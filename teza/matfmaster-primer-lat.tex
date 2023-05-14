@@ -1,0 +1,582 @@
+% Format teze zasnovan je na paketu memoir
+% http://tug.ctan.org/macros/latex/contrib/memoir/memman.pdf ili
+% http://texdoc.net/texmf-dist/doc/latex/memoir/memman.pdf
+% 
+% Prilikom zadavanja klase memoir, navedenim opcijama se podešava 
+% veličina slova (12pt) i jednostrano štampanje (oneside).
+% Ove parametre možete menjati samo ako pravite nezvanične verzije
+% mastera za privatnu upotrebu (na primer, u b5 varijanti ima smisla 
+% smanjiti 
+\documentclass[12pt,oneside]{memoir} 
+
+% Paket koji definiše sve specifičnosti master rada Matematičkog fakulteta
+\usepackage[latinica]{matfmaster} 
+%
+% Podrazumevano pismo je ćirilica.
+%   Ako koristite pdflatex, a ne xetex, sav latinički tekst na srpskom jeziku
+%   treba biti okružen sa \lat{...} ili \begin{latinica}...\end{latinica}.
+%
+% Opicija [latinica]:
+%   ako želite da pišete latiniciom, dodajte opciju "latinica" tj.
+%   prethodni paket uključite pomoću: \usepackage[latinica]{matfmaster}.
+%   Ako koristite pdflatex, a ne xetex, sav ćirilički tekst treba biti
+%   okružen sa \cir{...} ili \begin{cirilica}...\end{cirilica}.
+%
+% Opcija [biblatex]:
+%   ako želite da koristite reference na više jezika i umesto paketa
+%   bibtex da koristite BibLaTeX/Biber, dodajte opciju "biblatex" tj.
+%   prethodni paket uključite pomoću: \usepackage[biblatex]{matfmaster}
+%
+% Opcija [b5paper]:
+%   ako želite da napravite verziju teze u manjem (b5) formatu, navedite
+%   opciju "b5paper", tj. prethodni paket uključite pomoću: 
+%   \usepackage[b5paper]{matfmaster}. Tada ima smisla razmisliti o promeni
+%   veličine slova (izmenom opcije 12pt na 11pt u \documentclass{memoir}).
+%
+% Naravno, opcije je moguće kombinovati.
+% Npr. \usepackage[b5paper,biblatex]{matfmaster}
+
+% Pomoćni paket koji generiše nasumičan tekst u kojem se javljaju sva slova
+% azbuke (nema potrebe koristiti ovo u pravim disertacijama)
+\usepackage[latinica]{pangrami}
+
+\usepackage{hyperref}
+% \hypersetup{
+%     colorlinks=true,
+%     linkcolor=blue,
+%     filecolor=magenta,      
+%     urlcolor=cyan,
+%     pdftitle={Overleaf Example},
+%     pdfpagemode=FullScreen,
+%     }
+
+\usepackage{minted}
+
+% Datoteka sa literaturom u BibTex tj. BibLaTeX/Biber formatu
+\bib{matfmaster-primer}
+
+% Ime kandidata na srpskom jeziku (u odabranom pismu)
+\autor{Vladimir Vuksanović}
+% Naslov teze na srpskom jeziku (u odabranom pismu)
+\naslov{Unapređenje infrastrukture LLVM čuvanjem originalne lokacije pri debagovanju izdvojenog koda}
+% Godina u kojoj je teza predana komisiji
+\godina{2023}
+% Ime i afilijacija mentora (u odabranom pismu)
+\mentor{dr Milena \textsc{Vujošević Janičić}, vanredni profesor\\ Univerzitet u Beogradu, Matematički fakultet}
+% Ime i afilijacija prvog člana komisije (u odabranom pismu)
+\komisijaA{dr Filip \textsc{Marić}, redovan profesor\\ Univerzitet u Beogradu, Matematički fakultet}
+% Ime i afilijacija drugog člana komisije (u odabranom pismu)
+\komisijaB{dr Mirko \textsc{Spasić}, docent\\ Univerzitet u Beogradu, Matematički fakultet}
+% Ime i afilijacija trećeg člana komisije (opciono)
+% \komisijaC{}
+% Ime i afilijacija četvrtog člana komisije (opciono)
+% \komisijaD{}
+% Datum odbrane (odkomentarisati narednu liniju i upisati datum odbrane ako je poznat)
+% \datumodbrane{}
+
+% Apstrakt na srpskom jeziku (u odabranom pismu)
+\apstr{%
+% \pangrami
+}
+
+% Ključne reči na srpskom jeziku (u odabranom pismu)
+% \kljucnereci{analiza, geometrija, algebra, logika, računarstvo, astronomija}
+\kljucnereci{izdvajanje koda, kompajler, debager, informacije za debagovanje, projekat LLVM}
+
+\begin{document}
+% ==============================================================================
+% Uvodni deo teze
+\frontmatter
+% ==============================================================================
+% Naslovna strana
+\naslovna
+% Strana sa podacima o mentoru i članovima komisije
+\komisija
+% Strana sa posvetom (u odabranom pismu)
+\posveta{}
+% Strana sa podacima o disertaciji na srpskom jeziku
+\apstrakt
+% Sadržaj teze
+\tableofcontents*
+
+% ==============================================================================
+% Glavni deo teze
+\mainmatter
+% ==============================================================================
+
+% ------------------------------------------------------------------------------
+\chapter{Uvod}
+% ------------------------------------------------------------------------------
+
+\chapter{Kompajleri}
+
+\section{Primeri korišćenja klasičnih \LaTeX{} elemenata}
+% Primeri citiranja
+Ovo je rečenica u kojoj se javlja citat \cite{PetrovicMikic2015}.
+Još jedan citat \cite{GuSh:243}.
+% Primeri navodnika
+Isprobavamo navodnike: "Rekao je da mu se javimo sutra".
+% Primer referisanja na tabelu (koja se javlja kasnije)
+U tabeli \ref{tbl:rezultati} koja sledi prikazani su rezultati eksperimenta.
+% Primer kraćeg ćiriličkog teksta
+{\cir Ово је пример ћириличког текста који се јавља у латиничком документу.}
+U ovoj rečenici se javlja jedna reč na {\cir ћирилици}.
+% Primer korišćenja fusnota
+Iza ove rečenice sledi fusnota.\footnote{Ovo je fusnota.}
+
+\section{Informacije za debagovanje}
+\label{sec:informacije_za_debagovanje}
+
+\section{Kompajlerske optimizacije}
+
+\section{Format DWARF}
+
+
+\section{Kompajler LLVM}
+
+\chapter{Debageri}
+
+\section{Debager LLDB}
+
+\chapter{Optimizacija izdvajanjem koda}
+
+Izdvajanje koda (eng.~{\em outlining}) je kompajlerska optimizacija koja smanjuje kolicinu memorijskog prostora koji zauzima program, ali pritom potencijalno povecava njegovo vreme izvršavanja.
+Ona pronalazi segmente koda (uzastopne nizove instrukcija) koji se ponavljaju u programu, izdvaja ih u zasebnu funkciju i menja pojavljivanja tog segmenta sa pozivom ka novoj funkciji.
+% Segmenti ne moraju da bude isti u izvornom kodu, vec je dovoljno da su semanticki ekvivalentni, to jest da obavljaju iste operacije.
+% Nije moguce uvek pronaci sve sematicki iste segmente, vec se poredi slicnost u internoj reprezentaciji kompajlera.
+U nekim slucajevima moguce je da se ubrza i vreme potrebno za kompilaciju programa.
+
+Ova optimizacija je posebno korisna za uredjaje sa malom kolicinom memorije, najcesce ugradjenim (eng.~{\em embedded}) uredjajima poput pametnih satova, mp3 plejera ili uradjaja zasnovanih na razvojnom sistemu Arduino.
+% Moguce da poboljsa vreme izvrsavanja
+Vreme izvrsavanja programa moze da bude osteceno ako se izdvoji deo koda koji se bas cesto izvrsava (eng.~{\em hotspot}).
+Poziv funkcije je skupa instrukcija.
+Osim samog poziva, stek mora da bude pripremljen za poziv i parametri premesteni na odgovarajuca mesta.
+Sve to dodaje trosak koji nije prethodno postojao.
+Izdvajanjem koda koji se retko izvrsava, sa druge strane, moguce je da dodje do poboljsanja u vremenu izvrsavanja zbog bolje organizacije kes memorije.
+Nazalost, u vreme kompilacije je tesko odrediti koliko puta ce se izvrsiti segment koda, time ni razlika u vremenu izvrsavanja programa nije lako predvidiva.
+
+% Primer outlining efekat C kod -> x64 ASM
+U listingu \ref{lst:outline_program_example} je prikazan primer C koda.
+Redovi 11-14 i 16-19 predstavljaju dobrie kandidate za izdvajanje. Vrse se iste operacije samo sa drugacijom promeljivom.
+Ukoliko se ovaj kod prevede do asemblerskog koda komandama prikazanim u listingu \ref{lst:outlining_compile_instructions} da se pokrene samo optimizacija izdvajanja koda, rezultujuci kod prikazan u listingu \ref{lst:outline_program_asm}.
+Moze se primetiti da je kostruisana nova funkcija \verb|outlined_ir_func_0|. Ona sadrzi sve instrukcije iz izdvojenih redova, a ti redovi su zamenjeni pozivom ka toj funkciji.
+
+\begin{listing}
+\begin{minted}[linenos, tabsize=4, fontsize=\small]{c}
+int global;
+
+__attribute__((noinline)) int foo(int a, int b) {
+  return a / b * 2;
+}
+
+int main() {
+  int x = 0;
+  int y = 1;
+  
+  int c1 = x + y;
+  c1--;
+  global += 2;
+  foo(c1, global);
+  
+  int c2 = x + y;
+  c2--;
+  global += 2;
+  foo(c2, global);
+  
+  return c1;
+}
+\end{minted}
+\caption{Primer C programa koji je dobar kandidat za izdvajanje koda}
+\label{lst:outline_program_example}
+\end{listing}
+
+\begin{listing}
+  \begin{minted}[fontsize=\small]{bash}
+clang -Xclang -disable-llvm-passes -g -O3 -S -emit-llvm test.c -o test.ll
+opt -passes="iroutliner" -ir-outlining-no-cost=true -S test.ll -o test_opt.ll
+llc -filetype=asm test_opt.ll -o test.s
+  \end{minted}
+  \caption{Instrukcije za prevodjenje koda sa ukljucenim izdvajanjem instrukcija}
+  \label{lst:outlining_compile_instructions}
+\end{listing}
+
+\begin{listing}
+\begin{minted}[linenos, tabsize=4, fontsize=\footnotesize]{asm}
+main:                                   # @main
+.Lfunc_begin1:
+	.loc	0 11 0 is_stmt 1                # outline.c:11:0
+	.cfi_startproc
+...
+	movq	%rbx, %rdi
+	movq	%r14, %rsi
+	callq	outlined_ir_func_0
+...
+	movq	%rbx, %rdi
+	movq	%r14, %rsi
+	callq	outlined_ir_func_0
+...
+  .type	outlined_ir_func_0,@function    # -- Begin function outlined_ir_func_0
+outlined_ir_func_0:                     # @outlined_ir_func_0
+.Lfunc_begin2:
+	.loc	0 0 0 is_stmt 1                 # outline.c:0:0
+	.cfi_startproc
+...
+\end{minted}
+\caption{Isecci iz asemblerskog koda koji sadrzi funkciju dobijenu izdvajanjem koda}
+\label{lst:outline_program_asm}
+\end{listing}
+
+Ova optimizacija prestavlja suprotan proces poznatijoj optimizaciji, umetanju koda (eng.~{\em inlining}).
+% Pošto je umetanje koda jednostavnije za razumevanje, prvo će ono biti objašnjeno.
+Umetanje koda podrazumeva zamenu poziva ka funkciji sa telom te funkcije.
+Najcesce se primenjuje na kratke i jednostavne funkcije, koje se pozivaju na vise mesta.
+Time se ponistava cena poziva funkcije, sto poboljsava vreme izvrsavanja, ali pritom posto su neki delovi koda duplirani dolazi do povecanja memorijskog zauzeca koda.
+% U programskim jezicima C i C++ programer moze da nagovesti kompajleru da umetne neku funkciju koristeci kljucnu rec \verb|inline|.
+% Kompajler ovo tretira kao sugestiju, tako da moze da izabere da ne izvrsi optimizaciju ukoliko proceni da dobitak nije dovoljno veliki da nadomesti cenu ili ako nije moguce umetnuti funkciju (npr. jer se to funkciji pristupa preko pokazivaca).
+
+% Primer inlining efekat C kod -> x64 ASM
+
+Iako imaju suprotne efekte, obe optimizacije je moguce koristiti i zajedno na primer za delimicno umetanje. %\cite{}
+Ova ideja koristi izdvajanje koda kako bi iz funkcije namenjene za umetanje bili izdvojeni "hladni" delovi koda i time se smanjile negativne posledice umetanja.
+U tom kontekstu izdvajanje koda ne trazi sekvence koje se ponavljaju vec koristi heuristike da pronadje kod koji se retko izvrsava.
+
+U jezicima C i C++ postoji kljucna rec \verb|inline| koja nagovestava kompajleru da primeni umetanje koda da oznacenu funkciju. % \cite
+Kompajler nije primoran da primeni optimizaciju, vec je slobodan da izabere da li ce funkciju umetnuti ili ostaviti poziv.
+Za razliku od toga, za izdvajanje koda ne postoji slican mehanizam.
+Ukoliko kompajler podrzava ovu optimizaciju, na njemu je da izabere koji delovi koda ce biti izdvojeni.
+Ova optimizacija nije podrazumevano ukljucena, vec programer može da je uključi na podrzanim kompajlerima najcesce kompilacijom programa sa opcijom \verb|-Os| (ili \verb|-Oz| za clang) koja optimizuje program za memoriju umesto za vreme.
+
+\section{Implementacija u kompajleru LLVM}
+
+Kompajler LLVM, kao jedan od najpopularnijih kompajlera za jezik C++ ima podrsku za veliki broj optimizacija.
+Jedna od tih optimizacija je i izdvajanje koda.
+Postoje dve implementacije izdvajanja koda u okviru kompajlera LLVM:
+\begin{enumerate}
+  \item \verb|MachineOutliner| - na masinski-zavisnom medjukodu (MIR) \cite{paquette2016machineoutliner} % Jessica Paquette, Apple
+  \item \verb|IROutliner| - na masinski-nezavisnom medjukodu (IR) \cite{litteken2020iroutliner} % Andrew Litteken, Apple
+\end{enumerate}
+Obe su implementirane kao prolazi (eng.~{\em pass}) koji rade na nivou modula tako da omoguce izdvajanje koda iz razlicitih funkcija.
+Ideja je da obe implementacije komplementiraju jedna drugu i daju bolje rezultate nego ako bi se koristila samo jedna od njih.
+Oba mesta implementacije imaju svoje prednosti i mane.
+Na masinski-zavisnom medjukodu su dostupne informacije o ciljnoj arhitekturi cime je moguce dosta bolje proceniti cene izdvajanja instrukcija.
+Bolji model cena instrukcija bitno utice na odredjivanje delova koda koji ce biti izdvojeni.
+Problem na ovom nivou je sto je u tom trenutku vec izvrsena alokacija registara.
+Kandidati za izdvjanje su ograniceni samo na sekvence koje koriste iste registre, iako mozda postoji vise sekvenci koje vrse isto izracunavanje samo sa drugim registrima.
+Sa druge strane, na masinski-nezavisnom medjukodu se koriste virtuelni registri.
+Oni ne moraju da se poklapaju izmedju sekvenci tako da je moguce izdvojiti mnogo veci deo koda.
+Medjutim ovde se sada javlja problem procene dobitka memorije zato sto se bez konkretne ciljne arhitekture ne moze odrediti velicina instrukcija.
+Zbog koriscenja procena za cene instrukcija u obe implementacija je moguce da rezultat izdvajanja koda ima vecu velicinu od pocetnog koda.
+
+Obe implementacije se zasnivaju na istoj ideji, samo su adaptirane za medjukod koji optimizuju.
+U nastavku ce prvo biti objasnjen opsti algoritam, a zatim specificnosti obe implementacije.
+
+\subsection{Opsti algoritam za izdvajanje koda}
+
+Opsti algoritam za izdvajanje koda sadrzi dva osnovna koraka: odabir kandidata i izdvajanje koda.
+
+Algoritam za odabir kandidata se zasniva na ideji da se program moze tretirati kao niz numerickih vrednosti
+gde se svakoj instrukciji dodeljuje jedna vrednost.
+% Klasifikacija instrukcija
+% Jedinstvene vrednosti za basic blokove
+% Primarna razlika dve implementacije je u nacinu na koji se odredjuju vrednosti dodeljene instrukcijama.
+% Za potrebe dodele celobrojnih vrednosti 
+Instrukcije se dele u tri grupe: legalne, ilegalne i nevidljive.
+Legalne instrukcije su one koje je dozvoljeno izdvojiti. Tu spada vecina instrukcija: aritmeticke, logicke...
+Ilegalne instrukcije su one cije izdvajanje je zabranjeno kao sto su pozivi funkcija ili instrukcije vezane za obradu gresaka.
+Nevidljive instrukcije ne uticu na izdvajanje, ovo su primarno instrukcije koje se koriste za debagovanje.
+Pojedinacne vrednosti dodeljene instrukcijama se nadovezuju za svaki osnovni blok i svaki od njih se terminira jedinstvenom vrednosti kako bi se sprecilo izdvajanje koda preko granice blokova.
+Nadovezivanjem tih reprezentacija osnovnih blokova se dobija reprezentacija celog programa.
+
+% Primer
+
+Nad takvom reprezentacijom programa sada mogu da se primene algoritmi za trazenje ponavljajucih podniski (eng.~{\em longest repeated substring}).
+% Kod problema najduza ponavljajuca podniska zadatak je pronaci podnisku date niske koja se ponavlja bar dva puta i ima najvecu duzinu.
+% Implemenitrani algoritam koristi sufiksno stablo za efikasno trazenje ponavljajucih podniski.
+Implementirani algoritam korsiti sufiksno stablo.
+Sufiksno stablo je struktura podataka koja omogućava efikasno izvršavanje nekih algoritama nad niskama.
+% formalna definicija
+Formalno, sufiksno stablo niske $S$ dužine $n$ je korensko stablo za koje važi:
+\begin{itemize}
+  \item stablo ima tačno $n$ listova koji su numerisani od $1$ do $n$
+  \item osim korena, svaki unutrašnji čvor ima bar 2 deteta
+  \item svaka grana je označena nepraznom podniskom niske $S$
+  \item nikoje dve grane koje polaze iz istog čvora nemaju zajednički prefiks
+  \item niska dobijena konkatenacijom oznaka svih grana na putu od korena do lista numerisanog brojem $i$ je sufiks niske $S$ koji počinje od $i$-tog karaktera
+\end{itemize}
+Ovo stablo se sagradi u linearnoj slozenosti u odnosu na broj karaktera niske pomocu Ukonenovog algoritma \cite{ukkonen1993suffix}.
+Broj cvorova u ovom stablu je linearno zavisan od broj karaktera, sto znaci da je obilazak ovog stabla takodje linearne slozenosti.
+% slozenost pretrazivanja ponavljajuce podniske
+Trazenje svih ponavljajucih podniski se moze obaviti jednostavnim obilaskom stabla, takodje linearne slozenosti.
+
+% Primer
+
+% Izdvajanje funkcije
+Kada se odrede kandidati prelazi se u fazu izdvajanja koda.
+U petlji se odabira grupa kandidata za izdvajanje na navecim izracunatim doprinosom.
+Nacin racunanja doprinosa zavisi od implementacije.
+U oba slucaja se dobija kao procena razlike u velicini programa ukoliko se grupa ne izdvoji i ako se izdvoji.
+Za odabranu grupu se generise nova funkcija, a svi kandidati se zamenjuju pozivom te funkcije.
+Pritom se pazi da se odrzi semantika koda na tom medjukodu.
+Posle svakog odabira kandidata, ta grupa kao i svi drugi kandidati koji se preklapaju sa njom se brisu iz sufiksnog stabla i postupak se ponavlja sve dok postoje grupe koje sa pozitivnim doprinosom.
+Ukoliko ih vise nema, prolaz izdvajanja koda je zavrsen.
+
+% Youtube
+% [2016 LLVM Developers’ Meeting: J. Paquette "Reducing Code Size Using Outlining"](https://www.youtube.com/watch?v=yorld-WSOeU)
+% [2018 LLVM Developers’ Meeting: J. Paquette "What’s New In Outlining"](https://www.youtube.com/watch?v=naF9r8O_3aY)
+% [2017 LLVM Developers’ Meeting: R. Riddle "Code Size Optimization: Interprocedural Outlining ..."](https://www.youtube.com/watch?v=SS1rJzggBu0)
+% [2020 LLVM Developers’ Meeting: "Finding and Outlining Similarities in LLVM IR"](https://www.youtube.com/watch?v=HaN83qMyAhY)
+
+% MachineOutliner
+% https://reviews.llvm.org/D26872
+% https://lists.llvm.org/pipermail/llvm-dev/2016-August/104170.html
+% https://www.llvm.org/devmtg/2016-11/Slides/Paquette-Outliner.pdf
+
+% IROutliner
+% https://lists.llvm.org/pipermail/llvm-dev/2020-September/144779.html
+% https://llvm.org/devmtg/2020-09/slides/Finding-outlining-ir-level-Andrew-Litteken.pdf
+% https://llvm.org/devmtg/2017-10/slides/Riddle-Interprocedural%20IR%20Outlining%20For%20Code%20Size.pdf
+% https://lists.llvm.org/pipermail/llvm-dev/2017-July/115666.html
+% https://lists.llvm.org/pipermail/llvm-dev/2017-September/117153.html
+
+
+% Tri specificna koraka:
+% hesiranje
+% racunanje benfita
+% izdvajanje
+
+\subsection{Specifičnosti na masinski-zavisnom medjukodu}
+
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/CodeGen/MachineOutliner.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/MachineOutliner.cpp
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/CodeGen/TargetInstrInfo.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/TargetInstrInfo.cpp
+
+Izdvajanje koda na masinski-zavisnom medjukodu je implementirano u klasi \verb|MachineOutliner|.
+Ovo je jednostavnija od dve implementacije.
+
+% Instrukcije se porede na jednakost
+Hesiranje instrukcija na ovom nivou je jednostavno.
+Poredjenje se vrsi po jednakosti.
+Dakle instrukcija i operandi moraju da budu identicni.
+Ovo je jedno od najvecih ogranicenja na ovom nivou.
+Ukoliko dve sekvence vrse isto izracunavanje ali njihovim operandima su dodeljeni razliciti registri, nece biti moguce izdvojiti taj kod.
+Jos uvek vazi klasifikacija instrukcija, tako da instrukcije klasifikovane kao ilegalne nije moguce izdvojiti.
+Klasifikaciju instrukcija radi \verb|TargetInstrInfo|.
+
+% tacniji model cene instrukcija
+Procena dobitka se racuna po formuli:
+% \begin{minted}[fontsize=\footnotesize, breaklines]{text}
+%   Benefit - Cost
+%   Benefit = instrs_size * n_groups
+%   Cost = instrs_size(for outlined func) + n_groups * call_overhead + frame_overhead
+% \end{minted}
+Cene instrukcija na ciljnoj arhitekturi se dobijaju kroz interfejs \verb|TargetInstrInfo|.
+
+% generisanje funkcije, generisanje poziva
+Grupe se sortiraju po benefitu.
+Izbacuju se svi kandidati koji se preklapaju sa prethodno izdvojenim kodom.
+Generise se nova funckija sa imenom \verb|OUTLINED_FUNCTION_X| gde je \verb|X| redni broj izdvojene funkcije.
+Kopiraju se instrukcije proizvoljnog kandidata, generisu se informacije za debagovanje.
+Svi kandidati se zamenjuju pozivom ka generisanoj funkciji.
+% odrzava se liveness
+
+\subsection{Specifičnosti na masinski-nezavisnom medjukodu}
+
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Transforms/IPO/IROutliner.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/Transforms/IPO/IROutliner.cpp
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Analysis/IRSimilarityIdentifier.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/Analysis/IRSimilarityIdentifier.cpp
+
+Izdvajanje koda na masinski-nezavisnom medjukodu radi prolaz koji se zove \verb|IROutliner|.
+
+% IRSimilarityIdentifier, semanticka ekvivalentnost, instrukcije se hesiraju na osnovu opkoda, tipa, dodatnih flagova, nakon toga se testira unifikacija
+Za odredjivanje kandidata se koristi pomocna analiza, \verb|IRSimilarityIdentifier|.
+Umesto poredjenja celih instrukcija, poredi se samo tip instrukcije i operanda i dodatni parametri za neke instrukcije (npr. ime pozvane funkcije ili tip predikta za instrukciju poredjenja).
+Operandi ne uticu na hes vrednost instrukcije zato sto se oni mogu izvuci kao argumenti izdvojene funckije.
+Ova razlika omogucava izdvajanje dosta vise koda.
+
+Dobitak se racuna po narednoj formuli:
+% \begin{minted}[fontsize=\footnotesize, breaklines]{text}
+% Benefit = AvgOutlineBenefit(how much will be removed) = TotalRegionBenefit / NumRegions 
+% Cost    = OutputReloadCost + AvgOutlineBenefit(one instance of candidate) + load each arg + output block cost
+% \end{minted}
+Procene cena instrukcija nakon transformacije na ciljnu arhitekturu se dobija kroz interfejs \verb|TargetTransformInfo|.
+
+% izdvajanje svih kandidata, mapiranje argumenata, CodeExtractor, deduplikacija, zamena sa pozivom, duvanje arg...
+% Izdvajanje kandidata je komplikovan proces zbog cega je izdvojen u zasebnu klasu, \verb|CodeExtractor|.
+Kandidati se izdvajaju iz dva pokusaja. Prvi put kada se izdvoje odredjuju se svi argumenti koje je potrebno izdvojiti.
+Drugi put se izdvajanje vrsi uz zamenu argumenata. Jedan on izdvojenih kandidata se proglasava za konacnu izdvojenu funkciju.
+Njemu se dodeljuje ime \verb|outlined_ir_func_x| gde je \verb|x| redni broj izdvojene funkcije.
+Informacije iz svih izdvojenih kandidata se spajaju sa izabranom funkcijom i zatim brisu.
+Svaki kandidat je zamenjen pozivom ka funkciji prilikom cega se dodaju i instrukcije za cuvanje i ucitavanje argumenata.
+
+\section{Izdvajanje koda i debag lokacije}
+
+% Napomenuti format DWARF
+
+Debag lokacije predstavljaju pozicije u izvornom kodu koje odgovaraju instrukciji u izvrsnom fajlu. Sastoje se od fajla, reda i kolone.
+U idealnom slucaju, svaka instruckija u izvornom kodu bi trebalo da ima odgovarajucu lokaciju, ali to nije slucaj pogotovu u optimizovanom kodu.
+Veliki broj optimizacija menja kod na nacin koji moze da narusi tacnost debag lokacija.
+% https://www.llvm.org/docs/HowToUpdateDebugInfo.html#rules-for-updating-debug-locations
+Neki od najcescih slucajeva su brisanje nepotrebnih instrukcija ili pomeranja instruckija van tela petlje.
+Kompajleri se trude da odrze sto vecu kolicinu debag lokacija, ali nekada to ili nije moguce ili nema smisla posle izvrsavanja optimizacije.
+
+U nastavku se podrazumeva da se koristi format DWARF za cuvanje informacija za debagovanje.
+% Kao sto je objasnjeno u poglavlju \ref{sec:informacije_za_debagovanje} 
+Lokacije za debagovanje se interno cuvaju u tabeli linija u \verb|.debug_line| sekciji izvrsnog fajla.
+Ta tabela preslikava adresu iz tekst (kod) segmenta izvrsnog fajla na odgovarajucu lokaciju (fajl, red, kolona) u izvornom kodu i neke dodatne informacije o toj lokaciji.
+Format DWARF propisuje nacin enkodiranja tabele linija u vidu konacnog automata, ali postoje alati koji prikazuju podatke u obliku tabele razumljive od strane coveka.
+% Postoji vise alata Jedan nacin da se vidi ova tabela je uz pomoc alata \verb|llvm-dwarfdump|.
+Listing \ref{lst:debug_line_commands} prikazuje upotrebu nekoliko alata za dekodiranje tabele linija, a u listingu \ref{lst:line_table} se nalazi primer jedne tabele.
+
+\begin{listing}
+  \begin{minted}[breaklines, fontsize=\small]{bash}
+    llvm-dwarfdump --debug-line [file]
+    readelf -wL [file]
+    objdump -WL [file]
+  \end{minted}
+  \label{lst:debug_line_commands}
+  \caption{Komande za ispis tabele linija koristeci alate llvm-dwarfdump, readelf i objdump}
+\end{listing}
+
+\begin{listing}
+  \begin{minted}[fontsize=\small]{text}
+Address            Line   Column File   ISA Discriminator Flags
+------------------ ------ ------ ------ --- ------------- -------------
+0x0000000000401110      1      0      1   0             0  is_stmt
+0x000000000040111b      2      6      1   0             0  is_stmt prologue_end
+0x0000000000401122      3      3      1   0             0  is_stmt
+0x000000000040112b      4      2      1   0             0  is_stmt
+0x000000000040112f      4      2      1   0             0  is_stmt end_sequence
+  \end{minted}
+  \label{lst:line_table}
+  \caption{Tabela linija ispisana pomocu alata llvm-dwarfdump}
+\end{listing}
+
+% Primer
+
+Debageri prikazuju lokaciju iz tabele koja je vezana za prvu adresu koja je manja ili jednaka adresi instrukcije na kojoj je program zaustavljen.
+Na taj nacin ukoliko trenutna instrukcija nema svoju debag lokaciju, prikazace se lokacija prve prethodne instrukcije koja ima lokaciju.
+Standard propisuje i specijalne debag lokacije koje se poznaju po tome sto imaju red 0.
+Ove lokacije znace da je kod kompajlerski generisan i da ne postoji odgovarajuca lokacija u izvornom kodu.
+% debagerov step preskace do sledeceg reda i preskace adrese 0
+Prilikom izvrsavanja programa red po red (koristeci komandu \verb|step| u debageru LLDB) preskacu se sve instrukcije sa 
+Na instrukciju koja nema dodeljenu lokaciju je moguce stati izvrsavanjem programa instrukciju po instrukciju, postavljanjem tacke prekida na adresu te instrukcije ili usled zaustavljanja programa zbog izuzetka koji se desio u toj instrukciji.
+
+% U slucaju inlajnovanja ...
+% ista lokacija u izvornom kodu se ponavlja vise puta u tabeli.
+% inlinedAt podrska.
+
+Prilikom izdvajanja koda jedna instrukcija ima vise mogucih debag lokacija u zavisnosti od mesta poziva izdvojene funckije.
+Ovo predstavlja vise problema:
+\begin{itemize}
+  \item U vreme izvrsavanja programa nije moguce odrediti koja od ovih lokacija je korektna bez dodatnih informacija
+  \item Format DWARF ne podrzava postojanje vise razlicitih lokacija za istu adresu \cite{dwarf5}
+\end{itemize}
+Radi odrzavanja korektnosti, prilikom izdvajanja koda brisu se lokacije svih izdvojenih instrukcija.
+Kao posledica toga mogu se javiti nepogodnosti prilikom debagovanja:
+\begin{itemize}
+  \item Izvrsavanje korak po korak pravi velike skokove kada dodje do izdvojenog koda, bez bilo kakvog obavestanja korisniku
+  \item Postavljanje tacaka prekida na izdvojenu instrukciju precizirajuci njen red nije moguce
+\end{itemize}
+
+Primer debagovanja sa izdvojenim kodom je prikazan u listingu \ref{lst:outlining_debug_before}
+
+\begin{listing}
+\begin{minted}[breaklines, fontsize=\small]{text}
+$ lldb outline
+(lldb) breakpoint set 11
+(lldb) run
+    8           int x = 0;
+    9           int y = 1;
+    10          
+  -> 11          int c1 = x + y;
+    12          c1--;
+    13          global += 2;
+    14          foo(c1, global);
+(lldb) next
+    13          global += 2;
+    14          foo(c1, global);
+    15          
+  -> 16          int c2 = x + y;
+    17          c2--;
+    18          global += 2;
+    19          foo(c2, global);
+(lldb) next
+    18          global += 2;
+    19          foo(c2, global);
+    20          
+  -> 21          return 0;
+    22    }
+\end{minted}
+\label{lst:outlining_debug_before}
+\end{listing}
+
+\chapter{Implementacija resenja}
+
+Implementacija nadogradjuje verziju 16 \href{https://llvm.org/}{projekta LLVM}.
+Celokupan izvorni kod je dostupan na Github servisu na adresi \url{https://github.com/vvuksanovic/llvm-project/tree/outline-debug-info}
+
+Resenje se sastoji iz dva dela. Prvo je potrebno u okviru kompajlera generisati potrebne informacije za debagovanje, a zatim ih iz debagera iskoristiti za poboljsanje procesa debagovanja.
+U ovom poglavlju ce biti opisana oba dela implementacije.
+
+\section{Implementacija u kompajleru}
+
+
+% ------------------------------------------------------------------------------
+\chapter{Razrada}
+\label{chp:razrada}
+
+\subsection{Cuvanje debag lokacija prilikom optimizacije}
+
+\subsection{Cuvanje debag lokacija prilikom izbora instrukcija}
+
+\subsection{Ispisivanje debag lokacija}
+
+\section{Implementacija u debageru}
+
+\subsection{Ispisivanje linija koda}
+
+\subsection{Izvrsavanje korak po korak}
+
+\subsection{Postavljanje tacaka prekida}
+
+\chapter{Rezultati}
+
+% ------------------------------------------------------------------------------
+\chapter{Zaključak}
+% ------------------------------------------------------------------------------
+
+
+% ------------------------------------------------------------------------------
+% Literatura
+% ------------------------------------------------------------------------------
+\literatura
+
+% ==============================================================================
+% Završni deo teze i prilozi
+\backmatter
+% ==============================================================================
+
+% ------------------------------------------------------------------------------
+% Biografija kandidata
+\begin{biografija}
+  % \textbf{Vuk Stefanović Karadžić} (\emph{Tršić,
+  %   26. oktobar/6. novembar 1787. — Beč, 7. februar 1864.}) bio je
+  % srpski filolog, reformator srpskog jezika, sakupljač narodnih
+  % umotvorina i pisac prvog rečnika srpskog jezika.  Vuk je
+  % najznačajnija ličnost srpske književnosti prve polovine XIX
+  % veka. Stekao je i nekoliko počasnih mastera.  Učestvovao je u
+  % Prvom srpskom ustanku kao pisar i činovnik u Negotinskoj krajini, a
+  % nakon sloma ustanka preselio se u Beč, 1813. godine. Tu je upoznao
+  % Jerneja Kopitara, cenzora slovenskih knjiga, na čiji je podsticaj
+  % krenuo u prikupljanje srpskih narodnih pesama, reformu ćirilice i
+  % borbu za uvođenje narodnog jezika u srpsku književnost. Vukovim
+  % reformama u srpski jezik je uveden fonetski pravopis, a srpski jezik
+  % je potisnuo slavenosrpski jezik koji je u to vreme bio jezik
+  % obrazovanih ljudi. Tako se kao najvažnije godine Vukove reforme
+  % ističu 1818., 1836., 1839., 1847. i 1852.
+\end{biografija}
+% ------------------------------------------------------------------------------
+
+\end{document}
