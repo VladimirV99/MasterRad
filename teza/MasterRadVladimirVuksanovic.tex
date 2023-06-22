@@ -1,0 +1,961 @@
+% Format teze zasnovan je na paketu memoir
+% http://tug.ctan.org/macros/latex/contrib/memoir/memman.pdf ili
+% http://texdoc.net/texmf-dist/doc/latex/memoir/memman.pdf
+% 
+% Prilikom zadavanja klase memoir, navedenim opcijama se podešava 
+% veličina slova (12pt) i jednostrano štampanje (oneside).
+% Ove parametre možete menjati samo ako pravite nezvanične verzije
+% mastera za privatnu upotrebu (na primer, u b5 varijanti ima smisla 
+% smanjiti 
+\documentclass[12pt,oneside]{memoir} 
+
+% Paket koji definiše sve specifičnosti master rada Matematičkog fakulteta
+\usepackage[latinica]{matfmaster} 
+%
+% Podrazumevano pismo je ćirilica.
+%   Ako koristite pdflatex, a ne xetex, sav latinički tekst na srpskom jeziku
+%   treba biti okružen sa \lat{...} ili \begin{latinica}...\end{latinica}.
+%
+% Opicija [latinica]:
+%   ako želite da pišete latiniciom, dodajte opciju "latinica" tj.
+%   prethodni paket uključite pomoću: \usepackage[latinica]{matfmaster}.
+%   Ako koristite pdflatex, a ne xetex, sav ćirilički tekst treba biti
+%   okružen sa \cir{...} ili \begin{cirilica}...\end{cirilica}.
+%
+% Opcija [biblatex]:
+%   ako želite da koristite reference na više jezika i umesto paketa
+%   bibtex da koristite BibLaTeX/Biber, dodajte opciju "biblatex" tj.
+%   prethodni paket uključite pomoću: \usepackage[biblatex]{matfmaster}
+%
+% Opcija [b5paper]:
+%   ako želite da napravite verziju teze u manjem (b5) formatu, navedite
+%   opciju "b5paper", tj. prethodni paket uključite pomoću: 
+%   \usepackage[b5paper]{matfmaster}. Tada ima smisla razmisliti o promeni
+%   veličine slova (izmenom opcije 12pt na 11pt u \documentclass{memoir}).
+%
+% Naravno, opcije je moguće kombinovati.
+% Npr. \usepackage[b5paper,biblatex]{matfmaster}
+
+% Pomoćni paket koji generiše nasumičan tekst u kojem se javljaju sva slova
+% azbuke (nema potrebe koristiti ovo u pravim disertacijama)
+\usepackage[latinica]{pangrami}
+
+\usepackage{hyperref}
+% \hypersetup{
+%     colorlinks=true,
+%     linkcolor=blue,
+%     filecolor=magenta,      
+%     urlcolor=cyan,
+%     pdftitle={Overleaf Example},
+%     pdfpagemode=FullScreen,
+%     }
+
+\usepackage{minted}
+
+% Datoteka sa literaturom u BibTex tj. BibLaTeX/Biber formatu
+\bib{MasterRadVladimirVuksanovic}
+
+% Ime kandidata na srpskom jeziku (u odabranom pismu)
+\autor{Vladimir Vuksanović}
+% Naslov teze na srpskom jeziku (u odabranom pismu)
+\naslov{Unapređenje infrastrukture LLVM čuvanjem originalne lokacije pri debagovanju izdvojenog koda}
+% Godina u kojoj je teza predana komisiji
+\godina{2023}
+% Ime i afilijacija mentora (u odabranom pismu)
+\mentor{dr Milena \textsc{Vujošević Janičić}, vanredni profesor\\ Univerzitet u Beogradu, Matematički fakultet}
+% Ime i afilijacija prvog člana komisije (u odabranom pismu)
+\komisijaA{dr Filip \textsc{Marić}, redovan profesor\\ Univerzitet u Beogradu, Matematički fakultet}
+% Ime i afilijacija drugog člana komisije (u odabranom pismu)
+\komisijaB{dr Mirko \textsc{Spasić}, docent\\ Univerzitet u Beogradu, Matematički fakultet}
+% Ime i afilijacija trećeg člana komisije (opciono)
+% \komisijaC{}
+% Ime i afilijacija četvrtog člana komisije (opciono)
+% \komisijaD{}
+% Datum odbrane (odkomentarisati narednu liniju i upisati datum odbrane ako je poznat)
+% \datumodbrane{}
+
+% Apstrakt na srpskom jeziku (u odabranom pismu)
+\apstr{%
+% \pangrami
+}
+
+% Ključne reči na srpskom jeziku (u odabranom pismu)
+% \kljucnereci{analiza, geometrija, algebra, logika, računarstvo, astronomija}
+\kljucnereci{izdvajanje koda, kompajler, debager, informacije za debagovanje, projekat LLVM}
+
+\begin{document}
+% ==============================================================================
+% Uvodni deo teze
+\frontmatter
+% ==============================================================================
+% Naslovna strana
+\naslovna
+% Strana sa podacima o mentoru i članovima komisije
+\komisija
+% Strana sa posvetom (u odabranom pismu)
+\posveta{}
+% Strana sa podacima o disertaciji na srpskom jeziku
+\apstrakt
+% Sadržaj teze
+\tableofcontents*
+
+% ==============================================================================
+% Glavni deo teze
+\mainmatter
+% ==============================================================================
+
+% ------------------------------------------------------------------------------
+\chapter{Uvod}
+% ------------------------------------------------------------------------------
+
+\chapter{Kompajleri}
+
+% // Istorija, ASM
+% U pocetku, racunarski programi su se pisali direktno u binarnom zapisu.
+% Ubrzo, primetilo se da to nece biti odrzivo pa su napisani binarnim instrukcijama dodeljeni mnemonici i nastali su asmeblerski jezici i odgovariajuci softver koji pretvara te mnemonike u binarni reprezentaciju (asembleri).
+% Ti asembleri su jos uvek bili vezani za konkretnu arhitekturu. Tj program napisan za jedan sistem bi morao da se promeni kako bi radio na drugom sistemu.
+
+% Kako je softver postajao slozeniji nastala je potreba za opisivanjem naprednih koncepata u programskom kodu i tako su nastali programski jezici viseg nivoa (high-level lanugage). Prevodjenje pragrama napisanih na visem jeziku je znatno komplikovanije nego jednostavna zamena mnemonika u slucaju asemblera. Tako su se razvili napredniji alati, kompajleri.
+
+% Prednosti kompajliranih programskih jezika
+
+% Moderni kompajleri se obicno sastoje iz tri dela \cite{cooper2022engineering}:
+% - prednji deo - prevodi izvorni kod na neku internu reprezentaciju (npr. AST). Pritom vrsi leksicku, sintaksicku i semanticku analizu nad kodom
+% - optimizator - optimizuje internu reprezentaciju (medjureprezentaciju)
+% - zadnji deo - prevodi validnu internu reprezentaciju do programa koji moze da se izvrsi na ciljnoj masini
+
+\section{Informacije za debagovanje}
+\label{sec:informacije_za_debagovanje}
+
+% // TODO pomeri dole (ispod optimizacija)
+% Pored masinskog koda, kompajler takodje, ako mu je zatrazeno, generise i dodatne informacije koje se koriste za debagovanje. One ukljucuju mapiranja masinskih instrukcija u lokacije u izvornom kodu, imena promenjivih itd. 
+% // TODO -g
+% Ove informacije se nalaze u posebnim segmentima, van uobicajenih segmenata (text, data, bss...)
+% Postoji vise razlicitih formata za zapisivanje informacija za debagovanje. Najpopularniji medju njima su CodeView za Windows i DWARF za UNIX.
+
+\section{Kompajlerske optimizacije}
+
+% % https://compileroptimizations.com/
+% % https://groups.seas.harvard.edu/courses/cs153/2019fa/lectures/Lec19-Optimization.pdf
+% % https://en.wikipedia.org/wiki/Constant_folding
+% % https://en.wikipedia.org/wiki/Optimizing_compiler
+
+% Kompajleri osim prevodjenja izvornog koda do masinskih instrukcija takodje mogu da modifikuju taj kod za bolje performanse (u smislu vremena izvrsavanja ili memorija) sve dok se optimizovani kod isto ponasa kao originalni.
+
+% Primeri optimizacija: ...
+
+% % objasnjenje odnos O0, O1, O2, O3, Os, Oz
+% % https://discourse.llvm.org/t/compiling-for-size/65415/6
+% % https://stackoverflow.com/questions/45608392/what-do-the-optimization-levels-os-and-oz-do-in-rustc
+
+% Postoji nekoliko nivoa optimizacije podrzanih od strane kompajlera. O0 je podrazumevani nivo i oznacava da se kod uopste ne optimizuje.
+% Ovaj rezim se cesto koristi za pravljenje debag verzija programa (zato sto...).
+% O1 i O2 redom ukljucuju sve veci broj optimizacija podrazumevano da one drasticno ne povacavaju memorijsku slozenost programa.
+% O3 ja najveci nivo optimizacije vremena izvrsavanja. On podrazumeva sve O2 optimizacije, ali ukljucuje i optimizacije koje mogu da znatno povecaju memorijsko zauzece programa.
+% Sa druge strane Os (ili sinonim Oz) nivo takodje podrazumeva sve optimizacije iz O2 ali dodatno i optimizacije koje smanjuju memorijsko zauzece na ustrb vremena izvrsavanja.
+% Ovaj nivo se koristi za ugradjene (eng. embedded) uredjaje koji imaju malu kolicinu memorije.
+
+\section{Format DWARF}
+
+% https://www.llvm.org/devmtg/2016-11/Slides/Kleckner-CodeViewInLLVM.pdf
+
+% DWARF je jedan od formata za predstavljanje debag informacija. ON se koristi na UNIX sistemima.
+
+\section{Kompajler LLVM}
+
+% // Prednji deo - clang
+% // Srednji deo - LLVM IR
+% // Instruction selection, SelectionDAG
+% // Zadnji deo - MIR, AsmPrinter
+
+\chapter{Debageri}
+
+% // opste o greskama, procesu razvoja softvera, mogucnostima debagera
+
+% Prilikom programiranja bilo kog veceg projekta, bagovi ce se skoro sigurno javiti. Oni trebaju biti popravljeni pre objavljivanja verzije.
+
+% Debagovanje je proces trazenja, analiziranja i popravljanja bagova u programu.
+
+% Debager je softverski alat koji olaksava proces debagovanja. Neke osnovne (feature) debagera su koracanje kroz program, tacke prekida, evaluiranje vrednosti promenljivih ili izraza itd.
+
+\section{Debager LLDB}
+
+\chapter{Optimizacija izdvajanjem koda}
+
+% https://www.linaro.org/blog/reducing-code-size-with-llvm-machine-outliner-on-32-bit-arm-targets/
+% https://developer.arm.com/documentation/ka004653/latest
+% [Reducing Code Size Using Outlining](https://www.youtube.com/watch?v=yorld-WSOeU)
+% [Code Size Optimization: Interprocedural Outlining For Code Size](https://www.youtube.com/watch?v=SS1rJzggBu0)
+% [Finding and Outlining Similarities in LLVM IR](https://www.youtube.com/watch?v=HaN83qMyAhY)
+% [Fixing False Assumptions: Inter-Function vs Intra-Function Machine Outlining](https://www.youtube.com/watch?v=nt_vBdfdH-U)
+% [What's New in IR Similarity Identification and Outlining](https://www.youtube.com/watch?v=rBZz7dzbiBw)
+% [Function Outlining and Partial Inlining](https://webdocs.cs.ualberta.ca/~amaral/papers/ZhaoAmaralSBAC05.pdf)
+
+% Optimizacije imaju cilj da poboljsaju vremensk, memorijske ili obe performanse programa.
+
+Izdvajanje koda (eng.~{\em outlining}) je kompajlerska optimizacija koja smanjuje količinu memorijskog prostora koji zauzima program, ali pritom potencijalno povećava njegovo vreme izvršavanja.
+Ona pronalazi segmente koda (uzastopne nizove instrukcija) koji se ponavljaju u programu, izdvaja ih u zasebnu funkciju i menja pojavljivanja tog segmenta sa pozivom ka novoj funkciji.
+% Segmenti ne moraju da bude isti u izvornom kodu, već je dovoljno da su semantički ekvivalentni, to jest da obavljaju iste operacije.
+% Nije moguće uvek pronaći sve sematički iste segmente, već se poredi sličnost u internoj reprezentaciji kompajlera.
+U nekim slučajevima moguće je da se ubrza i vreme potrebno za kompilaciju programa.
+
+Ova optimizacija je posebno korisna za uređaje sa malom količinom memorije, najčešće ugrađenim (eng.~{\em embedded}) uređajima poput pametnih satova, mp3 plejera ili urađaja zasnovanih na razvojnom sistemu Arduino.
+% Moguce da poboljsa vreme izvrsavanja
+Vreme izvršavanja programa može da bude oštećeno ako se izdvoji deo koda koji se bas često izvršava (eng.~{\em hotspot}).
+Poziv funkcije je skupa instrukcija.
+Osim samog poziva, stek mora da bude pripremljen za poziv i parametri premešteni na odgovarajuća mesta.
+Sve to dodaje trošak koji nije prethodno postojao.
+Izdvajanjem koda koji se retko izvršava, sa druge strane, moguće je da dođe do poboljšanja u vremenu izvršavanja zbog bolje organizacije keš memorije.
+Nažalost, u vreme kompilacije je teško odrediti koliko puta će se izvršiti segment koda, time ni razlika u vremenu izvršavanja programa nije lako predvidiva.
+
+% Primer outlining efekat C kod -> x64 ASM
+U listingu \ref{lst:outline_program_example} je prikazan primer C koda.
+Redovi 11-14 i 16-19 predstavljaju dobre kandidate za izdvajanje. Vrše se iste operacije samo sa drugačijom promeljivom.
+Ukoliko se ovaj kod prevede do asemblerskog koda komandama prikazanim u listingu \ref{lst:outlining_compile_instructions} tako da se pokrene samo optimizacija izdvajanja koda, rezultujući kod je prikazan u listingu \ref{lst:outline_program_asm}.
+Može se primetiti da je kostruisana nova funkcija \verb|outlined_ir_func_0|. Ona sadrži sve instrukcije iz izdvojenih redova, a ti redovi su zamenjeni pozivom ka toj funkciji.
+
+\begin{listing}
+\begin{minted}[linenos, tabsize=4, fontsize=\small]{c}
+int global;
+
+__attribute__((noinline)) int foo(int a, int b) {
+  return a / b * 2;
+}
+
+int main() {
+  int x = 0;
+  int y = 1;
+  
+  int c1 = x + y;
+  c1--;
+  global += 2;
+  foo(c1, global);
+  
+  int c2 = x + y;
+  c2--;
+  global += 2;
+  foo(c2, global);
+  
+  return c1;
+}
+\end{minted}
+\caption{Primer C programa koji je dobar kandidat za izdvajanje koda}
+\label{lst:outline_program_example}
+\end{listing}
+
+\begin{listing}
+  \begin{minted}[fontsize=\small]{bash}
+clang -Xclang -disable-llvm-passes -g -O3 -S -emit-llvm test.c -o test.ll
+opt -passes="iroutliner" -ir-outlining-no-cost=true -S test.ll -o test_opt.ll
+llc -filetype=asm test_opt.ll -o test.s
+  \end{minted}
+  \caption{Instrukcije za prevođenje koda sa uključenim izdvajanjem instrukcija}
+  \label{lst:outlining_compile_instructions}
+\end{listing}
+
+\begin{listing}
+\begin{minted}[linenos, tabsize=4, fontsize=\footnotesize]{asm}
+main:                                   # @main
+.Lfunc_begin1:
+	.loc	0 11 0 is_stmt 1                # outline.c:11:0
+	.cfi_startproc
+...
+	movq	%rbx, %rdi
+	movq	%r14, %rsi
+	callq	outlined_ir_func_0
+...
+	movq	%rbx, %rdi
+	movq	%r14, %rsi
+	callq	outlined_ir_func_0
+...
+  .type	outlined_ir_func_0,@function    # -- Begin function outlined_ir_func_0
+outlined_ir_func_0:                     # @outlined_ir_func_0
+.Lfunc_begin2:
+	.loc	0 0 0 is_stmt 1                 # outline.c:0:0
+	.cfi_startproc
+...
+\end{minted}
+\caption{Isečci iz asemblerskog koda koji sadrži funkciju dobijenu izdvajanjem koda}
+\label{lst:outline_program_asm}
+\end{listing}
+
+Ova optimizacija prestavlja suprotan proces poznatijoj optimizaciji, umetanju koda (eng.~{\em inlining}).
+% Pošto je umetanje koda jednostavnije za razumevanje, prvo će ono biti objašnjeno.
+Umetanje koda podrazumeva zamenu poziva ka funkciji sa telom te funkcije.
+Najčešće se primenjuje na kratke i jednostavne funkcije, koje se pozivaju na više mesta.
+Time se poništava cena poziva funkcije, što poboljšava vreme izvršavanja, ali pritom pošto su neki delovi koda duplirani dolazi do povećanja memorijskog zauzeća koda.
+% U programskim jezicima C i C++ programer moze da nagovesti kompajleru da umetne neku funkciju koristeći ključnu reč \verb|inline|.
+% Kompajler ovo tretira kao sugestiju, tako da moze da izabere da ne izvrši optimizaciju ukoliko proceni da dobitak nije dovoljno veliki da nadomesti cenu ili ako nije moguće umetnuti funkciju (npr. jer se toj funkciji pristupa preko pokazivača).
+
+% Primer inlining efekat C kod -> x64 ASM
+
+Iako imaju suprotne efekte, obe optimizacije je moguće koristiti i zajedno na primer za delimično umetanje. %\cite{}
+Ova ideja koristi izdvajanje koda kako bi iz funkcije namenjene za umetanje bili izdvojeni "hladni" delovi koda i time se smanjile negativne posledice umetanja.
+U tom kontekstu izdvajanje koda ne traži sekvence koje se ponavljaju već koristi heuristike da pronađe kod koji se retko izvršava.
+
+U jezicima C i C++ postoji ključna reč \verb|inline| koja nagoveštava kompajleru da primeni umetanje koda na označenu funkciju. % \cite
+Kompajler nije primoran da primeni optimizaciju, već je slobodan da izabere da li će funkciju umetnuti ili ostaviti poziv.
+Za razliku od toga, za izdvajanje koda ne postoji sličan mehanizam.
+Ukoliko kompajler podržava ovu optimizaciju, na njemu je da izabere koji delovi koda će biti izdvojeni.
+Ova optimizacija nije podrazumevano uključena, već programer može da je uključi na podržanim kompajlerima najčešće kompilacijom programa sa opcijom \verb|-Os| (ili \verb|-Oz| za clang) koja optimizuje program za memoriju umesto za vreme.
+
+\section{Implementacija u kompajleru LLVM}
+
+Kompajler LLVM, kao jedan od najpopularnijih kompajlera za jezik C++ ima podršku za veliki broj optimizacija.
+Jedna od tih optimizacija je i izdvajanje koda.
+Postoje dve implementacije izdvajanja koda u okviru kompajlera LLVM:
+\begin{enumerate}
+  \item \verb|MachineOutliner| - na mašinski-zavisnom međukodu (MIR) \cite{paquette2016machineoutliner} % Jessica Paquette, Apple
+  \item \verb|IROutliner| - na mašinski-nezavisnom međukodu (IR) \cite{litteken2020iroutliner} % Andrew Litteken, Apple
+\end{enumerate}
+Obe su implementirane kao prolazi (eng.~{\em pass}) koji rade na nivou modula tako da omoguće izdvajanje koda iz različitih funkcija.
+Ideja je da obe implementacije komplementiraju jedna drugu i daju bolje rezultate nego ako bi se koristila samo jedna od njih.
+Oba mesta implementacije imaju svoje prednosti i mane.
+Na mašinski-zavisnom međukodu su dostupne informacije o ciljnoj arhitekturi čime je moguće dosta bolje proceniti cene izdvajanja instrukcija.
+Bolji model cena instrukcija bitno utiče na određivanje delova koda koji će biti izdvojeni.
+Problem na ovom nivou je što je u tom trenutku već izvršena alokacija registara.
+Kandidati za izdvajanje su ograničeni samo na sekvence koje koriste iste registre, iako možda postoji više sekvenci koje vrše isto izračunavanje samo sa drugim registrima.
+Sa druge strane, na mašinski-nezavisnom međukodu se koriste virtuelni registri.
+Oni ne moraju da se poklapaju između sekvenci tako da je moguće izdvojiti mnogo veći deo koda.
+Međutim ovde se sada javlja problem procene dobitka memorije zato što se bez konkretne ciljne arhitekture ne može odrediti veličina instrukcija.
+Zbog korišćenja procena za cene instrukcija u obe implementacija je moguće da rezultat izdvajanja koda ima veću veličinu od početnog koda.
+
+Obe implementacije se zasnivaju na istoj ideji, samo su adaptirane za međukod koji optimizuju.
+U nastavku će prvo biti objašnjen opšti algoritam, a zatim specifičnosti obe implementacije.
+
+\subsection{Opšti algoritam za izdvajanje koda}
+
+Opšti algoritam za izdvajanje koda sadrži dva osnovna koraka: odabir kandidata i izdvajanje koda.
+
+Algoritam za odabir kandidata se zasniva na ideji da se program može tretirati kao niz numeričkih vrednosti
+gde se svakoj instrukciji dodeljuje jedna vrednost.
+% Klasifikacija instrukcija
+% Jedinstvene vrednosti za osnovne blokove
+% Primarna razlika dve implementacije je u načinu na koji se određuju vrednosti dodeljene instrukcijama.
+% Za potrebe dodele celobrojnih vrednosti 
+Instrukcije se dele u tri grupe: legalne, ilegalne i nevidljive.
+Legalne instrukcije su one koje je dozvoljeno izdvojiti. Tu spada većina instrukcija: aritmetičke, logičke...
+Ilegalne instrukcije su one čije izdvajanje je zabranjeno kao što su pozivi funkcija ili instrukcije vezane za obradu grešaka.
+Nevidljive instrukcije ne utiču na izdvajanje, ovo su primarno instrukcije koje se koriste za debagovanje.
+Pojedinačne vrednosti dodeljene instrukcijama se nadovezuju za svaki osnovni blok i svaki od njih se terminira jedinstvenom vrednosti kako bi se sprečilo izdvajanje koda preko granice blokova.
+Nadovezivanjem tih reprezentacija osnovnih blokova se dobija reprezentacija celog programa.
+
+% Primer
+
+Nad takvom reprezentacijom programa sada mogu da se primene algoritmi za traženje ponavljajucih podniski (eng.~{\em longest repeated substring}).
+% Kod problema najduza ponavljajuca podniska zadatak je pronaci podnisku date niske koja se ponavlja bar dva puta i ima najvecu duzinu.
+% Implemenitrani algoritam koristi sufiksno stablo za efikasno trazenje ponavljajucih podniski.
+Implementirani algoritam korsiti sufiksno stablo.
+Sufiksno stablo je struktura podataka koja omogućava efikasno izvršavanje nekih algoritama nad niskama.
+% formalna definicija
+Formalno, sufiksno stablo niske $S$ dužine $n$ je korensko stablo za koje važi:
+\begin{itemize}
+  \item stablo ima tačno $n$ listova koji su numerisani od $1$ do $n$
+  \item osim korena, svaki unutrašnji čvor ima bar 2 deteta
+  \item svaka grana je označena nepraznom podniskom niske $S$
+  \item nikoje dve grane koje polaze iz istog čvora nemaju zajednički prefiks
+  \item niska dobijena konkatenacijom oznaka svih grana na putu od korena do lista numerisanog brojem $i$ je sufiks niske $S$ koji počinje od $i$-tog karaktera
+\end{itemize}
+Ovo stablo se sagradi u linearnoj složenosti u odnosu na broj karaktera niske pomoću Ukonenovog algoritma \cite{ukkonen1993suffix}.
+Broj čvorova u ovom stablu je linearno zavisan od broj karaktera, što znači da je obilazak ovog stabla takođe linearne složenosti.
+% slozenost pretrazivanja ponavljajuce podniske
+Traženje svih ponavljajućih podniski se može obaviti jednostavnim obilaskom stabla, takođe linearne složenosti.
+
+% Primer
+
+% Izdvajanje funkcije
+Kada se odrede kandidati prelazi se u fazu izdvajanja koda.
+U petlji se odabira grupa kandidata za izdvajanje sa najvećim izračunatim doprinosom.
+Način računanja doprinosa zavisi od implementacije.
+U oba slučaja se dobija kao procena razlike u veličini programa ukoliko se grupa ne izdvoji i ako se izdvoji.
+Za odabranu grupu se generiše nova funkcija, a svi kandidati se zamenjuju pozivom te funkcije.
+Pritom se pazi da se održi semantika koda na tom međukodu.
+Posle svakog odabira kandidata, ta grupa kao i svi drugi kandidati koji se preklapaju sa njom se brišu iz sufiksnog stabla i postupak se ponavlja sve dok postoje grupe koje sa pozitivnim doprinosom.
+Ukoliko ih više nema, prolaz izdvajanja koda je završen.
+
+% Youtube
+% [2016 LLVM Developers’ Meeting: J. Paquette "Reducing Code Size Using Outlining"](https://www.youtube.com/watch?v=yorld-WSOeU)
+% [2018 LLVM Developers’ Meeting: J. Paquette "What’s New In Outlining"](https://www.youtube.com/watch?v=naF9r8O_3aY)
+% [2017 LLVM Developers’ Meeting: R. Riddle "Code Size Optimization: Interprocedural Outlining ..."](https://www.youtube.com/watch?v=SS1rJzggBu0)
+% [2020 LLVM Developers’ Meeting: "Finding and Outlining Similarities in LLVM IR"](https://www.youtube.com/watch?v=HaN83qMyAhY)
+
+% MachineOutliner
+% https://reviews.llvm.org/D26872
+% https://lists.llvm.org/pipermail/llvm-dev/2016-August/104170.html
+% https://www.llvm.org/devmtg/2016-11/Slides/Paquette-Outliner.pdf
+
+% IROutliner
+% https://lists.llvm.org/pipermail/llvm-dev/2020-September/144779.html
+% https://llvm.org/devmtg/2020-09/slides/Finding-outlining-ir-level-Andrew-Litteken.pdf
+% https://llvm.org/devmtg/2017-10/slides/Riddle-Interprocedural%20IR%20Outlining%20For%20Code%20Size.pdf
+% https://lists.llvm.org/pipermail/llvm-dev/2017-July/115666.html
+% https://lists.llvm.org/pipermail/llvm-dev/2017-September/117153.html
+
+
+% Tri specificna koraka:
+% hesiranje
+% racunanje benfita
+% izdvajanje
+
+\subsection{Specifičnosti na mašinski-zavisnom međukodu}
+
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/CodeGen/MachineOutliner.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/MachineOutliner.cpp
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/CodeGen/TargetInstrInfo.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/TargetInstrInfo.cpp
+
+Izdvajanje koda na mašinski-zavisnom međukodu je implementirano u klasi \verb|MachineOutliner|.
+Ovo je jednostavnija od dve implementacije.
+
+% Instrukcije se porede na jednakost
+Heširanje instrukcija na ovom nivou je jednostavno.
+Poređenje se vrši po jednakosti.
+Dakle instrukcija i operandi moraju da budu identični.
+Ovo je jedno od najvećih ograničenja na ovom nivou.
+Ukoliko dve sekvence vrše isto izračunavanje ali njihovim operandima su dodeljeni različiti registri, neće biti moguće izdvojiti taj kod.
+Još uvek važi klasifikacija instrukcija, tako da instrukcije klasifikovane kao ilegalne nije moguće izdvojiti.
+Klasifikaciju instrukcija radi \verb|TargetInstrInfo|.
+
+% tacniji model cene instrukcija
+Procena dobitka se računa po formuli:
+% \begin{minted}[fontsize=\footnotesize, breaklines]{text}
+%   Benefit - Cost
+%   Benefit = instrs_size * n_groups
+%   Cost = instrs_size(for outlined func) + n_groups * call_overhead + frame_overhead
+% \end{minted}
+Cene instrukcija na ciljnoj arhitekturi se dobijaju kroz interfejs \verb|TargetInstrInfo|.
+
+% generisanje funkcije, generisanje poziva
+Grupe se sortiraju po benefitu.
+Izbacuju se svi kandidati koji se preklapaju sa prethodno izdvojenim kodom.
+Generiše se nova funckija sa imenom \verb|OUTLINED_FUNCTION_X| gde je \verb|X| redni broj izdvojene funkcije.
+Kopiraju se instrukcije proizvoljnog kandidata, generišu se informacije za debagovanje.
+Svi kandidati se zamenjuju pozivom ka generisanoj funkciji.
+% odrzava se liveness
+
+\subsection{Specifičnosti na mašinski-nezavisnom međukodu}
+
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Transforms/IPO/IROutliner.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/Transforms/IPO/IROutliner.cpp
+% https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Analysis/IRSimilarityIdentifier.h
+% https://github.com/llvm/llvm-project/blob/main/llvm/lib/Analysis/IRSimilarityIdentifier.cpp
+
+Izdvajanje koda na mašinski-nezavisnom međukodu radi prolaz koji se zove \verb|IROutliner|.
+
+% IRSimilarityIdentifier, semanticka ekvivalentnost, instrukcije se hesiraju na osnovu opkoda, tipa, dodatnih flagova, nakon toga se testira unifikacija
+Za određivanje kandidata se koristi pomoćna analiza, \verb|IRSimilarityIdentifier|.
+Umesto poređenja celih instrukcija, poredi se samo tip instrukcije i operanda i dodatni parametri za neke instrukcije (npr. ime pozvane funkcije ili tip predikta za instrukciju poređenja).
+Operandi ne utiču na heš vrednost instrukcije zato što se oni mogu izvući kao argumenti izdvojene funckije.
+Ova razlika omogućava izdvajanje dosta više koda.
+
+Dobitak se računa po narednoj formuli:
+% \begin{minted}[fontsize=\footnotesize, breaklines]{text}
+% Benefit = AvgOutlineBenefit(how much will be removed) = TotalRegionBenefit / NumRegions 
+% Cost    = OutputReloadCost + AvgOutlineBenefit(one instance of candidate) + load each arg + output block cost
+% \end{minted}
+Procene cena instrukcija nakon transformacije na ciljnu arhitekturu se dobija kroz interfejs \verb|TargetTransformInfo|.
+
+% izdvajanje svih kandidata, mapiranje argumenata, CodeExtractor, deduplikacija, zamena sa pozivom, duvanje arg...
+% Izdvajanje kandidata je komplikovan proces zbog cega je izdvojen u zasebnu klasu, \verb|CodeExtractor|.
+Kandidati se izdvajaju iz dva pokušaja. Prvi put kada se izdvoje određuju se svi argumenti koje je potrebno izdvojiti.
+Drugi put se izdvajanje vrši uz zamenu argumenata. Jedan on izdvojenih kandidata se proglašava za konačnu izdvojenu funkciju.
+Njemu se dodeljuje ime \verb|outlined_ir_func_x| gde je \verb|x| redni broj izdvojene funkcije.
+Informacije iz svih izdvojenih kandidata se spajaju sa izabranom funkcijom i zatim brišu.
+Svaki kandidat je zamenjen pozivom ka funkciji prilikom čega se dodaju i instrukcije za čuvanje i učitavanje argumenata.
+
+\section{Izdvajanje koda i debag lokacije}
+
+\label{sec:izdvajanje_koda_debag}
+
+% Napomenuti format DWARF
+
+Debag lokacije predstavljaju pozicije u izvornom kodu koje odgovaraju instrukciji u izvršnom fajlu. Sastoje se od fajla, reda i kolone.
+U idealnom slučaju, svaka instruckija u izvornom kodu bi trebalo da ima odgovarajuću lokaciju, ali to nije slučaj pogotovu u optimizovanom kodu.
+Veliki broj optimizacija menja kod na način koji može da naruši tačnost debag lokacija.
+% https://www.llvm.org/docs/HowToUpdateDebugInfo.html#rules-for-updating-debug-locations
+Neki od najčešćih slučajeva su brisanje nepotrebnih instrukcija ili pomeranja instruckija van tela petlje.
+Kompajleri se trude da održe što veću količinu debag lokacija, ali nekada to ili nije moguće ili nema smisla posle izvršavanja optimizacije.
+
+U nastavku se podrazumeva da se koristi format DWARF za čuvanje informacija za debagovanje.
+% Kao sto je objasnjeno u poglavlju \ref{sec:informacije_za_debagovanje} 
+Lokacije za debagovanje se interno čuvaju u tabeli linija u \verb|.debug_line| sekciji izvršnog fajla.
+Ta tabela preslikava adresu iz tekst (kod) segmenta izvršnog fajla na odgovarajuću lokaciju (fajl, red, kolona) u izvornom kodu i neke dodatne informacije o toj lokaciji.
+Format DWARF propisuje način enkodiranja tabele linija u vidu konačnog automata, ali postoje alati koji prikazuju podatke u obliku tabele razumljive od strane čoveka.
+% Postoji vise alata Jedan nacin da se vidi ova tabela je uz pomoc alata \verb|llvm-dwarfdump|.
+Listing \ref{lst:debug_line_commands} prikazuje upotrebu nekoliko alata za dekodiranje tabele linija, a u listingu \ref{lst:line_table} se nalazi primer jedne tabele.
+
+\begin{listing}
+  \begin{minted}[breaklines, fontsize=\small]{bash}
+    llvm-dwarfdump --debug-line [file]
+    readelf -wL [file]
+    objdump -WL [file]
+  \end{minted}
+  \label{lst:debug_line_commands}
+  \caption{Komande za ispis tabele linija koristeći alate llvm-dwarfdump, readelf i objdump}
+\end{listing}
+
+\begin{listing}
+  \begin{minted}[fontsize=\small]{text}
+Address            Line   Column File   ISA Discriminator Flags
+------------------ ------ ------ ------ --- ------------- -------------
+0x0000000000401110      1      0      1   0             0  is_stmt
+0x000000000040111b      2      6      1   0             0  is_stmt prologue_end
+0x0000000000401122      3      3      1   0             0  is_stmt
+0x000000000040112b      4      2      1   0             0  is_stmt
+0x000000000040112f      4      2      1   0             0  is_stmt end_sequence
+  \end{minted}
+  \label{lst:line_table}
+  \caption{Tabela linija ispisana pomoću alata llvm-dwarfdump}
+\end{listing}
+
+% Primer
+
+Debageri prikazuju lokaciju iz tabele koja je vezana za prvu adresu koja je manja ili jednaka adresi instrukcije na kojoj je program zaustavljen.
+Na taj način ukoliko trenutna instrukcija nema svoju debag lokaciju, prikazaće se lokacija prve prethodne instrukcije koja ima lokaciju.
+Standard propisuje i specijalne debag lokacije koje se poznaju po tome sto imaju red 0.
+Ove lokacije znače da je kod kompajlerski generisan i da ne postoji odgovarajuća lokacija u izvornom kodu.
+% debagerov step preskace do sledeceg reda i preskace adrese 0
+Prilikom izvršavanja programa red po red (koristeći komandu \verb|step| u debageru LLDB) preskaču se sve instrukcije sa istim redom kao prethodna ili sa redom 0. 
+Na instrukciju koja nema dodeljenu lokaciju je moguće stati izvršavanjem programa instrukciju po instrukciju, postavljanjem tačke prekida na adresu te instrukcije ili usled zaustavljanja programa zbog izuzetka koji se desio u toj instrukciji.
+
+% U slucaju inlajnovanja ...
+% ista lokacija u izvornom kodu se ponavlja vise puta u tabeli.
+% inlinedAt podrska.
+
+Prilikom izdvajanja koda jedna instrukcija ima više mogućih debag lokacija u zavisnosti od mesta poziva izdvojene funckije.
+Ovo predstavlja više problema:
+\begin{itemize}
+  \item U vreme izvršavanja programa nije moguće odrediti koja od ovih lokacija je korektna bez dodatnih informacija
+  \item Format DWARF ne podržava postojanje više različitih lokacija za istu adresu \cite{dwarf5}
+\end{itemize}
+Radi održavanja korektnosti, prilikom izdvajanja koda brišu se lokacije svih izdvojenih instrukcija.
+Kao posledica toga mogu se javiti nepogodnosti prilikom debagovanja:
+\begin{itemize}
+  \item Izvršavanje korak po korak pravi velike skokove kada dođe do izdvojenog koda, bez bilo kakvog obaveštenja korisniku
+  \item Postavljanje tačaka prekida na izdvojenu instrukciju precizirajući njen red nije moguće
+\end{itemize}
+
+Primer debagovanja sa izdvojenim kodom je prikazan u listingu \ref{lst:outlining_debug_before}.
+
+\begin{listing}
+\begin{minted}[breaklines, fontsize=\small]{text}
+$ lldb outline
+(lldb) breakpoint set 11
+(lldb) run
+    8           int x = 0;
+    9           int y = 1;
+    10          
+  -> 11          int c1 = x + y;
+    12          c1--;
+    13          global += 2;
+    14          foo(c1, global);
+(lldb) next
+    13          global += 2;
+    14          foo(c1, global);
+    15          
+  -> 16          int c2 = x + y;
+    17          c2--;
+    18          global += 2;
+    19          foo(c2, global);
+(lldb) next
+    18          global += 2;
+    19          foo(c2, global);
+    20          
+  -> 21          return 0;
+    22    }
+\end{minted}
+\label{lst:outlining_debug_before}
+\end{listing}
+
+\chapter{Implementacija rešenja}
+
+Implementacija rešenja nadograđuje verziju 16 \href{https://llvm.org/}{projekta LLVM}, što je najnovija stabilna vezija u vreme pisanja rada.
+Celokupan izvorni kod je dostupan na servisu GitHub na adresi \url{https://github.com/vvuksanovic/llvm-project/tree/outline-debug-info}.
+
+Rešenje se sastoji iz dva dela.
+Prvo je potrebno u okviru kompajlera generisati potrebne informacije za debagovanje, a zatim ih iz debagera iskoristiti za poboljšanje procesa debagovanja.
+% To zahteva velike promene na različitim delovima procesa kompilacije.
+U nastavku će redom biti opisana oba dela implementacije.
+
+% TODO: Reference sowda2019entryvalues. Slican mehanizam se koristi u ovom radu.
+% TODO: Reference tomasevic2022outlined. Osnova za prepoznavanje izdvojenih instrukcija.
+
+\section{Implementacija u kompajleru}
+
+% https://developer.ibm.com/articles/au-dwarf-debug-format/
+% https://discourse.llvm.org/t/rfc-debuginfo-dwarf-debug-line-entry-for-a-callsite-of-an-inlined-function/62984
+% https://dwarfstd.org/doc/DWARF4.pdf
+% https://github.com/vvuksanovic/llvm-project/commit/735209d2696c448720fbf97842c37e4051ada28c
+
+Zadatak ovog dela je da prilikom primene optimizacije izdvajanja funkcija zapamti originalne lokacije u izvornom kodu, prenese ih kroz sve faze kompilacije i ispiše ih u sekciju za debagovanje izvršnog fajla.
+Potrebne informacije se generišu u okviru implementacija optimizacije, u prolazima \verb|IROutliner| i \verb|MachineOutliner|.
+
+% Kao sto je vec pomenuto u glavi \ref{sec:},
+Kako tabela linija ne podržava duplirane vrednosti adrese, ona nije u opticaju za čuvanje vrednosti.
+% Umesto toga
+Ideja je da se debag lokacije sačuvaju u \verb|.debug_info| sekciji umesto u \verb|.debug_line|.
+Verzija 5 standarda DWARF je uvela novu etiketu, \verb|DW_TAG_call_site|, koja bi trebalo da sadrži podatke o mestu poziva funkcije \cite{jelinek2010callsite}.
+Trenutno se već koristi za pružanje informacija o vrednostima parametara prilikom poziva funkcije \cite{jelinek2010entryvalue} i da li je poziv repni ili repni rekuzivan. % reference
+Ovo je pogodno mesto za dodavanje informacija o izdvojenim instrukcijama zato što su one baš vezane za mesto poziva izdvojene funkcije.
+
+Trenutna implementacija ima mekoliko bitnih ograničenja.
+% Implementacija trenutno podržava 
+Prvo, podržano je čuvanje samo podataka sa mašinski nezavisne međureprezentacije, ali se lako može proširiti da podržava i mašinski zavisnu međureprezentaciju.
+Takođe, \verb|SelectionDAG| je jedina podržana implementacija izbora instrukcija.
+Ona je izabrana zato što je podrazumevana za veliki broj arhitektura uključujući \verb|x86_64|.
+
+% IROutliner, SelectionDAG, MIR, AsmPrinter
+Dakle, debag lokacije moraju da budu prenesene od \verb|IROutliner| optimizacionog prolaza, kroz izbor instrukcija do mašinski-zavisnog međukoda i konačno do asemblerskog fajla u okviru debag sekcije.
+Svaka od navedenih stavki je detaljnije objašnjena u nastavku.
+
+\subsection{Čuvanje debag lokacija prilikom optimizacije}
+
+Kao što je objašnjeno u poglavlju \ref{sec:izdvajanje_koda_debag},
+optimizacioni prolaz \verb|IROutliner| prilikom izdvajanja instrukcija briše sve podatke o njihovim lokacijama u izvornom kodu.
+Kako izdvajanje funkcija ostavlja kod sa manje instrukcija nego sto je bilo pre toga, ne postoji dovoljno mesta da se smeste potrebne informacije.
+Kao prvi korak očuvanju ovih podataka ovaj rad uvodi novu intrinzičku funkciju za debagovanje, \verb|llvm.dbg.outlined|, čiji poziv se generiše odmah posle poziva ka izdvojenoj funkciji i dodatno je opisuje odgovarajućom debag lokacijom izdvojene instrukcije.
+
+% Opisati intrinzicke funkcije za debagovanje, dbg.declare, dbg.value, dbg.addr, dbg.label
+% https://llvm.org/docs/LangRef.html#intrinsic-functions
+% https://llvm.org/docs/SourceLevelDebugging.html#debugger-intrinsic-functions
+% https://www.llvm.org/docs/ExtendingLLVM.html
+Intrinzičke funkcije su funkcije koje su ugradjene u sami kompajler takve da on može da ih implementira na najoptimizovaniji način \cite{sarda2015llvm}.
+One predstavljaju mehanizam proširenja LLVM jezika takav da ne zahteva modifikaciju svih prolaza kada se nešto doda u jezik.
+Imena svih intrinzičkih funkcija počinju prefiksom "\verb|llvm.|", on će u nastavku biti ometen.
+% TODO: Intrinzicke instrukcije, deklaracije funkcija
+Posebnu klasu intrinzičkih funkcija čine funkcije za debagovanje.
+U ovu grupu spadaju \verb|dbg.declare|, \verb|dbg.value| i \verb|dbg.addr| za praćenje promenljivih i \verb|dbg.label| za obeležavanje labela u izvornom kodu.
+One ne utiču na krajnji izvršni kod nego se koriste za popunjavanje informacija za debagovanje.
+
+% TODO: Pomeriti ranije?
+Kao pomoć za identifikovanje izdvojenih instrukcija, uveden je i novi metapodatak \verb|outline_id|.
+Taj metapodatak će se nalaziti uz svaku izdvojenu instrukciju kao i uz instrukciju poziva izdvojene funkcije.
+On nema nikakve dodatne podatke nego je umesto toga deklarisan kao jedinstven.
+To znači da će se za svaku upotrebu kreirati nova instanca umesto da se ponovo koristi postojeća kao što je podrazumevano.
+
+Sada kada postoji način za referisanje instrukcija, moguće je definisati deklaraciju \verb|dbg.outlined| funkcije.
+Deklaracija ima dva parametra, oba su metapodaci koji pokazuju na \verb|outline_id| identifikatore redom za odgovarajuci izdvojenu instrukciju i instrukciju poziva uz koju stoji.
+Ovi parametri ne mogu da budu zaključeni implicitno na osnovu mesta na kom se nalaze zbog potencijalnih optimizacija koje mogu da se izvrše kao i promene redosleda instrukcija (npr. u izdvojenoj funkciji).
+% Razlog postojanja ove instrukcije je dodeljivanje debag lokacije.
+Dodatno, instrukcija sadrži i debag lokaciju koju pruzima od izdvojene instrukcije koju zamenjuje.
+
+% TODO: DIBuilder::insertDbgOutlinedIntrinsic konstruise instrukciju
+% Intrinsics.td - definicija dbg.outlined instrukcije
+% IntrinsicInst - klasa DbgOutlinedInst
+Kreiranje nove intrinzičke funkcije za debagovanje je veoma jednostavno i radi se na deklarativan način.
+Jedino što je potrebno uraditi je dodati deklaraciju u \verb|Intrinsics.td| fajlu sa nazivom, u parametrima.
+Za lakše upravljanje tom funkcijom i njenim parametrima napravljen je novi tip instrukcije \verb|DbgOutlinedInst| koja nasleđuje \verb|DbgInfoIntrinsic| klasu.
+Ta instrukcija služi kao omotač i koristi se kao alias za instrukciju poziva \verb|dbg.outlined| funkcije. 
+Instanciranje ove instrukcije se radi uz pomoć nove funkcije u klasi \verb|DIBuilder|.
+% DebugInfoMetadata sadrzi DISubprogram::isOutlined i definiciju DIOutlineId : MDNode
+% FixedMetadataKinds.def definise tip i string za outline_id
+% Metadata.def registruje DIOutlineId
+Metapodatak \verb|outline_id| se registruje u definicionom fajlu \verb|FixedMetadataKinds.def|.
+Implementacija se nalazi u klasi \verb|DebugInfoMetadata| i nju je potrebno registrovati u \verb|Metadata.def|.
+Dodatno, uvedena je podrška za čitanje i pisanje LLVM IR fajlova kao i za njihovu proveru ispravnosti. 
+
+Za svaku izdvojenu instrukciju koja ima debag lokaciju se generiše odgovarajuća \verb|dbg.outlined| instrukcija i dodaje se posle instrukcije poziva.
+Isečak LLVM međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_ir_example}.
+
+% Primer
+\begin{figure}
+\begin{minted}[breaklines, fontsize=\small]{llvm}
+define dso_local i32 @main() #2 !dbg !30 {
+   ...
+   call void @outlined_ir_func_0(ptr %x, ptr %y, ptr %c1), !dbg !44, !outline_id !45
+   call void @llvm.dbg.outlined(metadata !46, metadata !45), !dbg !44
+   call void @llvm.dbg.outlined(metadata !47, metadata !45), !dbg !48
+   call void @llvm.dbg.outlined(metadata !49, metadata !45), !dbg !50
+   call void @llvm.dbg.outlined(metadata !51, metadata !45), !dbg !43
+   call void @llvm.dbg.outlined(metadata !52, metadata !45), !dbg !53
+   call void @llvm.dbg.outlined(metadata !54, metadata !45), !dbg !53
+   call void @llvm.dbg.outlined(metadata !55, metadata !45), !dbg !53
+   call void @llvm.dbg.outlined(metadata !56, metadata !45), !dbg !57
+   call void @llvm.dbg.outlined(metadata !58, metadata !45), !dbg !57
+   call void @llvm.dbg.outlined(metadata !59, metadata !45), !dbg !57
+   call void @llvm.dbg.outlined(metadata !60, metadata !45), !dbg !61
+   call void @llvm.dbg.outlined(metadata !62, metadata !45), !dbg !63
+   call void @llvm.dbg.outlined(metadata !64, metadata !45), !dbg !65
+   ...
+}
+...
+define internal void @outlined_ir_func_0(ptr %0, ptr %1, ptr %2) {
+   ...
+   %3 = load i32, ptr %0, !outline_id !46
+   %4 = load i32, ptr %1, !outline_id !47
+   %add = add nsw i32 %3, %4, !outline_id !49
+   store i32 %add, ptr %2, !outline_id !51
+   %5 = load i32, ptr %2, !outline_id !52
+   %dec = add nsw i32 %5, -1, !outline_id !54
+   store i32 %dec, ptr %2, !outline_id !55
+   %6 = load i32, ptr @global, !outline_id !56
+   %add1 = add nsw i32 %6, 2, !outline_id !58
+   store i32 %add1, ptr @global, !outline_id !59
+   %7 = load i32, ptr %2, !outline_id !60
+   %8 = load i32, ptr @global, !outline_id !62
+   %call = call i32 @foo(i32 noundef %7, i32 noundef %8), !outline_id !64
+   ...
+}
+\end{minted}
+\label{lst:outlining_ir_example}
+\caption{Primer LLVM medjukoda nakon optimizacije izdvajanja koda sa novom instrukcijom i metapodatkom.}
+\end{figure}
+
+% Izdvojena funkcija je obelezena sa outlined flagom (uz artificial) prilikom obe optimizacije
+% outlined flag (DebugInfoFlags.def) -> konvertuje se u DW_AT_LLVM_outlined u asm (Dwarf.def)
+Funkcije generisane izdvajanjem koda je potrebno na neki način razlikovati od drugih funkcija.
+Trenutno se već u mašinski nezavisnom međukodu dodaje zastavica (flag) \verb|DIFlagArtificial| ali to nije dovoljno da se razlikuje od drugog kompajlerski generisanog koda.
+Iz tog razloga, dodata je nova vrsta zastavice, \verb|DIFlagOutlined|, koja označava samo izdvojene funkcije.
+U kasnijoj fazi kompilacije ona će se prevesti u DWARF atribut \verb|DW_AT_LLVM_outlined|.
+Nova zastavica se dodaje u trenutku generisanja izdvojene funkcije u klasi \verb|IROutliner|, a stara zastavica \verb|DIFlagArtificial| je zadržana radi održanja kompatibilnosti unazad.
+% Moguce je pristupiti na osnovu funkcije (DISubprogram)
+Pristup ovoj zastavici je omogućen dodavanjem \verb|isOutlined| metode u okviru \verb|DISubprogram| klase koja predstavlja metapodatak sa podacima o funkciji.
+
+\subsection{Čuvanje debag lokacija prilikom izbora instrukcija}
+
+% https://www.llvm.org/docs/CodeGenerator.html#instruction-selection-section
+% https://stackoverflow.com/questions/22189410/understanding-llvm-selectiondag
+% scheduling -> zakazivanje, planiranje, odredjivanje redosleda instrukcija
+
+% Kratak uvod
+Na kraju prethodne glave su potrebne informacije za debagovanje postale dostupne posle izvršavanja optimizacija na mašinski nezavisnom međukodu.
+Naredni korak je sprovesti te informacije do sledećeg nivoa, odnosno mašinski-zavisnog međukoda.
+Proces konverzije iz mašinski nezavisnog do zavisnog međukoda u infrastrukturi LLVM se naziva izbor instrukcija.
+% Kao sto je pomenuto u glavi ...
+Postoji vise implementacija izbora instrukcija, ali u ovom radu je trenutno podržan samo \verb|SelectionDAG|.
+
+% SelectionDAG uvod?
+SelectionDAG prevodi LLVM međukod u reprezentaciju u obliku usmerenog acikličnog grafa, a svaka instrkcija postaje čvor u tom grafu.
+Klasa koja predstavlja instrukciju je \verb|SDNode| i oni se konstruišu u okviru klase \verb|SelectionDAGBuilder|.
+% Sagrađeni graf prolazi kroz sledeće faze u toku kompilacije:
+% \begin{enumerate}
+%   \item Legalizacija tipova - 
+%   \item Legalizacija operacija
+%   \item Izbor instrukcija
+%   \item Odrađivanje redosleda instrukcija i odabir registara
+%   \item Optimizacije
+% \end{enumerate}
+Nad sagrađenim grafom se rade legalizacija tipova i operacija (pretvaranje tipova i operacija koje nisu podržane na ciljnoj arhitekturi u one koje jesu),
+izbor instrukcija (zamena mašinski nezavisnih instrukcija sa instrukcijama za konkretnu arhitekturu), 
+određivanje redosleda instrukcija, dodeljivanje registara i optimizacije.
+Krajnji rezultat izbora instrukcija je program čije su instrukcije prestavljene klasom \verb|MachineInstruction|.
+
+% Sta je sve potrebno pretvoriti u drugi oblik
+Od uvedenih podataka za potrebe ovog rada, za \verb|dbg.outlined| i vezu između \verb|DIOutlineId| i instrukcija za koje su vezane potrebno implementirati dalje prevođenje.
+Svi metapodaci ostaju u istom obliku u ovoj fazi kompilacije.
+
+% Ideja je da ...
+Na kraju selekcije instrukcija sve \verb|dbg.outlined| instrukcije će biti zamenjene ekvivalentnom MIR instrukcijom \verb|DBG_OUTLINED| sa istim parametrima i debag lokacijom.
+% DBG_OUTLINED je pseudo instrukcija
+% Target.td + TargetOpcodes.def registruju DBG_OUTLINED
+Instrukcija \verb|DBG_OUTLINED| je registrovana u definicionim fajlovima \verb|Target.td| i \verb|TargetOpcodes.def|.
+% SalectionDAG - dodate funkcije za generisanje i dodavanje DbgOutlined u DAG
+% Instrukcije za debagovanje se tretiraju drugacije od ostalih instrukcija ...
+SelectionDAG tretira instrukcije za debagovanje drugačije od ostalih instrukcija. 
+One se takođe pretvaraju čvorove usmerenog aciklicnog grafa ali 
+umesto da se ubace u usmeren aciklicni graf, one su ostavljene po strani u odvojenim strukturama podataka. % (zajedno sa SDDbgValue i SDDbgLabel)
+Zahvaljujući ovome te instrukcije će ostati neizmenjene prilikom izvršavanja većine faza izbora instrukcija.
+Po ugledu na druge instrukcije za debagovanje, uveden je tip cvora \verb|SDDbgOutlined| i dodato polje u klasi \verb|SelectionDAG| za njihovo skladistenje.
+Kada se gradi SelectionDAG, sve \verb|dbg.outlined| instrukcije se pretvaraju u \verb|SDDbgOutlined| i čuvaju u novom polju.
+% Oni su jos uvek u obliku SD cvorova tako da jos uvek sadrze redosled (redne brojeve) u kom treba da se pojave.
+Na kraju izbora instrukcija, kada je potrebno poređati instrukcije svaki \verb|SDDbgOutlined| sadrži redni broj koji je dobio prilikom konstrukcije i na osnovu njega se \verb|DBG_OUTLINED| emituju na očekivanom mestu u kodu.
+% ScheduleDAGSDNodes je zaduzen da raspodeli cvorove u instrukcije
+% TODO: InstrEmitter: SDDbgOUtliner -> DBG_OUTLINED
+
+% Unutar SelectionDAG-a outline id se cuva u CallSiteDbgInfo/NodeExtraInfo objektima
+Na sličan način kao za čvorove instrukcija za debagovanje, tako se i podaci o \verb|outline_id| metapodatku instrukcija čuva odvojeno od grafa.
+Konkretno, čuva se u novom polju u okviru promenljive \verb|SDCallSiteDbgInfo|. % TODO: kasnije preimenovana u NodeExtraInfo
+To je mapa koja preslikava \verb|SDNode| u objekat koji sadrži dodatne informacije o čvorovima.
+% ScheduleDAGSDNodes je zaduzen da postavi vrednost outline_id u instrukcije
+Prilikom emitovanja mašinskih instrukcija proverava se postojanje ovog podatka za svaku instrukciju i ukoliko postoji dodeljuje se instrukciji.
+% TODO: U MachineInstr se nalazi u ExtraInfo objektu samo ako postoji
+
+% TODO: Pomeriti ispod primera
+% Problem: gubljenje/promena instrukcija koje imaju outline_id
+Najveća količina informacija se izgubi prilikom izbora instrukcija.
+Identifikatori koji stoje iz instrukcije se mogu izgubiti ako se instrukcija zameni drugom bez kopirnanja njenih dodatnih podataka.
+% To znaci da ...
+% Primer: x86 call instrukcija gubi outline_id sto je rucno popravljeno
+Na primer, prilikom spustanja mašinski nezavisne instrukcije poziva funkcije na mašinski zavisan nivo za arhitekturu X86 pravi potpuno novi čvor.
+Zato što se \verb|outline_id| čuva u mapi ciji je ključ \verb|SDNode|, zamenom nekog cvora će se izgubiti ta veza osim ako se taj podatak eksplicitno prenese.
+% i metapodatak nece biti emitovan uz zamenjenu instrukciju.
+Pomenuti primer je popravljen u implementaciji, ali još uvek postoji veliki broj slučajeva kada će ovaj problem ispoljiti.
+
+% TODO: MIR printing/parsing
+
+Isečak LLVM mašinski zavišnog međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_mir_example}.
+
+\begin{figure}
+\begin{minted}[breaklines, fontsize=\small]{text}
+name: main
+...
+body:
+   ...
+   CALL64pcrel32 @outlined_ir_func_0, outline-id !45, debug-location !44
+   ADJCALLSTACKUP64 0, 0, debug-location !44
+   DBG_OUTLINED !46, !45, debug-location !44
+   DBG_OUTLINED !47, !45, debug-location !48
+   DBG_OUTLINED !49, !45, debug-location !50
+   DBG_OUTLINED !51, !45, debug-location !43
+   DBG_OUTLINED !52, !45, debug-location !53
+   DBG_OUTLINED !54, !45, debug-location !53
+   DBG_OUTLINED !55, !45, debug-location !53
+   DBG_OUTLINED !56, !45, debug-location !57
+   DBG_OUTLINED !58, !45, debug-location !57
+   DBG_OUTLINED !59, !45, debug-location !57
+   DBG_OUTLINED !60, !45, debug-location !61
+   DBG_OUTLINED !62, !45, debug-location !63
+   DBG_OUTLINED !64, !45, debug-location !65
+   ...
+\end{minted}
+\label{lst:outlining_mir_example}
+\caption{}
+\end{figure}
+
+\subsection{Ispisivanje debag lokacija prilikom emitovanja asemblerskog koda}
+
+% https://llvm.org/docs/CodeGenerator.html
+
+% % Uvod
+% Poslednja faza kompilacije koju radi direktno kompajler je emitovanje asemblerskog koda. % dalje poslove rade asembler i linker
+% U okviru nje se mašinske instrukcije dobijene izborom instrukcija pretvaraju u odgovarajuće asemblerske instrukcije za tu arhitekturu.
+% U isto vreme se i informacije za debagovanje ispisuju u isti fajl u izabranom formatu.
+% Ovaj rad podržava samo ispisivanje u formatu DWARF.
+% % MachineInstr -> MCInst konverziju radi MCInstrLower kao deo AsmPrinter prolaza
+
+% % DW_TAG_LLVM_outlined_ref i DW_AT_LLVM_outlined (Dwarf.def)
+% Svi podaci o izdvojenim instrukcijama treba da se pretvore u informacije za debagovanje.
+% Nijedna instrukcija neće biti dodata u tekst segment programa.
+% % \verb|DBG_OUTLINED| instrukcije ce biti koriscene za popunjavanje etikete sa informacijama o mestu poziva funkcije.
+% Kao sto je pomenuto na početku poglavlja, novi podaci ce biti smešteni u okviru \verb|DW_TAG_call_site| etikete.
+% % Koji su potrebni podaci
+% Za svaku \verb|DBG_OUTLINED| instrukciju u odgovarajućoj etiketi mesta poziva funkcije biće dodata novouvedena etiketa \verb|DW_TAG_LLVM_outlined_ref|.
+% Ona treba da sadrzi informacije koje bi se inace nalazile u tabeli linija.
+% Tu spadaju lokacija u izvornom kodu koja se dobija iz debag lokacije i adresa odgovarajuce instrukcije u tekst segmentu.
+% Adrese se pojavljuju u kodu tek prilikom linkovanja tako da umesto konkretnih vrednosti adresa ovde se koriste labele.
+% % Ispred svake izdvojene instrukcije ce biti dodata labela ...
+
+% % kako debug info se generise funkciju po funkciju a izdvajanje radi nad vise funkcija, informacije se moraju pamtiti celim procesom
+% Informacije za debagovanje se normalno generisu funkciju po funkciju.
+% Medjutim, po prirodi ovog zadatka uvek ce postojati izdvojena funkcija koju je potrebno obraditi pre nego što je moguće obraditi funkcije koje je pozivaju.
+% LLVM ne pruža mogućnost zadavanja ovakvih zavisnosti, tako da je rešenje pomeriti većinu poslova da se izvrše na samom kraju obrade modula.
+% Obradom svake funkcije se izvršavaju potrebne pripreme i čuvaju potrebne informacije koje će se na kraju spojiti u krajnju reprezentaciju.
+
+% Glavna klasa zadužena za upravljanje informacijama za debagovanje na ovom nivou je \verb|DebugHandlerBase|.
+% To je bazna klasa koja je nasleđena za svaki format informacija za debagovanje.
+% Ovaj rad se fokusira na implementaciju \verb|DwarfDebug|.
+% % TODO: sta jos radi...
+% Na početku obrade funkcije \verb|DbgEntityHistoryCalculator| prolazi kroz kod i pamti \verb|DBG_OUTLINED| instrukcije grupisane po njihovom drugom argumentu koji predstavlja \verb|outline_id| instrukcije poziva. % (DbgOutlinedInstrMap DbgOutlines)
+% % ^ pozvano od strane DebugHandlerBase klase na pocetku funkcije
+% % posle se radi zahtev za labelama
+
+% % DwarfDebug (podklasa DebugHandlerBase) radi sledece
+% % - constructCallSideDIEs - sacuva CallSiteDIE u mapi ciji kljuc je outline id instrukcije poziva (OutlineCallDIEs iz DwarfDebug)
+% % - finalizeModuleInfo - dodaje sve nase informacije u DIE kako bi se emitovali. Sam upis radi DwarfCompileUnit
+% % - endModule - ciscenje (InfoHoldera - DwarfFile - on cuva sve DbgOutlined objekte)
+% % - collectEntityInfo konvertuje izlaz iz DbgEntityHistoryCalculator (DbgOutlinedInstrMap DbgOutlines) u novu reprezentaciju, DbgOutlined
+% % - endFunctionImpl - puni OutlineLabelMap (iz DebugHandlerBase) zahtevanim labelama (kljuc je outline_id)
+
+% % DwarfFile sadrzi CallOutlines, listu DbgOutlined(iz DwarfDebug) grupisane po outline_id instrukcije poziva
+
+% % DwarfCompileUnit - radi operacije sa DIE
+% % Nove:
+% % - constructOutlinedDIE - Kreira i popunjava DW_TAG_outlined_ref
+% % - createCallSiteOutlineEntries - Prima sve prikupljene informacije: CallSiteDIE, outline_id i labele, sadrzi CallOutlines iz DwarfFile i dodaje DW_TAG_outlined_ref u CallSiteDIE
+% % - applyOutlinedAttributes - dodaje sve informacije u DW_TAG_outlined_ref, pozvano od strane constructOutlinedDIE
+% % Stara:
+% % - constructCallSiteEntryDIE - ovde se dodaje DW_AT_LLVM_outlined atribut kao u DISubprogram, for convenience
+
+% % DwarfUnit::applySubprogramAttributes dodaje DW_AT_LLVM_outlined
+
+% % Ovo je dwarfdump ispis a ne ispis iz asemblerskog koda
+% Asembler nema predstavu o formatu ili informacijama za debagovanje.
+% Sekcije za debagovanje se u asemblerskom kodu popunjavaju literalima koji imaju redosled i veličinu propisane formatom.
+% % npr. .byte 1 .byte 16 .long 4 ...
+
+\begin{figure}
+\begin{minted}[breaklines, fontsize=\small]{text}
+  0x00000093: DW_TAG_call_site
+                 DW_AT_call_origin    (0x000000dc)
+                 DW_AT_call_return_pc (0x0000000000001179)
+                 DW_AT_LLVM_outlined  (true)
+  
+  0x00000099: DW_TAG_LLVM_outlined_ref
+                 DW_AT_decl_file      ("test.c")
+                 DW_AT_decl_line      (11)
+                 DW_AT_decl_column    (0x0b)
+                 DW_AT_low_pc         (0x0000000000001194)
+  
+  0x0000009e: DW_TAG_LLVM_outlined_ref
+                 DW_AT_decl_file      ("test.c")
+                 DW_AT_decl_line      (11)
+                 DW_AT_decl_column    (0x0f)
+                 DW_AT_low_pc         (0x0000000000001196)
+  
+  \end{minted}
+  \label{lst:outlining_asm_example}
+  \caption{}
+\end{figure}
+
+\section{Implementacija u debageru}
+
+% Potrebne informacije se nalaze u izvrsnom fajlu ali kako nisu u standardnoj lokaciji debager ne ume da ih upotrebi
+
+% https://github.com/vvuksanovic/llvm-project/commit/0613708ca195f4fb634f7481e2739a3a2ac682fe
+
+\subsection{Učitavanje podataka}
+
+\subsection{Ispisivanje ispravnih linija izvornog koda}
+
+\subsection{Izvršavanje korak po korak}
+
+\subsection{Postavljanje tačaka prekida}
+
+\chapter{Rezultati}
+
+% ------------------------------------------------------------------------------
+\chapter{Zaključak}
+% ------------------------------------------------------------------------------
+
+
+% ------------------------------------------------------------------------------
+% Literatura
+% ------------------------------------------------------------------------------
+\literatura
+
+% ==============================================================================
+% Završni deo teze i prilozi
+\backmatter
+% ==============================================================================
+
+% ------------------------------------------------------------------------------
+% Biografija kandidata
+\begin{biografija}
+  % \textbf{Vuk Stefanović Karadžić} (\emph{Tršić,
+  %   26. oktobar/6. novembar 1787. — Beč, 7. februar 1864.}) bio je
+  % srpski filolog, reformator srpskog jezika, sakupljač narodnih
+  % umotvorina i pisac prvog rečnika srpskog jezika.  Vuk je
+  % najznačajnija ličnost srpske književnosti prve polovine XIX
+  % veka. Stekao je i nekoliko počasnih mastera.  Učestvovao je u
+  % Prvom srpskom ustanku kao pisar i činovnik u Negotinskoj krajini, a
+  % nakon sloma ustanka preselio se u Beč, 1813. godine. Tu je upoznao
+  % Jerneja Kopitara, cenzora slovenskih knjiga, na čiji je podsticaj
+  % krenuo u prikupljanje srpskih narodnih pesama, reformu ćirilice i
+  % borbu za uvođenje narodnog jezika u srpsku književnost. Vukovim
+  % reformama u srpski jezik je uveden fonetski pravopis, a srpski jezik
+  % je potisnuo slavenosrpski jezik koji je u to vreme bio jezik
+  % obrazovanih ljudi. Tako se kao najvažnije godine Vukove reforme
+  % ističu 1818., 1836., 1839., 1847. i 1852.
+  % \textbf{Vladimir Vuksanović} je rođen 2. januara 1999. godine u Užicu.
+  % Tamo je zavrsio osnovnu i školu i prirodno-matematički smer gimnazije.
+  % 2017. godine je upisao informatički smer na Matematičkom fakultetu.
+  % Osnovne studije je završio za 4 godine sa prosekom 9,82.
+  % Nagrađen je kao jedan od najboljih studenata generacije od strane katedre za
+  % računarstvo i informatiku, i dobitnik je nagrade Nedeljko Parezanovic.
+  % Iste godine je upisao master studije. Pred kraj studija je radio praksu u
+  % kompaniji Sirmija posle cega se tamo zaposlio kao softverski inzenjer.
+  % Tamo radi na sistemskom softveru, primarno nad projektom LLVM.
+\end{biografija}
+% ------------------------------------------------------------------------------
+
+\end{document}
