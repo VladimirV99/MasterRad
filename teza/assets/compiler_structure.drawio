@@ -1,0 +1,53 @@
+<mxfile host="Electron" modified="2023-07-09T13:30:41.275Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.6.1 Chrome/112.0.5615.204 Electron/24.6.1 Safari/537.36" etag="AY4yGbjqcfbCsaz5cpuD" version="21.6.1" type="device">
+  <diagram name="Page-1" id="opcXu72X4wLk4PT5Rvgx">
+    <mxGraphModel dx="989" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="h2DnceNnB229T00WYzUK-1" value="Prednji Deo" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="120" y="260" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-2" value="Optimizator" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="260" y="260" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-3" value="Zadnji Deo" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="400" y="260" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-5" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="40" y="290" as="sourcePoint" />
+            <mxPoint x="120" y="289.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-7" value="Izvorni kod" style="edgeLabel;resizable=0;html=1;align=left;verticalAlign=bottom;fontSize=14;" connectable="0" vertex="1" parent="h2DnceNnB229T00WYzUK-5">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-8" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="520" y="289.9" as="sourcePoint" />
+            <mxPoint x="600" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-11" value="Izvrsni fajl" style="edgeLabel;resizable=0;html=1;align=right;verticalAlign=bottom;fontSize=14;" connectable="0" vertex="1" parent="h2DnceNnB229T00WYzUK-8">
+          <mxGeometry x="1" relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-12" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="h2DnceNnB229T00WYzUK-1" target="h2DnceNnB229T00WYzUK-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="410" y="340" as="sourcePoint" />
+            <mxPoint x="460" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h2DnceNnB229T00WYzUK-13" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="h2DnceNnB229T00WYzUK-2" target="h2DnceNnB229T00WYzUK-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="410" y="340" as="sourcePoint" />
+            <mxPoint x="460" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

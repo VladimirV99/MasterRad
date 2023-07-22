@@ -106,79 +106,573 @@
 
 % ------------------------------------------------------------------------------
 \chapter{Uvod}
+
+% TODO Predstavljanje sledecih poglavlja
 % ------------------------------------------------------------------------------
 
 \chapter{Kompajleri}
 
-% // Istorija, ASM
+% https://en.wikipedia.org/wiki/History_of_programming_languages
+% https://en.wikipedia.org/wiki/History_of_compiler_construction
+
+% Istorija, ASM
 % U pocetku, racunarski programi su se pisali direktno u binarnom zapisu.
 % Ubrzo, primetilo se da to nece biti odrzivo pa su napisani binarnim instrukcijama dodeljeni mnemonici i nastali su asmeblerski jezici i odgovariajuci softver koji pretvara te mnemonike u binarni reprezentaciju (asembleri).
 % Ti asembleri su jos uvek bili vezani za konkretnu arhitekturu. Tj program napisan za jedan sistem bi morao da se promeni kako bi radio na drugom sistemu.
+% Kako je softver postajao slozeniji nastala je potreba za opisivanjem naprednih koncepata u programskom kodu i tako su nastali programski jezici viseg nivoa (high-level lanugage).
+% Prevodjenje programa napisanih na visem jeziku je znatno komplikovanije nego jednostavna zamena mnemonika u slucaju asemblera. Tako su se razvili napredniji alati, kompajleri.
 
-% Kako je softver postajao slozeniji nastala je potreba za opisivanjem naprednih koncepata u programskom kodu i tako su nastali programski jezici viseg nivoa (high-level lanugage). Prevodjenje pragrama napisanih na visem jeziku je znatno komplikovanije nego jednostavna zamena mnemonika u slucaju asemblera. Tako su se razvili napredniji alati, kompajleri.
+% Računari izvršavaju softver napisan u mašinskom kodu.
+% Prva apstrakcija mašinskog koda nastala je u vidu asemblerskog koda.
+% On je uveo mnemonike za mašinske instrukcije što je znatno poboljšalo čitljivost koda.
+% Kako računar još uvek razumeju samo mapinski kod, nastali su posebni alati, asembleri, koji vrše jednostavne zamene menmonika i operanada sa odgovarajućim mašinskim kodom.
+% Programiranje direktno asemblerskim jezikom je veoma izazovan posao koji zahteva precizno poznavanje računara za koji se prevodi program.
+% Potreba za pisanjem kompleksnijeg softvera dovela je do nastanka viših programskih jezika (eng.~{\em high-level programming language}).
+% Ti jezici omogućavaju programerima da koriste složenije koncepte i već poznate algoritme i strukture podataka bez potrebe da sami implementiraju sve iz početka.
+% Takodje, viši programski jezik nije vezan za konkretnu arhitekturu računara.
 
-% Prednosti kompajliranih programskih jezika
 
-% Moderni kompajleri se obicno sastoje iz tri dela \cite{cooper2022engineering}:
-% - prednji deo - prevodi izvorni kod na neku internu reprezentaciju (npr. AST). Pritom vrsi leksicku, sintaksicku i semanticku analizu nad kodom
-% - optimizator - optimizuje internu reprezentaciju (medjureprezentaciju)
-% - zadnji deo - prevodi validnu internu reprezentaciju do programa koji moze da se izvrsi na ciljnoj masini
+% Skoro sav savremeni softver je napisan korišćenjem viših programskih jezika (eng.~{\em high-level programming language}).
+% Ti jezici omogućavaju programerima da koriste složenije koncepte i već poznate algoritme i strukture podataka bez potrebe da sami implementiraju sve iz početka.
+% % Pre pojave visih programskih jezika, programiranje se radilo u asemblerskom kodu.
+% Pojava jezika višeg nivoa omogućila je nastanak kompleksnijeg softvera.
+% % Kompajlirani i interpretirani jezici
+% % Prednosti kompajliranih programskih jezika
+% Kompjuteri mogu da izvršavaju samo mašinski k\^od tako da je potreban način da se program napisan u višem programskom jeziku prevede do mašinskog koda.
+% Kompajleri su alati koji rade taj posao.
+% % Kljucnu ulogu imaju kompajleri
+
+% TODO spojiti sa prethodnom glavom
+\section{Struktura modernih kompajlera}
+\label{sec:compiler_structure}
+
+% https://en.wikipedia.org/wiki/Compiler
+
+Kompajleri su veoma kompleksni softverski sistemi.
+Kako postoje već dugo vremena i čine ključne alate za razvoj softvera, kompajleri su tema brojnih istraživanja.
+Kao rezulat tih istraživanja dobijeno je dosta informacija o dobrim načinima za struktuiranje i implementaciju kompajlera.
+% TODO: MxN problem
+Moderni kompajleri se obično sastoje iz tri dela \cite{cooper2022engineering}:
+\begin{itemize}
+  \item Prednji deo -- Analizara i prevodi izvorni k\^od na neku internu reprezentaciju. Pritom vrši leksičku, sintaksičku i semantičku analizu nad kodom. Ukoliko korisnički k\^od nije ispravan, kompilacija se završava ovde.
+  \item Optimizator -- Optimizuje internu reprezentaciju kako bi se postigao neki cilj. Može da radi u jednom ili više prolaza.
+  \item Zadnji deo -- Prevodi validnu internu reprezentaciju do programa koji može da se izvrši na ciljnoj mašini.
+\end{itemize}
+Samo prednji i zadnji deo su potrebni za generisanje mašinskog koda.
+Optimizator je opcioni deo nastao iz potrebe da dobijeni k\^od bude performantan.
+Svaki dobar kompajler ipak sadrži ovaj deo, i on je možda čak njegov najveći deo.
+Odnos ovih delova je prikazan na slici \ref{fig:compiler_structure}.
+% Priblizavanje prednjem kraju se priblizava izvornom kodu a pomeranjem ka zadnjem kraju se priblizava ciljnoj masini
+U svakom trenutku program je enkodiran u neku vrstu interne reprezentacije.
+Ta reprezentacija postaje sve bliža mašinskom kodu u svakom koraku.
+Ovakva struktura omogućava lako dodavanje podrške bilo za druge programske jezike i, bitnije, za podržavanje novih arhitektura.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.8\textwidth]{assets/compiler_structure.png}
+  \caption{}
+  \label{fig:compiler_structure}
+\end{figure}
+
+\section{Kompajlerske optimizacije}
+
+% https://compileroptimizations.com/
+% https://groups.seas.harvard.edu/courses/cs153/2019fa/lectures/Lec19-Optimization.pdf
+% https://en.wikipedia.org/wiki/Constant_folding
+% https://en.wikipedia.org/wiki/Optimizing_compiler
+
+Kompajleri osim prevođenja izvornog koda do mašinskih instrukcija takođe mogu da ga modifikuju za bolje performanse sve dok se optimizovani k\^od isto ponaša kao originalni.
+Performanse mogu da se odnose na vreme izvršavanja programa, memorijski prostor potreban prilikom izvršavanja ili memorijski prostor potreban za skladištenje izvršnog fajla.
+U zavisnosti od faze kompilacije u kojoj se rade, optimizacije mogu biti nezavisne ili zavisne od ciljne arhitekture. % TODO cite
+Nezavisne optimizacije rade za sve ciljne arhitekture i oslanjaju se na smanjivanje ukupnog broja operacija koje treba izvršiti.
+Zavisne optimizacije iskorišćavaju detalje arhitekture kako bi podigli performanse.
+To se ogleda u korišćenju instrukcija koje rade više operacija u isto vreme ili instrukcija koje rade brže od alternativnih.
+Čest primer na arhitekturi \verb|x86_64| je zamena instrukcije \verb|mov eax, 0| sa instrukcijom \verb|xor eax, eax|.
+
+Primeri nekih bitnih optimizacija su:
+\begin{itemize}
+  \item \textbf{Savijanje konstanti (eng.~{\em constant folding})} -- programeri često ostavljaju konstantne matematičke izraze bez promenljivih u kodu zato što je čitljivije nego da izračujaju vrednost. Kako izraz ne sadrži promenljive, nema razlog da se on evaluira za vreme izvršavanja svaki put već se to radi u vreme kompilacije.
+  \item \textbf{Eliminacija mrtvog koda (eng.~{\em dead code elimination})} -- statičkom analizom je moguće u specijalnim slučajevima utvrditi da se neki deo programa nikada neće izvrsiti. Brisanjem tog koda štedi se memorija, ubrzava proces kompilacije i može da se ubrza vreme izvršavanja zbog bolje organizacije keš memorije.
+  \item \textbf{Globalna numeracija vrednosti (eng.~{\em global value numbering})} -- neki izrazi ili delovi izraza se mogu javiti na više mesta u kratkom rasponu. Ukoliko su izračunati jednom, nije potrebno računati ih ponovo već je moguće obezbediti da prethodni rezultat ostane dostupan u memoriji dok nije ponovo potreban.
+  \item \textbf{Razmotavanje petlji (eng.~{\em loop unrolling})} -- izvršavanje petlji sa kratkim telom dovodi do velikog broja skokova u maloj količini vremena. Skokovi su skupa instrukcija i njihovim smanjenjem mogu znatno da se povećaju performanse programa. Razmotavanje se radi tako što se telo petlje ponovi više puta u jednoj iteraciji i broj iteracija se isti broj puta smanji. Ovo je moguće samo u posebnim situacijama kada kompajler ima dovoljno informacija o načinu izvršavanja petlje.
+\end{itemize}
+
+% objasnjenje odnos O0, O1, O2, O3, Os, Oz (/Od, /O1, /O2, /Os)
+% https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+% https://learn.microsoft.com/en-us/cpp/build/reference/o-options-optimize-code?view=msvc-170
+% https://discourse.llvm.org/t/compiling-for-size/65415/6
+% https://stackoverflow.com/questions/45608392/what-do-the-optimization-levels-os-and-oz-do-in-rustc
+
+% TODO ovo nije tacno za MSVC
+Postoji nekoliko nivoa optimizacije koji se mogu podesiti u prilikom poziva kompajlera.
+Izbor nivoa određuje koje optimizacije treba da se izvrše a koje ne.
+Način odabira i nivoi optimizacije su drugačiji na različitim kompajlerima.
+Na kompajlerima \verb|gcc| i \verb|clang| korisnik moze da izabere koji nivo tako što prosledi zastavicu \verb|-O| iza koje se javlja neki od karaktera 0, 1, 2, 3 ili s\footnote{Ovo nije potpuna lista. Postoje nivoi koji nisu navedeni.}.
+\verb|O0| je podrazumevani nivo ukoliko nijedan drugi nije specificiran i označava da se k\^od uopšte ne optimizuje.
+Ovaj režim se koristi za pravljenje debag verzija programa.
+Više reči o tome će biti u poglavlju \ref{sec:informacije_za_debagovanje}.
+\verb|O1| i \verb|O2| redom uključuju sve veći broj optimizacija podrazumevano da one drastično ne povaćavaju memorijsku složenost programa.
+\verb|O3| ja najveći nivo optimizacije vremena izvršavanja.
+On podrazumeva sve što se koristi u \verb|O2|, ali uključuje i optimizacije koje mogu da znatno povećaju memorijsko zauzeće programa.
+% Release se koristi -O2/3, dok se za debagovanje koristi -O0
+Isporučene verzije programa se često kompajliraju na ovaj način.
+Sa druge strane \verb|Os| nivo takođe podrazumeva sve optimizacije iz \verb|O2| ali dodatno i optimizacije koje smanjuju memorijsko zauzeće na uštrb vremena izvršavanja.
+% Korak dalje ide nivo \verb|Oz| koji dodatno optimizuje za velicinu.
+Ovaj nivo se koristi za uređaje sa ugrađenim računarom (eng.~{\em embedded devices}) koji imaju malu količinu memorije.
+
+\section{Kompajler LLVM}
+
+% https://llvm.org/
+% https://en.wikipedia.org/wiki/LLVM
+% The Architecture Of Open Source Applications - Chap 11
+% https://aosabook.org/en/v1/llvm.html
+% LLVM Essentials - Chapter 1
+% https://www.prevodioci.matf.bg.ac.rs/kk/2020/predavanja/03_llvm_text.pdf
+% https://www.prevodioci.matf.bg.ac.rs/KonstrukcijaKompilatora.html#2_tab
+
+Projekat LLVM započet je 2000. godine na Univerzitetu Ilinois od strane Krisa Latnera. Ubrzo se projektu pridružio i njegov mentor Vikram Adve.
+Cilj projekta je bio proučavanje tehnika kompajliranja u SSA obliku (eng.~{\em Static Single Assignment}) koja podržava statičku i dinamičku kompilaciju proizvoljnih programskih jezika.
+Inicijalno, naziv LLVM je bio akronim za "virutelna mašina niskog nivoa" (eng.~{\em Low Level Virtual Machine}).
+Od tada akronim se više ne koristi, ali je ime ostalo nepromenjeno.
+Danas, projekat pokriva veliki broj biblioteka i alata za programiranje niskog nivoa \cite{llvm}.
+Svaki deo projekta je dizajniran kao biblioteka tako da se može ponovo upotrebiti za implementiranje drugih alata.
+Celokupan izvorni k\^od je javno dostupan na servisu GitHub. % TODO link
+Prednost pristupu otvorenog koda je da svako ko želi da poboljša k\^od ili ispravi neku grešku može to da učini.
+Velika zajednica se formirala oko projekta što je znatno doprinelo njegovoj popularnosti.
+Mnoge firme koriste svoje verzije kompajlera LLVM bilo za podršku neke arhitekture ili kao osnovu za novi programski jezik. % TODO cite
+% Jezik Rust se oslanja na LLVM midle-backend
+
+% Potprojekti znacajni za ovaj rad su: LLVM, Clang i LLDB
+Glavnu komponentu projekta LLVM čini kolekcija biblioteka u okviru istoimenog potprojekta.
+One implementiraju optimizator i zadnji deo kompajlera i koriste se od strane većine ostalih alata.
+Drugi bitan potprojekat je clang. On implementira prednji deo kompajlera za jezike C, C++ i Objective-C.
+LLVM implementira i svoj debager koji se zove LLDB. Više reči o njemu će biti u glavi \ref{sec:lldb}.
+Postoji još veliki broj biblioteka i pomoćnih alata koji nisu pomenuti zato što nisu predmet ovog rada.
+
+Kompajler LLVM je relativno nov u odnosu na druge popularne C++ kompajlere i prati moderniji dizajn.
+Za razliku od kompajlera GCC, koji je napisan u jeziku C i ima monolitnu strukturu, LLVM uživa u pogodnostima proširenja koje nudi jezik C++ pritom koristeći modularnu arhitekturu.
+Dok je najveći deo projekta napisan u programskom jeziku C++, postoji interfejs za povezivanje sa jezicima C i Python.
+Implementacija kompajlera LLVM prati opštu strukturu kompajlera prikazanu u poglavlju \ref{sec:compiler_structure} \cite{brown2011architecture}.
+% slika alati koji prevode u svakom koraku kompilacije
+Korake kompilacije izvršavaju različiti alati.
+Odnos različitih reprezentacija koje program ima u toku kompilacije i alata koji konvertuju iz jedne reprezantacije u drugu je prikazan na slici \ref{fig:llvm_compile_tools}.
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\textwidth]{assets/llvm_compile_tools.png}
+  \caption{}
+  \label{fig:llvm_compile_tools}
+\end{figure}
+
+% Kompilacija se konceptualno moze podeliti na analizu i sintezu.
+% Analiza vrsi provere ispravnosti izvornog koda
+U nastavku će biti opisani redom prednji, srednji i zadnji deo LLVM kompajlera sa fokusom na poslednja dva kako su oni bitniji za ovaj rad.
+
+\subsection{Prednji deo}
+
+Projekat LLVM sadrži vise različitih prednjih delova kompajlera.
+Druge organizacije i firme takođe proizvode i održavaju prednje delove kompajlera LLVM za svoje jezike.
+Iz tog razloga, LLVM podržava veliki broj programskih jezika koji uključuju C, C++, Objectve-C, Fortran, Haskell, Swift i druge.
+Prednji deo za programske jezike C i C++ koji su fokus ovog rada naziva se clang.
+Pre nastavka dalje, potrebno je razjasniti terminologiju.
+Naime, postoji nekoliko značenja termina clang.
+Može se smatrati da je to prednji deo kompajlera, kao u skladu sa prethodnim korišćenjem izraza, zatim se može podrazumevati da je to alat koji upravlja celim procesom kompilacije ili može da bude biblioteka koja implementira funkcionalnost prednjeg dela kompajlera.
+Nadalje se podrazumeva prva interpretacija.
+
+Funkcija ovog dela kompajlera je da izvorni k\^od, u ovom slučaju napisan u jezicima C ili C++ prevede u LLVM međureprezentaciju.
+Usput se izvršavaju sve provere ispravnosti izvornog koda i prikazuju se greške i upozorenja korisniku.
+% Dakle ovaj deo kompajlera je zadužen za proces analize, dok ostatak kompajlera radi sintezu. % \cite{aho2006compilers}
+% Leksicka, sintaksna, semanticka analiza
+% Ova faza se moze finije podeliti na manje korake.
+Program se detaljno analizira iz nekoliko koraka i pritom dolazi do transformacija izvornog koda.
+
+% TODO bilo bi bolje da je ovo konkretno vezano za clang
+Prvo se prepoznaju osnovne jedinice gramatike programskog jezika, odnosno lekseme.
+Lekseme se pretvaraju u različite tipove tokena u zavisnosti od toga šta označavaju.
+Na primer za ključne reči programskog jezika postoje različite vrste tokena, dok svi identifikatori imaju isti tip tokena.
+% Mnogo je lakše i brže raditi operacije nad tokenima nego u tekstualnom obliku.
+Tokeni osim tipa imaju i informacije o opsegu koji zauzimaju u izvornom kodu pomoću kog se može pristupiti njihovom tekstu.
+% Na ovaj način se ispisuju dijagnostičke poruke
+Nad nizom tokena se zatim radi sintaksna analiza ili parsiranje u skladu sa pravilima gramatike jezika.
+Ta pravila se zadaju korišćenjem kontekstno-slobodne gramatike.
+Primenom pravila gradi se sintaksno stablo gde unutrašnji čvorovi predstavljaju operacije a njihova deca su argumenti.
+Parsiranje utvrđuje da li program ima ispravnu strukturu ali ne proverava da li taj program ima smisao.
+To je zadatak semantičke analize.
+Program može da ima dobru strukturu, ali da nema validno značenje.
+Prolaskom kroz sintaksno stablo se prikupljaju informacije o funkcijama, promenljivima i drugim objektima i smeštaju se u tabelu simbola.
+Korišćenjem te tabele proverava se ispravnost sintaksnog stabla.
+% Primer nevalidne semantike
+Primer provere koja se vrši na ovom nivou je da li je korišćena promenljiva deklarisana pre toga.
+% Gradi se AST
+Rezultat svih ovih analiza je program u obliku apstraktnog sintaksnog stabla (eng.~{\em Abstract Syntax Tree, AST}).
+
+U biblioteci clang parsiranje i semantička analiza su usko povezani, a lekser se poziva po potrebi od strane parsera \cite{stulova2019overview}.
+Bitan deo leksera čini pretprocesor koji izvšava direktive poput \verb|#include| i \verb|#define|.
+Prilikom primene pravila gramatike parser zahteva tokene od leksera i delegira posao kreiranja sintaksnog stabla semantičkom analizatoru.
+Ukoliko se pronađe greška u bilo kojoj analizi, program se ne moze kompajlirati i poruka o razlogu se vraća korisniku.
+% Primer clang AST?
+U suprotnom, obilaskom apstraktnog sintaksnog stabla generiše se LLVM međukod.
+Komanda za prevođenje programa do LLVM međukoda prikazana je u listingu \ref{lst:clang_command}.
+
+% primer clang komanda
+\begin{figure}[!ht]
+\begin{minted}[]{text}
+  clang -S -emit-llvm -o output.ll input.c
+\end{minted}
+\caption{}
+\label{lst:clang_command}
+\end{figure}
+
+Ukoliko se program uspešno prevede do međukoda, onda je izvorni k\^od validan za jezik u kome je napisan.
+Još uvek je moguće da dođe do greške prilikom povezivanja zbog ne postojanja definicija nekih funkcija, ali će kompilacija do asemblerskog ili objektnog koda biti uspešna.
+Naravno, činjenica da se program kompajlira ne znači da on radi ono što je programer zamislio niti da će se program uvek uspešno završiti.
+
+\subsection{Optimizator}
+
+% https://llvm.org/docs/LangRef.html
+
+% Optimizator - LLVM IR
+Prednji deo prevodi izvorni k\^od u LLVM mašinski nezavisan međukod.
+U terminologiji se koristi skraćenica IR (eng.~{\em Intermediate Representation}).
+Izbor reprezentacije međukoda je veoma bitan kada kompajler treba da podrži i više programskih jezika i više ciljnih arhitektura.
+On treba da je na dovoljno visokom nivou da ne zavisi od arhitekture i u isto vreme na dovoljno niskom nivou da ne zavisi od prgramskog jezika \cite{sarda2015llvm_essentials}.
+LLVM međukod je u SSA obliku.
+To znači da je svakoj promenljivoj vrednost dodeljena samo jednom i da svakoj upotrebi promenljive prethodi njena definicija.
+Ovaj oblik je izabran zato što je pogodan za izvršavanje optimizacija.
+
+% Struktura LLVM IR fajla
+U listingu \ref{lst:llvm_ir_example} je dat primer LLVM međukoda za sitan program.
+Svaki fajl sa LLVM međukodom čuva informacije o jednom modulu.
+Na početku fajla se nalazi ime fajla u kojem se nalazi izvorni k\^od, informacije o načinu zapisa podataka i naziv ciljne arhitekture.
+U nastavku su globalne promenljive i funkcije.
+One se prepoznaju po tome što im imena imaju prefiks '@'.
+Svaka funkcija se sastoji od niza osnovnih blokova, a svaki blok od niza instrukcija.
+Osnovni blok je jedinica čije instrukcije se uvek linearno izvršavaju. Ako se uđe u osnovni blok on će se uvek izvršiti do kraja. 
+Dakle instrukcije grananja smeju i moraju da se pojave na kraju bloka.
+Granice osnovnih blokova su ozačene kao labele u jeziku C.
+Takođe, početak funkcije započinje prvi osnovni blok.
+U okviru funkcije lokalne promenljive su zamenjene virtuelnim registrima.
+Identifikatori virtuelnih registara pocinju karakterom '\%'.
+Zbog SSA oblika, svakom od njih se može dodeliti vrednost tačno jednom.
+Smatra se da tih registara ima neograničen broj.
+Instrukcije se sastoje od naziva (\verb|alloca|, \verb|call|, \verb|icmp|, ...), tipa (\verb|i32|, \verb|float|, \verb|label|, ...) i operanada.
+Ukoliko isntrukcija vraća vrednost, on se smešta u novi virtuelni registar.
+Dodatne informacije o instrukcijama i globalnim objektima se čuvaju u vidu metapodataka.
+Oni se mogu prepoznati po tome sto počinju karakterom '!'.
+Između ostalog, oni se koriste za informacije za debagovanje.
+Vise reči o primeni metapodataka će biti u glavi \ref{sec:informacije_za_debagovanje}.
+Kompletan pregled jezika LLVM IR dostupan je na internetu \cite{llvmlangref}.
+
+% Primer IR koda
+% TODO zameniti sa clang 16
+% clang -S -emit-llvm helloworld.c -o helloworld.ll
+\begin{figure}[!ht]
+\begin{minted}[fontsize=\footnotesize,breaklines,linenos]{llvm}
+; ModuleID = 'helloworld.c'
+source_filename = "helloworld.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-redhat-linux-gnu"
+
+@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@.str.1 = private unnamed_addr constant [14 x i8] c"hello, world!\00", align 1
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @main() #0 {
+  %1 = alloca i32, align 4
+  %2 = alloca i32, align 4
+  store i32 0, ptr %1, align 4
+  %3 = call i32 (ptr, ...) @__isoc99_scanf(ptr noundef @.str, ptr noundef %2)
+  %4 = load i32, ptr %2, align 4
+  %5 = srem i32 %4, 2
+  %6 = icmp eq i32 %5, 0
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %0
+  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.1)
+  br label %9
+
+9:                                                ; preds = %7, %0
+  ret i32 0
+}
+
+declare dso_local i32 @__isoc99_scanf(ptr noundef, ...) #1
+
+declare dso_local i32 @printf(ptr noundef, ...) #1
+
+...
+
+!llvm.module.flags = !{!0, !1, !2}
+!llvm.ident = !{!3}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 7, !"uwtable", i32 2}
+!2 = !{i32 7, !"frame-pointer", i32 2}
+!3 = !{!"clang version 15.0.7 (Fedora 15.0.7-2.fc37)"}
+\end{minted}
+\caption{}
+\label{lst:llvm_ir_example}
+\end{figure}
+
+Optimizacije su implementirane u vidu prolaza (eng.~{\em pass}) koji obrađuju modul, funkciju ili petlju.
+Prolazi nasleđuju apstraktnu klasu \verb|PassInfoMixin| i implementiraju funkciju \verb|run| sa argumentima za odgovarajuću jedinicu obrade.
+Prolazi se dele na analize i transformacije.
+Analize prikupljaju podatke dok transformacije koriste te podatke kako bi izmenili k\^od.
+Transformacija zahteva različite vrste analiza i može da ih poništi ako više ne važe posle promene koda.
+Optimizacije se primenjuju na program inkrementalno.
+Program dobijen kao izlaz iz jedne optimizacije postaje ulaz sledećoj optimizaciji.
+Dakle konačan program zavisi od redosleda izvršavanja optimizacija.
+Loš redosled može da rezultuje znatno lošijim performansama izvršnog fajla.
+% Zbog toga optimizacije su pažljivo poređane.
+Svaki nivo optimizacije propisuje koje optimizacije treba da budu primenjene i kojim redosledom.
+
+% opt alat
+Za primenu optimizacija na LLVM IR fajlu se koristi alat \verb|opt|.
+On prima imena optimizacija koje treba da pokrene i fajl sa ispravnim IR programom koji da optimizuje.
+Takođe moguće je pokretanje korisnički napisanih prolaza učitanih kao dinamičke biblioteke \cite{pandey2017cookbook}.
+Primer korišćenja alata je prikazan u listingu \ref{lst:opt_command}.
+% primer opt komanda
+\begin{figure}[!ht]
+\begin{minted}[]{text}
+  opt -passes="mem2reg,instnamer" -o input_opt.ll input.ll
+\end{minted}
+\caption{}
+\label{lst:opt_command}
+\end{figure}
+
+\subsection{Zadnji deo}
+
+% IR -> Instruction Selection -> Instructio Scheduling -> Passes -> Register Allocation -> Passes -> Instruction Scheduling -> Passes -> Code Emission
+% Isel: IR -> MIR, legalizacija instrukcija, alocirani registri, nije ih vise beskonacno, pre-RA/post-RA scheduling
+% scheduling: rasporedjivanje instrukcija
+
+% Zadnji deo - Instruction selection, SelectionDAG, MIR, AsmPrinter
+Pre generisanja mašinskog koda, postoji jos jedna, mašinski zavisna, interna reprezentacija.
+U terminologija projekta LLVM, ona se naziva MIR (eng.~{\em Machine Intermediate Representation}).
+Ona je dosta bliža ciljnoj arhitekturi i sastoji se od instrukcija te arhitekture.
+MIR k\^od se zapisuje u formatu YAML. % TODO: link?
+Tela funckija su parsirana kao obična niska.
+Struktura instrukcija je slična kao za IR k\^od.
+Najveće razlike su u tome što su intrukcije vezane za konkretnu arhitekturu i virtuelni registri su zamenjeni pravim registrima.
+Kompletan pregled jezika dostupan je u okviru dokumentacije projekta LLVM \cite{mirlangref}.
+
+Veliki i kompleksan korak u prevođenju koda je spuštanje sa mašinski nezavisne na mašinski zavisnu reprezentaciju.
+Taj korak se naziva izbor instrukcija (eng.~{\em Instruction Selection}).
+Postoje tri implementacije izbora instrukcija:
+\begin{itemize}
+  % https://llvm.org/docs/CodeGenerator.html#instruction-selection-section
+  \item \verb|SelectionDAG| --- Podrazumevana implementacija izbora instrukcija na većini arhitektura.
+  % https://llvm.org/docs/GlobalISel/index.html
+  \item \verb|GlobalIsel| --- Nova implementacija izbora instrukcija sa modularnim dizajnom, poboljšanim performansama i mogućnosti da optimizuje veći deo k\^oda. Trenutno nije završena implementacija, ali se planira da u budućnosti zameni \verb|SelectionDAG|.
+  % "Fast" instruction selection is designed to emit very poor code quickly.
+  % Also, it is not designed to be able to do much lowering, so most illegal
+  % types (e.g. i64 on 32-bit targets) and operations are not supported.  It is
+  % also not intended to be able to do much optimization, except in a few cases
+  % where doing optimizations reduces overall compile time.  For example, folding
+  % constants into immediate fields is often done, because it's cheap and it
+  % reduces the number of instructions later phases have to examine.
+  \item \verb|FastIsel| --- Pristup izboru instrukcija koji radi veoma brzo, ali generiše neoptimizovan k\^od. Ne podržava spuštanje svih ilegalnih instrukcija i u tim situacijama se oslanja na \verb|SelectionDAG|.
+\end{itemize}
+Ovaj rad se fokusira na implementaciju \verb|SelectionDAG| zbog svoje stabilnosti i zato što je podrazumevana za arhitekturu \verb|x86_64|.
+
+% SelectionDAG faze: IR -> Build SelectionDAG (w/ TargetLowering) -> combines and legalizations -> Isel Proper (DAG-to-DAG pattern matching)
+\verb|SelectionDAG| je dobio ime po načinu reprezentacije koda za vreme izbora instrukcija.
+Naime, odgovarajuća klasa se takođe zove \verb|SelectionDAG|.
+Osnovni blokovi programa su predstavljeni usmerenim acikličkim grafovima (eng.~{\em Directed Acyclic Graphs}).
+Čvorovi tog grafa su instrukcije koje imaju tip \verb|SDNode|, a grane su različite zavisnosti koje postoje između instrukcija.
+Postoje dva posebna čvora: ulazni čvor i koren.
+Ulazni čvor obeležava početak osnovnog bloka i služi samo za postavljanje veza.
+Sa druge strane, koren označava kraj bloka. Na kraju obrade je vezan za poslednju instrukciju osnovnog bloka.
+% tipovi veza: zavisnost podataka, lančane zavisnosti, zalepljene zavisnosti % cite lopes2014llvmcorelibs
+Kontrukcija se radi prolaskom kroz LLVM međukod pomoću klase \verb|SelectionDAGBuilder| koja implementira obrazac "posetilac". % cite GoF
+Za svaku instrukciju se kreira čvor na osnovu njenog koda.
+Konstrukcija čvora se radi direktno u klasi \verb|SelectionDAG|.
+Veze se kreiraju kada neki čvor koristi izlaznu vrednost drugog čvora.
+Tip te vrednosti određuje tip veze.
+% Program sastoji od niza \verb|SelectionDAG| struktura.
+
+% combine and legalize
+Prethodno konstruisan graf nije pogodan za spuštanje instrukcija i nad njim se vrše dodatne transformacije.
+On se dodatno optimizuje zamenom grupe čvorova sa jednostavnijim grupama uz pomoć algoritama za uparivanje stabala.
+Te optimizacije mogu da budu i mašinski nezavisne i zavisne.
+Graf takođe može da sadrži nepodržane tipove i operacije za ciljnu arhitekturu.
+Njih je potrebno zameniti odgovarajućim podržanim varijantama.
+Ove transformacije se zovu legalizacija tipova i operacija.
+Način legalizacije zavisi od arhitekture i implementiran je u odgovarajućim \verb|TargetLowering| klasama.
+Prolazi optimizacije i legalizacije se rade nekoliko puta u određenom redosledu i rezultuju grafom spremnim za spuštanje instrukcija.
+
+% isel proper / dag-to-dag
+Proces spuštanja instrukcija kada su sve potrebne pripreme izvršene je prilično jednostavan.
+Kao i prilikom optimizacija, algoritam se zasniva na uparivanju čvorova.
+Čvorovi svake \verb|SelectionDAG| strukture traže svoj pandan za ciljnu arhitekturu.
+Arhitektura definiše ta uparivanja u svojoj podklasi klase \verb|SelectionDAGISel|.
+Ona definiše funkciju \verb|Select| koja prima objekat tipa \verb|SDNode| i vraća čvor sa mašinski zavisnim kodom operacije.
+U ovom koraku se ne zamenjuju baš svi čvorovi već neki prolaze u sledeću fazu.
+
+% Instruction scheduling and register allocation
+Poslednji trag LLVM međukoda koji je opstao u programu a da je potrebno da se eliminiše su virutelni registri.
+U toku izvršavanja program će imati ograničen broj registara i ne može svaki od njih da se koristi za svaku operaciju.
+Dodeljivanje registara je korak kada se virtuelni registri zamenjuju konkretnim registrima za ciljnu arhitekturu.
+Po potrebi dodaju se nove instrukcije za čuvanje i učitavanje vrednosti registara.
+Dobijeni \verb|SelectionDAG| predstavlja instrukcije potpuno ispravnog MIR programa.
+% Ostalo je još da se te instrukcije rasporede u linearni redosled.
+% Graf nameće neke uslove za to koje instrukcije zavise od drugih, ali još uvek postoji sloboda u odabiru instrukcija koje nisu međusobno povezane.
+% Iako je bilo koji od mogućih rasporeda ispravan, postoje rasporedi koji pružaju bolje performanse.
+% Razlog za to je što raspored utiče na paralelizaciju na nivou instrukcija.
+% Koristeći podatke o ciljnoj mašini, instrukcije se biraju na osnovu heuristika za poboljšanje performansi.
+% Ovo rezultuje kodom u MIR obliku.
+Ostalo je još da se one rasporede u linearni redosled uz poštovanje zavisnosti između čvorova.
+Ovo rezultuje kodom u MIR obliku.
+
+% Na kraju spuštanja instrukcija program je još uvek u obliku grafa.
+% Te instrukcije je potrebno rasporediti u niz.
+% Graf nameće neke uslove za to koje instrukcije zavise od drugih, ali još uvek postoji sloboda u odabiru instrukcija koje nisu međusobno povezane.
+% Iako je bilo koji od mogućih rasporeda ispravan, postoje rasporedi koji pružaju bolje performanse.
+% % raspored treba da obezbedi sto bolju paralelizaciju na nivou instrukcija
+% Razlog za to je što raspored utiče na dodeljivanje registara i paralelizaciju na nivou instrukcija.
+% Dodeljivanje registara je korak kada virtuelni registri iz IR oblika zamenjuju konkretne registre za ciljnu arhitekturu.
+% Po potrebi dodaju se nove instrukcije za čuvanje i učitavanje vrednosti registara.
+% % Raspoređivanje se vrši dva puta, pre i posle dodeljivanja registara.
+% Koristeći podatke o ciljnoj mašini, instrukcije se biraju na osnovu heuristika za poboljšanje performansi.
+% Ovo rezultuje kodom u MIR obliku.
+
+% MIR prolazi
+I na ovom nivou postoje optimizacioni prolazi.
+Optimizacije na ovom nivou su vezane za ciljnu arhitekturu.
+Svi mašinski zavisni prolazi nasleđuju klasu \verb|MachineFunctionPass| i implementiraju funkciju \verb|runOnMachineFunction| koja se poziva za svaku funkciju u izvornom kodu.
+Način izvršavanja prolaza je sličan kao za mašinski nezavisan međukod. 
+
+% Code emission: MachineInstr -> MCInst
+Poslednji prolaz na MIR kodu je \verb|AsmPrinter| koji emituje asmeblerski ili objektni k\^od za ciljnu arhitekturu.
+Na ovom mestu se završava zadatak kompajera.
+Dalje, ukoliko je emitovan asemblerski k\^od on se prevodi do objektnog koristeći asmebler.
+Objektni k\^od se povezuje sa bibliotekama i drugim objektnim kodom pomoću povezivača (eng.~{\em linker}) i dobija se izvršni fajl.
+
+Alat koji obavlja posao zadnjeg dela kompajlera je \verb|llc|.
+Njemu se opciono zadaje vrsta izlaza (asemblerski ili objektni k\^od) i nivo optimizacije.
+Bitan parametar koji \verb|llc| prihvata je ciljna arhitektura.
+% https://www.flother.is/til/llvm-target-triple/
+Ona se zadaje argumentom \verb|-mtriple| i vrednosti u vidu niske koja sadrži arhitekturu, proizvođača, operativni sistem i okruženje.
+% TODO: odabir optimizacija, print after all
+Komanda za prevođenje optimizovanog mašinski nezavisnog međukoda do asemblerskog fajla je prikazana u listingu \ref{lst:llc_command}.
+
+% primer llc komanda
+\begin{figure}[!ht]
+  \begin{minted}[breaklines]{text}
+    llc -filetype=asm -mtriple="x86_64-unknown-linux-gnu" -o output.s input_opt.ll
+  \end{minted}
+  \caption{}
+  \label{lst:llc_command}
+\end{figure}
+
+\chapter{Debageri}
+
+% % https://eli.thegreenplace.net/2011/01/23/how-debuggers-work-part-1
+
+% % opste o greskama, procesu razvoja softvera
+% % print debagovanje i debageri
+% Prilikom programiranja bilo kog većeg projekta, neminovno je da ce doći do propusta.
+% Ti propusti se popularno nazivaju bagovi. % i mogu se ispoljiti na više načina.
+% % U zavisnosti od komponente programa posledice propusta mogu da budu vise ili manje ozbiljne.
+% Bagovi se odnose na bilo kakvo ponašanje programa koje nije u skladu sa namerom programera.
+
+% Svakako, oni trebaju biti popravljeni pre objavljivanja verzije softvera.
+% % Debagovanje je proces trazenja, analiziranja i popravljanja bagova u programu.
+% Proces traženja, analiziranja i popravljanja bagova u programu se naziva debagovanje.
+% Postoji nekoliko načina debagovanja.
+% Osnovni vid je debagovanje štampanjem (eng.~{\em print debugging}).
+% Debagovanje stampanjem podrazumeva izmenu izvornog koda tako da ispisuje poruke i vrednosti promenljivih u glavnim koracima dela koda za koju programer smatra da su razlog za postojanje greske.
+% Za sitnije greske ovo je sasvim prihvatljiv nacin resavanja.
+% Naravno, mane pristupa su potreba za ponovnom kompilacijom celog programa svaki put kada se dodaje ili menja ispis.
+% Kompilacija velikih projekata moze da traje bas dugo, tako da se ovaj pristup ne isplati uvek.
+% Alternativa je koriscenje posebnog alata namenjenog za ovu situaciju.
+% Debager je softverski alat koji olaksava proces debagovanja.
+% % mogucnosti debagera
+% Neke osnovne mogucnosti (feature) debagera su koracanje kroz program, tacke prekida, evaluiranje vrednosti promenljivih ili izraza itd.
+
+% Iako postoje kao posebni alati koji se koriste iz komandnog prozora, debageri su cesto integrisani u razvojna okruzenja.
 
 \section{Informacije za debagovanje}
 \label{sec:informacije_za_debagovanje}
 
-% // TODO pomeri dole (ispod optimizacija)
-% Pored masinskog koda, kompajler takodje, ako mu je zatrazeno, generise i dodatne informacije koje se koriste za debagovanje. One ukljucuju mapiranja masinskih instrukcija u lokacije u izvornom kodu, imena promenjivih itd. 
-% // TODO -g
-% Ove informacije se nalaze u posebnim segmentima, van uobicajenih segmenata (text, data, bss...)
-% Postoji vise razlicitih formata za zapisivanje informacija za debagovanje. Najpopularniji medju njima su CodeView za Windows i DWARF za UNIX.
+% % https://www.prevodioci.matf.bg.ac.rs/kk/2021/predavanja/gostujucePredavanje/DjordjeTodorovic_LLVM_DebagInformacije.pdf
+% % https://www.llvm.org/devmtg/2016-11/Slides/Kleckner-CodeViewInLLVM.pdf
 
-\section{Kompajlerske optimizacije}
+% % https://llvm.org/docs/SourceLevelDebugging.html
 
-% % https://compileroptimizations.com/
-% % https://groups.seas.harvard.edu/courses/cs153/2019fa/lectures/Lec19-Optimization.pdf
-% % https://en.wikipedia.org/wiki/Constant_folding
-% % https://en.wikipedia.org/wiki/Optimizing_compiler
+% % Source level debugging
+% % Debagovanje radi na nivou izvornog koda, ali on nije vezan za krajnji program.
+% Za uspešno debagovanje programa potrebna je podrška kompajlera da sačuva informacije o izvornom kodu do izvršnog fajla.
+% Pored mašinskog koda, kompajler takođe, ako mu je zatraženo, generiše i dodatne informacije koje se koriste za debagovanje.
+% One uključuju mapiranja mašinskih instrukcija u lokacije u izvornom kodu, imena funkcija i promenjivih itd.
+% Kompajler LLVM generiše ove podatke dodavanje zastavice \verb|-g|.
 
-% Kompajleri osim prevodjenja izvornog koda do masinskih instrukcija takodje mogu da modifikuju taj kod za bolje performanse (u smislu vremena izvrsavanja ili memorija) sve dok se optimizovani kod isto ponasa kao originalni.
+% % Ove informacije se nalaze u posebnim segmentima, van uobičajenih segmenata (text, data, bss...).
+% Izvršni fajl je normalno podeljen u nekoliko delova koji se nazivaju segmenti.
+% Najbitniji među njima su tekst segment gde se nalaze instrukcije, segment inicijalizovanih podataka i segment neinicijalizovanih podataka.
+% Pored njih mogu da postoje i druge sekcije, na primer za razmotavanje u slučaju greške.
+% % ne smeju da menjaju kod koji se izvrsava
+% Informacije za debagovanje ne diraju nijedan od prethodnih segmenata već definišu nove kako ni bi menjali postojeće podatke.
+% Tačan broj i naziv novih segmenata zavisi od formata informacija za debagovanje koji se koristi.
 
-% Primeri optimizacija: ...
+% Postoji vise razlicitih formata za zapisivanje informacija za debagovanje.
+% Najpopularniji medju njima su CodeView za Windows sisteme i DWARF za sisteme UNIX tipa.
 
-% % objasnjenje odnos O0, O1, O2, O3, Os, Oz
-% % https://discourse.llvm.org/t/compiling-for-size/65415/6
-% % https://stackoverflow.com/questions/45608392/what-do-the-optimization-levels-os-and-oz-do-in-rustc
+% % Odnos optimizacija i debag informacija
+% Generisanje informacija za debagovanje nailazi na problem kada se uključe kompajlerske optimizacije.
+% Što se više krajnji program razlikuje od izvornog koda postaje teže očuvati informacije.
+% U nekim slučajevima je čak potpuno nemoguće.
 
-% Postoji nekoliko nivoa optimizacije podrzanih od strane kompajlera. O0 je podrazumevani nivo i oznacava da se kod uopste ne optimizuje.
-% Ovaj rezim se cesto koristi za pravljenje debag verzija programa (zato sto...).
-% O1 i O2 redom ukljucuju sve veci broj optimizacija podrazumevano da one drasticno ne povacavaju memorijsku slozenost programa.
-% O3 ja najveci nivo optimizacije vremena izvrsavanja. On podrazumeva sve O2 optimizacije, ali ukljucuje i optimizacije koje mogu da znatno povecaju memorijsko zauzece programa.
-% Sa druge strane Os (ili sinonim Oz) nivo takodje podrazumeva sve optimizacije iz O2 ali dodatno i optimizacije koje smanjuju memorijsko zauzece na ustrb vremena izvrsavanja.
-% Ovaj nivo se koristi za ugradjene (eng. embedded) uredjaje koji imaju malu kolicinu memorije.
 
 \section{Format DWARF}
+\label{sec:dwarf}
 
-% https://www.llvm.org/devmtg/2016-11/Slides/Kleckner-CodeViewInLLVM.pdf
+% % Introduction to the DWARF Debugging Format
 
-% DWARF je jedan od formata za predstavljanje debag informacija. ON se koristi na UNIX sistemima.
+% DWARF je standardizovan format za zapisivanje informacija za debagovanje.
+% Dizajniran da radi uz format ELF za biblioteke, izvršni i objektni k\^od, ali podržava i druge formate.
+% % Ime je dobio zato što je namenjen da se koristi uz format za izvršne fajlove i biblioteke, ELF, ali se može koristiti i uz druge formate.
+% Ovaj format se koristi na UNIX sistemima koji uključuju Linux distribucije i macOS.
 
-\section{Kompajler LLVM}
+% Sve informacije za debagovanje su raspoređene u nove sekcije izvršnog fajla.
+% Te sekcije počinju prefiksom \verb|.debug_|.
+% % propisuje sekcije: .debug_info .debug_frame .debug_line
+% \begin{itemize}
+%   \item \verb|.debug_info|
+%   \item \verb|.debug_line|
+%   \item \verb|.debug_frame|
+%   \item \verb|.debug_abbrev|
+% \end{itemize}
 
-% // Prednji deo - clang
-% // Srednji deo - LLVM IR
-% // Instruction selection, SelectionDAG
-% // Zadnji deo - MIR, AsmPrinter
+% % etikete i atributi
+% Podaci su predstavljeni pomoću osnovnih jedinica (eng.~{\em Debug Information Entry, DIE}) organizovanim u drvoliku strukturu.
+% Svaka jedinica ima etiketu (eng.~{\em tag}) koja označava njen tip, dodatne informacije predstavljene atributima i može da ima potomke.
+% Standard propisuje validne etikete i atribute koje moraju da postoje za te etikete.
 
-\chapter{Debageri}
+% % Format je veoma kompresovan. Sve se cuva kao litarli sa propisanim velicinama, ne postoje nikakva imena.
 
-% // opste o greskama, procesu razvoja softvera, mogucnostima debagera
+% % Prosirivost
 
-% Prilikom programiranja bilo kog veceg projekta, bagovi ce se skoro sigurno javiti. Oni trebaju biti popravljeni pre objavljivanja verzije.
 
-% Debagovanje je proces trazenja, analiziranja i popravljanja bagova u programu.
-
-% Debager je softverski alat koji olaksava proces debagovanja. Neke osnovne (feature) debagera su koracanje kroz program, tacke prekida, evaluiranje vrednosti promenljivih ili izraza itd.
+% % Primeri etiketa i atributa
 
 \section{Debager LLDB}
+\label{sec:lldb}
+
+% % https://en.wikipedia.org/wiki/LLDB_(debugger)
+% % https://lldb.llvm.org/
+% % LLVM Cookbook, chapter 9, Using LLDB
+% % https://lldb.llvm.org/use/tutorial.html
+
+% LLDB je jedan od potprojekata koji se razvija kao deo projekta LLVM \cite{lldb}.
+% % It is built as a set of reusable components which extensively use existing libraries from LLVM, such as the Clang expression parser and LLVM disassembler
+% % Za jezike C, Objective-C and C++
+
+% % On radi i na kodu koji je generisan kompajlerom GCC.
+% % Kombinacija kompajlera i debagera nije bitna sve dok rade u istom formatu, ali se informacije koje kompjaler generise i debager razume potencijalno razliciti.
+
+% % Podrzava Windows, Mac, Linux
+
+% % LLDB je podrazumevani debager integrisan u Apple Xcode integrisano razvojno okruzenje, i podrzan je od strane drugih okruzenja i debagera ukljucujuci JetBrains CLion, QtCreator, Eclipse i VSCode.
+% % Takodje ima TUI - https://peeterjoot.com/2019/08/26/the-lldb-tui-text-user-interface/
 
 \chapter{Optimizacija izdvajanjem koda}
 
@@ -197,13 +691,13 @@ Izdvajanje koda (eng.~{\em outlining}) je kompajlerska optimizacija koja smanjuj
 Ona pronalazi segmente koda (uzastopne nizove instrukcija) koji se ponavljaju u programu, izdvaja ih u zasebnu funkciju i menja pojavljivanja tog segmenta sa pozivom ka novoj funkciji.
 % Segmenti ne moraju da bude isti u izvornom kodu, već je dovoljno da su semantički ekvivalentni, to jest da obavljaju iste operacije.
 % Nije moguće uvek pronaći sve sematički iste segmente, već se poredi sličnost u internoj reprezentaciji kompajlera.
-U nekim slučajevima moguće je da se ubrza i vreme potrebno za kompilaciju programa.
+U nekim slučajevima moguće je da se ubrza i vreme potrebno za kompilaciju programa \cite{grune2012design}.
 
-Ova optimizacija je posebno korisna za uređaje sa malom količinom memorije, najčešće ugrađenim (eng.~{\em embedded}) uređajima poput pametnih satova, mp3 plejera ili urađaja zasnovanih na razvojnom sistemu Arduino.
+Ova optimizacija je posebno korisna za uređaje sa malom količinom memorije, najčešće uređajima sa ugrađenim računarom (eng.~{\em embedded devices}) poput pametnih satova, mp3 plejera ili urađaja zasnovanih na razvojnom sistemu Arduino.
 % Moguce da poboljsa vreme izvrsavanja
 Vreme izvršavanja programa može da bude oštećeno ako se izdvoji deo koda koji se bas često izvršava (eng.~{\em hotspot}).
-Poziv funkcije je skupa instrukcija.
-Osim samog poziva, stek mora da bude pripremljen za poziv i parametri premešteni na odgovarajuća mesta.
+To je zato što je poziv funkcije je skupa instrukcija.
+Takođe, osim samog poziva, stek mora da bude pripremljen za poziv i parametri premešteni na odgovarajuća mesta.
 Sve to dodaje trošak koji nije prethodno postojao.
 Izdvajanjem koda koji se retko izvršava, sa druge strane, moguće je da dođe do poboljšanja u vremenu izvršavanja zbog bolje organizacije keš memorije.
 Nažalost, u vreme kompilacije je teško odrediti koliko puta će se izvršiti segment koda, time ni razlika u vremenu izvršavanja programa nije lako predvidiva.
@@ -211,7 +705,7 @@ Nažalost, u vreme kompilacije je teško odrediti koliko puta će se izvršiti s
 % Primer outlining efekat C kod -> x64 ASM
 U listingu \ref{lst:outline_program_example} je prikazan primer C koda.
 Redovi 11-14 i 16-19 predstavljaju dobre kandidate za izdvajanje. Vrše se iste operacije samo sa drugačijom promeljivom.
-Ukoliko se ovaj kod prevede do asemblerskog koda komandama prikazanim u listingu \ref{lst:outlining_compile_instructions} tako da se pokrene samo optimizacija izdvajanja koda, rezultujući kod je prikazan u listingu \ref{lst:outline_program_asm}.
+Ukoliko se ovaj k\^od prevede do asemblerskog koda komandama prikazanim u listingu \ref{lst:outlining_compile_instructions} tako da se pokrene samo optimizacija izdvajanja koda, rezultujući k\^od je prikazan u listingu \ref{lst:outline_program_asm}.
 Može se primetiti da je kostruisana nova funkcija \verb|outlined_ir_func_0|. Ona sadrži sve instrukcije iz izdvojenih redova, a ti redovi su zamenjeni pozivom ka toj funkciji.
 
 \begin{listing}
@@ -289,9 +783,9 @@ Time se poništava cena poziva funkcije, što poboljšava vreme izvršavanja, al
 
 % Primer inlining efekat C kod -> x64 ASM
 
-Iako imaju suprotne efekte, obe optimizacije je moguće koristiti i zajedno na primer za delimično umetanje. %\cite{}
+Iako imaju suprotne efekte, obe optimizacije je moguće koristiti i zajedno, na primer za delimično umetanje \cite{Zhao2005FunctionOA}.
 Ova ideja koristi izdvajanje koda kako bi iz funkcije namenjene za umetanje bili izdvojeni "hladni" delovi koda i time se smanjile negativne posledice umetanja.
-U tom kontekstu izdvajanje koda ne traži sekvence koje se ponavljaju već koristi heuristike da pronađe kod koji se retko izvršava.
+U tom kontekstu izdvajanje koda ne traži sekvence koje se ponavljaju već koristi heuristike da pronađe k\^od koji se retko izvršava.
 
 U jezicima C i C++ postoji ključna reč \verb|inline| koja nagoveštava kompajleru da primeni umetanje koda na označenu funkciju. % \cite
 Kompajler nije primoran da primeni optimizaciju, već je slobodan da izabere da li će funkciju umetnuti ili ostaviti poziv.
@@ -305,17 +799,17 @@ Kompajler LLVM, kao jedan od najpopularnijih kompajlera za jezik C++ ima podršk
 Jedna od tih optimizacija je i izdvajanje koda.
 Postoje dve implementacije izdvajanja koda u okviru kompajlera LLVM:
 \begin{enumerate}
-  \item \verb|MachineOutliner| - na mašinski-zavisnom međukodu (MIR) \cite{paquette2016machineoutliner} % Jessica Paquette, Apple
-  \item \verb|IROutliner| - na mašinski-nezavisnom međukodu (IR) \cite{litteken2020iroutliner} % Andrew Litteken, Apple
+  \item \verb|MachineOutliner| --- na mašinski zavisnom međukodu (MIR) \cite{paquette2016machineoutliner} % Jessica Paquette, Apple
+  \item \verb|IROutliner| --- na mašinski nezavisnom međukodu (IR) \cite{litteken2020iroutliner} % Andrew Litteken, Apple
 \end{enumerate}
 Obe su implementirane kao prolazi (eng.~{\em pass}) koji rade na nivou modula tako da omoguće izdvajanje koda iz različitih funkcija.
 Ideja je da obe implementacije komplementiraju jedna drugu i daju bolje rezultate nego ako bi se koristila samo jedna od njih.
 Oba mesta implementacije imaju svoje prednosti i mane.
-Na mašinski-zavisnom međukodu su dostupne informacije o ciljnoj arhitekturi čime je moguće dosta bolje proceniti cene izdvajanja instrukcija.
+Na mašinski zavisnom međukodu su dostupne informacije o ciljnoj arhitekturi čime je moguće dosta bolje proceniti cene izdvajanja instrukcija.
 Bolji model cena instrukcija bitno utiče na određivanje delova koda koji će biti izdvojeni.
 Problem na ovom nivou je što je u tom trenutku već izvršena alokacija registara.
 Kandidati za izdvajanje su ograničeni samo na sekvence koje koriste iste registre, iako možda postoji više sekvenci koje vrše isto izračunavanje samo sa drugim registrima.
-Sa druge strane, na mašinski-nezavisnom međukodu se koriste virtuelni registri.
+Sa druge strane, na mašinski nezavisnom međukodu se koriste virtuelni registri.
 Oni ne moraju da se poklapaju između sekvenci tako da je moguće izdvojiti mnogo veći deo koda.
 Međutim ovde se sada javlja problem procene dobitka memorije zato što se bez konkretne ciljne arhitekture ne može odrediti veličina instrukcija.
 Zbog korišćenja procena za cene instrukcija u obe implementacija je moguće da rezultat izdvajanja koda ima veću veličinu od početnog koda.
@@ -333,16 +827,18 @@ gde se svakoj instrukciji dodeljuje jedna vrednost.
 % Jedinstvene vrednosti za osnovne blokove
 % Primarna razlika dve implementacije je u načinu na koji se određuju vrednosti dodeljene instrukcijama.
 % Za potrebe dodele celobrojnih vrednosti 
-Instrukcije se dele u tri grupe: legalne, ilegalne i nevidljive.
-Legalne instrukcije su one koje je dozvoljeno izdvojiti. Tu spada većina instrukcija: aritmetičke, logičke...
-Ilegalne instrukcije su one čije izdvajanje je zabranjeno kao što su pozivi funkcija ili instrukcije vezane za obradu grešaka.
-Nevidljive instrukcije ne utiču na izdvajanje, ovo su primarno instrukcije koje se koriste za debagovanje.
+Instrukcije se dele u tri grupe:
+\begin{itemize}
+  \item Legalne instrukcije su one koje je dozvoljeno izdvojiti. Tu spada većina instrukcija: aritmetičke, logičke...
+  \item Ilegalne instrukcije su one čije izdvajanje je zabranjeno kao što su pozivi funkcija ili instrukcije vezane za obradu grešaka.
+  \item Nevidljive instrukcije ne utiču na izdvajanje, ovo su primarno instrukcije koje se koriste za debagovanje.
+\end{itemize}
 Pojedinačne vrednosti dodeljene instrukcijama se nadovezuju za svaki osnovni blok i svaki od njih se terminira jedinstvenom vrednosti kako bi se sprečilo izdvajanje koda preko granice blokova.
 Nadovezivanjem tih reprezentacija osnovnih blokova se dobija reprezentacija celog programa.
 
 % Primer
 
-Nad takvom reprezentacijom programa sada mogu da se primene algoritmi za traženje ponavljajucih podniski (eng.~{\em longest repeated substring}).
+Nad takvom reprezentacijom programa sada mogu da se primene algoritmi za traženje ponavljajućih podniski (eng.~{\em longest repeated substring}).
 % Kod problema najduza ponavljajuca podniska zadatak je pronaci podnisku date niske koja se ponavlja bar dva puta i ima najvecu duzinu.
 % Implemenitrani algoritam koristi sufiksno stablo za efikasno trazenje ponavljajucih podniski.
 Implementirani algoritam korsiti sufiksno stablo.
@@ -357,7 +853,7 @@ Formalno, sufiksno stablo niske $S$ dužine $n$ je korensko stablo za koje važi
   \item niska dobijena konkatenacijom oznaka svih grana na putu od korena do lista numerisanog brojem $i$ je sufiks niske $S$ koji počinje od $i$-tog karaktera
 \end{itemize}
 Ovo stablo se sagradi u linearnoj složenosti u odnosu na broj karaktera niske pomoću Ukonenovog algoritma \cite{ukkonen1993suffix}.
-Broj čvorova u ovom stablu je linearno zavisan od broj karaktera, što znači da je obilazak ovog stabla takođe linearne složenosti.
+Broj čvorova u ovom stablu je linearno zavisan od broja karaktera, što znači da je obilazak ovog stabla takođe linearne složenosti.
 % slozenost pretrazivanja ponavljajuce podniske
 Traženje svih ponavljajućih podniski se može obaviti jednostavnim obilaskom stabla, takođe linearne složenosti.
 
@@ -397,33 +893,40 @@ Ukoliko ih više nema, prolaz izdvajanja koda je završen.
 % racunanje benfita
 % izdvajanje
 
-\subsection{Specifičnosti na mašinski-zavisnom međukodu}
+\subsection{Specifičnosti na mašinski zavisnom međukodu}
 
 % https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/CodeGen/MachineOutliner.h
 % https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/MachineOutliner.cpp
 % https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/CodeGen/TargetInstrInfo.h
 % https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/TargetInstrInfo.cpp
 
-Izdvajanje koda na mašinski-zavisnom međukodu je implementirano u klasi \verb|MachineOutliner|.
+Izdvajanje koda na mašinski zavisnom međukodu je implementirano u klasi \verb|MachineOutliner|.
 Ovo je jednostavnija od dve implementacije.
+U nastavku će biti objašnjeni algoritmi za heširanje, procenu dobitka i način generisanja izdvojenog koda.
 
 % Instrukcije se porede na jednakost
 Heširanje instrukcija na ovom nivou je jednostavno.
 Poređenje se vrši po jednakosti.
 Dakle instrukcija i operandi moraju da budu identični.
-Ovo je jedno od najvećih ograničenja na ovom nivou.
-Ukoliko dve sekvence vrše isto izračunavanje ali njihovim operandima su dodeljeni različiti registri, neće biti moguće izdvojiti taj kod.
+To predstavlja jedno od najvećih ograničenja na ovom nivou.
+Ukoliko dve sekvence vrše isto izračunavanje ali njihovim operandima su dodeljeni različiti registri, neće biti moguće izdvojiti taj k\^od.
 Još uvek važi klasifikacija instrukcija, tako da instrukcije klasifikovane kao ilegalne nije moguće izdvojiti.
 Klasifikaciju instrukcija radi \verb|TargetInstrInfo|.
 
 % tacniji model cene instrukcija
-Procena dobitka se računa po formuli:
+Procena dobitka memorije se računa kao razlika između veličine programa bez i sa uključenom optimizacijom.
+Kako se ona radi na nivou jedne grupe kandidata, dovoljno je posmatrati samo instrukcije koje pripadaju toj grupi. % odrediti razliku između veličine svih instrukcija pre optimizacije i veličine svih instrukcija ukoliko bi se optimizacija primenila.
+Veličina grupe kadidata bez optimizacije ne mora da se proceni, jer je već dostupna kao proizvod veličine jedne grupe i ukupnog broja grupa.
+Veličina sa primenjenom optimizacijom zahteva više računa.
+Još uvek postoji jedan kandidat iz grupe koji predstavlja telo izdvojene funkcije.
+On se sabira sa procenama cena svih poziva izdvojene funkcije i cenama dodatnih instrukcija za kreiranje novog okvira za funkciju.
+Sve to ukupno čini procenu sa uključenom optimizacijom.
 % \begin{minted}[fontsize=\footnotesize, breaklines]{text}
 %   Benefit - Cost
 %   Benefit = instrs_size * n_groups
 %   Cost = instrs_size(for outlined func) + n_groups * call_overhead + frame_overhead
 % \end{minted}
-Cene instrukcija na ciljnoj arhitekturi se dobijaju kroz interfejs \verb|TargetInstrInfo|.
+Cene instrukcija na ciljnoj arhitekturi kao i procene poziva i  se dobijaju kroz interfejs \verb|TargetInstrInfo|.
 
 % generisanje funkcije, generisanje poziva
 Grupe se sortiraju po benefitu.
@@ -433,22 +936,30 @@ Kopiraju se instrukcije proizvoljnog kandidata, generišu se informacije za deba
 Svi kandidati se zamenjuju pozivom ka generisanoj funkciji.
 % odrzava se liveness
 
-\subsection{Specifičnosti na mašinski-nezavisnom međukodu}
+\subsection{Specifičnosti na mašinski nezavisnom međukodu}
 
 % https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Transforms/IPO/IROutliner.h
 % https://github.com/llvm/llvm-project/blob/main/llvm/lib/Transforms/IPO/IROutliner.cpp
 % https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Analysis/IRSimilarityIdentifier.h
 % https://github.com/llvm/llvm-project/blob/main/llvm/lib/Analysis/IRSimilarityIdentifier.cpp
 
-Izdvajanje koda na mašinski-nezavisnom međukodu radi prolaz koji se zove \verb|IROutliner|.
+Izdvajanje koda na mašinski nezavisnom međukodu radi prolaz koji se zove \verb|IROutliner|.
+Ona je znatno kompilkovanija nego mašinski nezavisna varijanta, ali pruža više mogućnosti za izdvajanje.
+% Glavna ideja implementacije je već objašnjena u okviru opšteg algoritma. 
+U nastavku će biti objašnjeni algoritmi za heširanje, procenu dobitka i način generisanja izdvojenog koda.
 
 % IRSimilarityIdentifier, semanticka ekvivalentnost, instrukcije se hesiraju na osnovu opkoda, tipa, dodatnih flagova, nakon toga se testira unifikacija
 Za određivanje kandidata se koristi pomoćna analiza, \verb|IRSimilarityIdentifier|.
 Umesto poređenja celih instrukcija, poredi se samo tip instrukcije i operanda i dodatni parametri za neke instrukcije (npr. ime pozvane funkcije ili tip predikta za instrukciju poređenja).
 Operandi ne utiču na heš vrednost instrukcije zato što se oni mogu izvući kao argumenti izdvojene funckije.
-Ova razlika omogućava izdvajanje dosta više koda.
+Zbog toga je moguće izdvajanje dosta više koda.
+% Podaci o izdvojenim argumentima su sačuvani uz rezultat analize i koriste se 
 
-Dobitak se računa po narednoj formuli:
+Dobitak se računa slično kao na mašinski nezavisnom nivou, kao razlika bez i sa uključenom optimizacijom.
+Kako je ovaj međukod dalji od krajnjeg koda, procena postaje teža jer se oslanja na manje precizne podatke.
+Cena bez optimizacije se ovaj put računa kao suma procena veličina svih kandidata.
+Cena sa optimizacijom sadrži prosečnu veličinu kandidata i procene veličina instrukcija za smeštanje i učitavanje potrebnih argumenta.
+% Dobitak se računa po narednoj formuli:
 % \begin{minted}[fontsize=\footnotesize, breaklines]{text}
 % Benefit = AvgOutlineBenefit(how much will be removed) = TotalRegionBenefit / NumRegions 
 % Cost    = OutputReloadCost + AvgOutlineBenefit(one instance of candidate) + load each arg + output block cost
@@ -457,11 +968,13 @@ Procene cena instrukcija nakon transformacije na ciljnu arhitekturu se dobija kr
 
 % izdvajanje svih kandidata, mapiranje argumenata, CodeExtractor, deduplikacija, zamena sa pozivom, duvanje arg...
 % Izdvajanje kandidata je komplikovan proces zbog cega je izdvojen u zasebnu klasu, \verb|CodeExtractor|.
-Kandidati se izdvajaju iz dva pokušaja. Prvi put kada se izdvoje određuju se svi argumenti koje je potrebno izdvojiti.
-Drugi put se izdvajanje vrši uz zamenu argumenata. Jedan on izdvojenih kandidata se proglašava za konačnu izdvojenu funkciju.
-Njemu se dodeljuje ime \verb|outlined_ir_func_x| gde je \verb|x| redni broj izdvojene funkcije.
+Usled postojanja argumenata izdvojenoj funkciji, način izdvajanja postaje komplikovaniji.
+Kandidati se izdvajaju iz dva pokušaja. Prvi put kada se izdvoje određuju se svi argumenti koje će funkcija imati.
+Svi potrebni argumenti su poznati tek nakon prvog prolaska tako da se drugi put se izdvajanje vrši uz zamenu argumenata.
+Jedan od izdvojenih kandidata se proglašava za konačnu izdvojenu funkciju i
+njemu se dodeljuje ime \verb|outlined_ir_func_x| gde je \verb|x| redni broj izdvojene funkcije.
 Informacije iz svih izdvojenih kandidata se spajaju sa izabranom funkcijom i zatim brišu.
-Svaki kandidat je zamenjen pozivom ka funkciji prilikom čega se dodaju i instrukcije za čuvanje i učitavanje argumenata.
+Na kraju, svaki kandidat se zamenjuje pozivom ka funkciji prilikom čega se dodaju i instrukcije za čuvanje i učitavanje argumenata.
 
 \section{Izdvajanje koda i debag lokacije}
 
@@ -471,7 +984,7 @@ Svaki kandidat je zamenjen pozivom ka funkciji prilikom čega se dodaju i instru
 
 Debag lokacije predstavljaju pozicije u izvornom kodu koje odgovaraju instrukciji u izvršnom fajlu. Sastoje se od fajla, reda i kolone.
 U idealnom slučaju, svaka instruckija u izvornom kodu bi trebalo da ima odgovarajuću lokaciju, ali to nije slučaj pogotovu u optimizovanom kodu.
-Veliki broj optimizacija menja kod na način koji može da naruši tačnost debag lokacija.
+Veliki broj optimizacija menja k\^od na način koji može da naruši tačnost debag lokacija.
 % https://www.llvm.org/docs/HowToUpdateDebugInfo.html#rules-for-updating-debug-locations
 Neki od najčešćih slučajeva su brisanje nepotrebnih instrukcija ili pomeranja instruckija van tela petlje.
 Kompajleri se trude da održe što veću količinu debag lokacija, ali nekada to ili nije moguće ili nema smisla posle izvršavanja optimizacije.
@@ -479,8 +992,8 @@ Kompajleri se trude da održe što veću količinu debag lokacija, ali nekada to
 U nastavku se podrazumeva da se koristi format DWARF za čuvanje informacija za debagovanje.
 % Kao sto je objasnjeno u poglavlju \ref{sec:informacije_za_debagovanje} 
 Lokacije za debagovanje se interno čuvaju u tabeli linija u \verb|.debug_line| sekciji izvršnog fajla.
-Ta tabela preslikava adresu iz tekst (kod) segmenta izvršnog fajla na odgovarajuću lokaciju (fajl, red, kolona) u izvornom kodu i neke dodatne informacije o toj lokaciji.
-Format DWARF propisuje način enkodiranja tabele linija u vidu konačnog automata, ali postoje alati koji prikazuju podatke u obliku tabele razumljive od strane čoveka.
+Ta tabela preslikava adresu iz tekst (k\^od) segmenta izvršnog fajla na odgovarajuću lokaciju (fajl, red, kolona) u izvornom kodu i neke dodatne informacije o toj lokaciji.
+Format DWARF propisuje način enkodiranja tabele linija u vidu konačnog automata, ali postoje alati koji prikazuju podatke u obliku tabele.
 % Postoji vise alata Jedan nacin da se vidi ova tabela je uz pomoc alata \verb|llvm-dwarfdump|.
 Listing \ref{lst:debug_line_commands} prikazuje upotrebu nekoliko alata za dekodiranje tabele linija, a u listingu \ref{lst:line_table} se nalazi primer jedne tabele.
 
@@ -490,8 +1003,8 @@ Listing \ref{lst:debug_line_commands} prikazuje upotrebu nekoliko alata za dekod
     readelf -wL [file]
     objdump -WL [file]
   \end{minted}
-  \label{lst:debug_line_commands}
   \caption{Komande za ispis tabele linija koristeći alate llvm-dwarfdump, readelf i objdump}
+  \label{lst:debug_line_commands}
 \end{listing}
 
 \begin{listing}
@@ -504,8 +1017,8 @@ Address            Line   Column File   ISA Discriminator Flags
 0x000000000040112b      4      2      1   0             0  is_stmt
 0x000000000040112f      4      2      1   0             0  is_stmt end_sequence
   \end{minted}
-  \label{lst:line_table}
   \caption{Tabela linija ispisana pomoću alata llvm-dwarfdump}
+  \label{lst:line_table}
 \end{listing}
 
 % Primer
@@ -513,7 +1026,7 @@ Address            Line   Column File   ISA Discriminator Flags
 Debageri prikazuju lokaciju iz tabele koja je vezana za prvu adresu koja je manja ili jednaka adresi instrukcije na kojoj je program zaustavljen.
 Na taj način ukoliko trenutna instrukcija nema svoju debag lokaciju, prikazaće se lokacija prve prethodne instrukcije koja ima lokaciju.
 Standard propisuje i specijalne debag lokacije koje se poznaju po tome sto imaju red 0.
-Ove lokacije znače da je kod kompajlerski generisan i da ne postoji odgovarajuća lokacija u izvornom kodu.
+Ove lokacije znače da je k\^od kompajlerski generisan i da ne postoji odgovarajuća lokacija u izvornom kodu.
 % debagerov step preskace do sledeceg reda i preskace adrese 0
 Prilikom izvršavanja programa red po red (koristeći komandu \verb|step| u debageru LLDB) preskaču se sve instrukcije sa istim redom kao prethodna ili sa redom 0. 
 Na instrukciju koja nema dodeljenu lokaciju je moguće stati izvršavanjem programa instrukciju po instrukciju, postavljanjem tačke prekida na adresu te instrukcije ili usled zaustavljanja programa zbog izuzetka koji se desio u toj instrukciji.
@@ -536,8 +1049,10 @@ Kao posledica toga mogu se javiti nepogodnosti prilikom debagovanja:
 \end{itemize}
 
 Primer debagovanja sa izdvojenim kodom je prikazan u listingu \ref{lst:outlining_debug_before}.
+Redovi 11-14 i 16-19 su izdvojeni u funkciju.
+Kada debager koračanjem naredbu po naredbu dođe do nekog od tih regiona, u sledećem koraku ga celog preskoči.
 
-\begin{listing}
+\begin{listing}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{text}
 $ lldb outline
 (lldb) breakpoint set 11
@@ -545,7 +1060,7 @@ $ lldb outline
     8           int x = 0;
     9           int y = 1;
     10          
-  -> 11          int c1 = x + y;
+ -> 11          int c1 = x + y;
     12          c1--;
     13          global += 2;
     14          foo(c1, global);
@@ -553,7 +1068,7 @@ $ lldb outline
     13          global += 2;
     14          foo(c1, global);
     15          
-  -> 16          int c2 = x + y;
+ -> 16          int c2 = x + y;
     17          c2--;
     18          global += 2;
     19          foo(c2, global);
@@ -561,16 +1076,33 @@ $ lldb outline
     18          global += 2;
     19          foo(c2, global);
     20          
-  -> 21          return 0;
+ -> 21          return 0;
     22    }
 \end{minted}
+\caption{Proces debagovanja programa sa izvojenim kodom. Izdvojeni delovi koda su preskočeni prilikom izvršavanja korak po korak.}
 \label{lst:outlining_debug_before}
 \end{listing}
+
+% TODO: a za breakpoint?
 
 \chapter{Implementacija rešenja}
 
 Implementacija rešenja nadograđuje verziju 16 \href{https://llvm.org/}{projekta LLVM}, što je najnovija stabilna vezija u vreme pisanja rada.
-Celokupan izvorni kod je dostupan na servisu GitHub na adresi \url{https://github.com/vvuksanovic/llvm-project/tree/outline-debug-info}.
+Celokupan izvorni k\^od je dostupan na servisu GitHub na adresi \url{https://github.com/vvuksanovic/llvm-project/tree/outline-debug-info}.
+Komande za kompilaciju projekta su prikazane u listingu \ref{lst:llvm_compile_commands}.
+
+\begin{figure}[!ht]
+\begin{minted}[]{bash}
+  $ git clone https://github.com/vvuksanovic/llvm-project.git
+  $ cd llvm-project
+  $ git checkout outline-debug-info
+  $ mkdir build && cd build
+  $ cmake -G Ninja -DCMAKE_ENABLE_PROJECTS="clang;lldb" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm
+  $ ninja
+\end{minted}
+\caption{Komande za prevođenje kompajlera LLVM}
+\label{lst:llvm_compile_commands}
+\end{figure}
 
 Rešenje se sastoji iz dva dela.
 Prvo je potrebno u okviru kompajlera generisati potrebne informacije za debagovanje, a zatim ih iz debagera iskoristiti za poboljšanje procesa debagovanja.
@@ -598,34 +1130,38 @@ Verzija 5 standarda DWARF je uvela novu etiketu, \verb|DW_TAG_call_site|, koja b
 Trenutno se već koristi za pružanje informacija o vrednostima parametara prilikom poziva funkcije \cite{jelinek2010entryvalue} i da li je poziv repni ili repni rekuzivan. % reference
 Ovo je pogodno mesto za dodavanje informacija o izdvojenim instrukcijama zato što su one baš vezane za mesto poziva izdvojene funkcije.
 
-Trenutna implementacija ima mekoliko bitnih ograničenja.
-% Implementacija trenutno podržava 
-Prvo, podržano je čuvanje samo podataka sa mašinski nezavisne međureprezentacije, ali se lako može proširiti da podržava i mašinski zavisnu međureprezentaciju.
-Takođe, \verb|SelectionDAG| je jedina podržana implementacija izbora instrukcija.
-Ona je izabrana zato što je podrazumevana za veliki broj arhitektura uključujući \verb|x86_64|.
+% Trenutna implementacija ima nekoliko bitnih ograničenja.
+% Prvo, podržano je čuvanje samo podataka na mašinski nezavisnoj međureprezentaciji, ali se lako može proširiti da podržava i mašinski zavisnu međureprezentaciju.
+% Takođe, \verb|SelectionDAG| je jedina podržana implementacija izbora instrukcija.
+% Ona je izabrana zato što je podrazumevana za veliki broj arhitektura uključujući \verb|x86_64|.
+Implementacija trenutno podržava čuvanje podataka na prilikom izdvajanja koda mašinski nezavisnoj međureprezentaciji.
+Kako to uključuje spuštanje kroz mašinski zavisnu reprezentaciju, jednostavno je dodati podršku za izdvajanje koda i na toj reprezentaciji.
+Jedini deo koji nedostaje je generisanje podataka.
+Za izbor instrukcija se koristi \verb|SelectionDAG| implementacija, tako da će čuvanje podataka raditi za sve podržane arhitekture.
+Glavni fokus ove implementacije je \verb|x86_64| arhitektura, ali količina koda specifičnog za tu arhitekturu je minimalna.
 
 % IROutliner, SelectionDAG, MIR, AsmPrinter
-Dakle, debag lokacije moraju da budu prenesene od \verb|IROutliner| optimizacionog prolaza, kroz izbor instrukcija do mašinski-zavisnog međukoda i konačno do asemblerskog fajla u okviru debag sekcije.
+Dakle, debag lokacije moraju da budu prenesene od \verb|IROutliner| optimizacionog prolaza, kroz izbor instrukcija do mašinski zavisnog međukoda i konačno do asemblerskog fajla u okviru debag sekcije.
 Svaka od navedenih stavki je detaljnije objašnjena u nastavku.
 
 \subsection{Čuvanje debag lokacija prilikom optimizacije}
 
 Kao što je objašnjeno u poglavlju \ref{sec:izdvajanje_koda_debag},
 optimizacioni prolaz \verb|IROutliner| prilikom izdvajanja instrukcija briše sve podatke o njihovim lokacijama u izvornom kodu.
-Kako izdvajanje funkcija ostavlja kod sa manje instrukcija nego sto je bilo pre toga, ne postoji dovoljno mesta da se smeste potrebne informacije.
-Kao prvi korak očuvanju ovih podataka ovaj rad uvodi novu intrinzičku funkciju za debagovanje, \verb|llvm.dbg.outlined|, čiji poziv se generiše odmah posle poziva ka izdvojenoj funkciji i dodatno je opisuje odgovarajućom debag lokacijom izdvojene instrukcije.
+Kako izdvajanje funkcija ostavlja k\^od sa manje instrukcija nego sto je bilo pre toga, ne postoji dovoljno mesta da se smeste potrebne informacije.
+Kao prvi korak očuvanju ovih podataka ovaj rad uvodi novu unutrašnju (eng.~{\em intrinsic}) funkciju za debagovanje, \verb|llvm.dbg.outlined|, čiji poziv se generiše odmah posle poziva ka izdvojenoj funkciji i dodatno je opisuje odgovarajućom debag lokacijom izdvojene instrukcije.
 
 % Opisati intrinzicke funkcije za debagovanje, dbg.declare, dbg.value, dbg.addr, dbg.label
 % https://llvm.org/docs/LangRef.html#intrinsic-functions
 % https://llvm.org/docs/SourceLevelDebugging.html#debugger-intrinsic-functions
 % https://www.llvm.org/docs/ExtendingLLVM.html
-Intrinzičke funkcije su funkcije koje su ugradjene u sami kompajler takve da on može da ih implementira na najoptimizovaniji način \cite{sarda2015llvm}.
+Unutrašnje funkcije su funkcije koje su ugradjene u sami kompajler takve da on može da ih implementira na optimalan način \cite{sarda2015llvm_essentials}.
 One predstavljaju mehanizam proširenja LLVM jezika takav da ne zahteva modifikaciju svih prolaza kada se nešto doda u jezik.
-Imena svih intrinzičkih funkcija počinju prefiksom "\verb|llvm.|", on će u nastavku biti ometen.
+Imena svih unutrašnjih funkcija počinju prefiksom "\verb|llvm.|", on će u nastavku biti izostavljen.
 % TODO: Intrinzicke instrukcije, deklaracije funkcija
-Posebnu klasu intrinzičkih funkcija čine funkcije za debagovanje.
+Posebnu klasu unutrašnjih funkcija čine funkcije za debagovanje.
 U ovu grupu spadaju \verb|dbg.declare|, \verb|dbg.value| i \verb|dbg.addr| za praćenje promenljivih i \verb|dbg.label| za obeležavanje labela u izvornom kodu.
-One ne utiču na krajnji izvršni kod nego se koriste za popunjavanje informacija za debagovanje.
+One ne utiču na krajnji izvršni k\^od nego se koriste za popunjavanje informacija za debagovanje.
 
 % TODO: Pomeriti ranije?
 Kao pomoć za identifikovanje izdvojenih instrukcija, uveden je i novi metapodatak \verb|outline_id|.
@@ -634,7 +1170,7 @@ On nema nikakve dodatne podatke nego je umesto toga deklarisan kao jedinstven.
 To znači da će se za svaku upotrebu kreirati nova instanca umesto da se ponovo koristi postojeća kao što je podrazumevano.
 
 Sada kada postoji način za referisanje instrukcija, moguće je definisati deklaraciju \verb|dbg.outlined| funkcije.
-Deklaracija ima dva parametra, oba su metapodaci koji pokazuju na \verb|outline_id| identifikatore redom za odgovarajuci izdvojenu instrukciju i instrukciju poziva uz koju stoji.
+Deklaracija ima dva parametra, oba su metapodaci koji pokazuju na \verb|outline_id| identifikatore redom za odgovarajuću izdvojenu instrukciju i instrukciju poziva uz koju stoji.
 Ovi parametri ne mogu da budu zaključeni implicitno na osnovu mesta na kom se nalaze zbog potencijalnih optimizacija koje mogu da se izvrše kao i promene redosleda instrukcija (npr. u izdvojenoj funkciji).
 % Razlog postojanja ove instrukcije je dodeljivanje debag lokacije.
 Dodatno, instrukcija sadrži i debag lokaciju koju pruzima od izdvojene instrukcije koju zamenjuje.
@@ -642,7 +1178,7 @@ Dodatno, instrukcija sadrži i debag lokaciju koju pruzima od izdvojene instrukc
 % TODO: DIBuilder::insertDbgOutlinedIntrinsic konstruise instrukciju
 % Intrinsics.td - definicija dbg.outlined instrukcije
 % IntrinsicInst - klasa DbgOutlinedInst
-Kreiranje nove intrinzičke funkcije za debagovanje je veoma jednostavno i radi se na deklarativan način.
+Kreiranje nove unutrašnje funkcije za debagovanje je veoma jednostavno i radi se na deklarativan način.
 Jedino što je potrebno uraditi je dodati deklaraciju u \verb|Intrinsics.td| fajlu sa nazivom, u parametrima.
 Za lakše upravljanje tom funkcijom i njenim parametrima napravljen je novi tip instrukcije \verb|DbgOutlinedInst| koja nasleđuje \verb|DbgInfoIntrinsic| klasu.
 Ta instrukcija služi kao omotač i koristi se kao alias za instrukciju poziva \verb|dbg.outlined| funkcije. 
@@ -697,14 +1233,14 @@ define internal void @outlined_ir_func_0(ptr %0, ptr %1, ptr %2) {
    ...
 }
 \end{minted}
+\caption{Primer LLVM međukoda nakon optimizacije izdvajanja koda sa novom instrukcijom i metapodatkom.}
 \label{lst:outlining_ir_example}
-\caption{Primer LLVM medjukoda nakon optimizacije izdvajanja koda sa novom instrukcijom i metapodatkom.}
 \end{figure}
 
 % Izdvojena funkcija je obelezena sa outlined flagom (uz artificial) prilikom obe optimizacije
 % outlined flag (DebugInfoFlags.def) -> konvertuje se u DW_AT_LLVM_outlined u asm (Dwarf.def)
 Funkcije generisane izdvajanjem koda je potrebno na neki način razlikovati od drugih funkcija.
-Trenutno se već u mašinski nezavisnom međukodu dodaje zastavica (flag) \verb|DIFlagArtificial| ali to nije dovoljno da se razlikuje od drugog kompajlerski generisanog koda.
+Trenutno se već u mašinski nezavisnom međukodu dodaje zastavica (eng.~{\em flag}) \verb|DIFlagArtificial| ali to nije dovoljno da se razlikuje od drugog kompajlerski generisanog koda.
 Iz tog razloga, dodata je nova vrsta zastavice, \verb|DIFlagOutlined|, koja označava samo izdvojene funkcije.
 U kasnijoj fazi kompilacije ona će se prevesti u DWARF atribut \verb|DW_AT_LLVM_outlined|.
 Nova zastavica se dodaje u trenutku generisanja izdvojene funkcije u klasi \verb|IROutliner|, a stara zastavica \verb|DIFlagArtificial| je zadržana radi održanja kompatibilnosti unazad.
@@ -719,44 +1255,44 @@ Pristup ovoj zastavici je omogućen dodavanjem \verb|isOutlined| metode u okviru
 
 % Kratak uvod
 Na kraju prethodne glave su potrebne informacije za debagovanje postale dostupne posle izvršavanja optimizacija na mašinski nezavisnom međukodu.
-Naredni korak je sprovesti te informacije do sledećeg nivoa, odnosno mašinski-zavisnog međukoda.
+Naredni korak je sprovesti te informacije do sledećeg nivoa, odnosno mašinski zavisnog međukoda.
 Proces konverzije iz mašinski nezavisnog do zavisnog međukoda u infrastrukturi LLVM se naziva izbor instrukcija.
 % Kao sto je pomenuto u glavi ...
-Postoji vise implementacija izbora instrukcija, ali u ovom radu je trenutno podržan samo \verb|SelectionDAG|.
+Postoji vise implementacija izbora instrukcija, ali u ovom radu je trenutno podržana samo implementacija \verb|SelectionDAG|.
 
-% SelectionDAG uvod?
-SelectionDAG prevodi LLVM međukod u reprezentaciju u obliku usmerenog acikličnog grafa, a svaka instrkcija postaje čvor u tom grafu.
-Klasa koja predstavlja instrukciju je \verb|SDNode| i oni se konstruišu u okviru klase \verb|SelectionDAGBuilder|.
-% Sagrađeni graf prolazi kroz sledeće faze u toku kompilacije:
-% \begin{enumerate}
-%   \item Legalizacija tipova - 
-%   \item Legalizacija operacija
-%   \item Izbor instrukcija
-%   \item Odrađivanje redosleda instrukcija i odabir registara
-%   \item Optimizacije
-% \end{enumerate}
-Nad sagrađenim grafom se rade legalizacija tipova i operacija (pretvaranje tipova i operacija koje nisu podržane na ciljnoj arhitekturi u one koje jesu),
-izbor instrukcija (zamena mašinski nezavisnih instrukcija sa instrukcijama za konkretnu arhitekturu), 
-određivanje redosleda instrukcija, dodeljivanje registara i optimizacije.
-Krajnji rezultat izbora instrukcija je program čije su instrukcije prestavljene klasom \verb|MachineInstruction|.
+% % SelectionDAG uvod?
+% SelectionDAG prevodi LLVM međukod u reprezentaciju u obliku usmerenog acikličnog grafa, a svaka instrukcija postaje čvor u tom grafu.
+% % TODO: koji oni?
+% Klasa koja predstavlja instrukciju je \verb|SDNode| i oni se konstruišu u okviru klase \verb|SelectionDAGBuilder|.
+% % Sagrađeni graf prolazi kroz sledeće faze u toku kompilacije:
+% % \begin{enumerate}
+% %   \item Legalizacija tipova - 
+% %   \item Legalizacija operacija
+% %   \item Izbor instrukcija
+% %   \item Odrađivanje redosleda instrukcija i odabir registara
+% %   \item Optimizacije
+% % \end{enumerate}
+% Nad sagrađenim grafom se rade legalizacija tipova i operacija (pretvaranje tipova i operacija koje nisu podržane na ciljnoj arhitekturi u one koje jesu),
+% izbor instrukcija (zamena mašinski nezavisnih instrukcija sa instrukcijama za konkretnu arhitekturu), 
+% određivanje redosleda instrukcija, dodeljivanje registara i optimizacije.
+% Krajnji rezultat izbora instrukcija je program čije su instrukcije prestavljene klasom \verb|MachineInstruction|.
 
 % Sta je sve potrebno pretvoriti u drugi oblik
-Od uvedenih podataka za potrebe ovog rada, za \verb|dbg.outlined| i vezu između \verb|DIOutlineId| i instrukcija za koje su vezane potrebno implementirati dalje prevođenje.
+Od uvedenih podataka za potrebe ovog rada, za \verb|dbg.outlined| i vezu između \verb|DIOutlineId| i instrukcija za koje su vezane potrebno je implementirati dalje prevođenje.
 Svi metapodaci ostaju u istom obliku u ovoj fazi kompilacije.
-
 % Ideja je da ...
-Na kraju selekcije instrukcija sve \verb|dbg.outlined| instrukcije će biti zamenjene ekvivalentnom MIR instrukcijom \verb|DBG_OUTLINED| sa istim parametrima i debag lokacijom.
+Na kraju iybora instrukcija sve \verb|dbg.outlined| instrukcije će biti zamenjene ekvivalentnom MIR instrukcijom \verb|DBG_OUTLINED| sa istim parametrima i debag lokacijom.
 % DBG_OUTLINED je pseudo instrukcija
 % Target.td + TargetOpcodes.def registruju DBG_OUTLINED
 Instrukcija \verb|DBG_OUTLINED| je registrovana u definicionim fajlovima \verb|Target.td| i \verb|TargetOpcodes.def|.
 % SalectionDAG - dodate funkcije za generisanje i dodavanje DbgOutlined u DAG
 % Instrukcije za debagovanje se tretiraju drugacije od ostalih instrukcija ...
-SelectionDAG tretira instrukcije za debagovanje drugačije od ostalih instrukcija. 
-One se takođe pretvaraju čvorove usmerenog aciklicnog grafa ali 
+Klasa \verb|SelectionDAG| tretira instrukcije za debagovanje drugačije od ostalih instrukcija. 
+One se takođe pretvaraju u čvorove usmerenog aciklicnog grafa ali 
 umesto da se ubace u usmeren aciklicni graf, one su ostavljene po strani u odvojenim strukturama podataka. % (zajedno sa SDDbgValue i SDDbgLabel)
 Zahvaljujući ovome te instrukcije će ostati neizmenjene prilikom izvršavanja većine faza izbora instrukcija.
-Po ugledu na druge instrukcije za debagovanje, uveden je tip cvora \verb|SDDbgOutlined| i dodato polje u klasi \verb|SelectionDAG| za njihovo skladistenje.
-Kada se gradi SelectionDAG, sve \verb|dbg.outlined| instrukcije se pretvaraju u \verb|SDDbgOutlined| i čuvaju u novom polju.
+Po ugledu na druge instrukcije za debagovanje, uveden je tip cvora \verb|SDDbgOutlined| i dodato polje u klasi \verb|SelectionDAG| za njihovo skladištenje.
+Kako se gradi objekat tipa \verb|SelectionDAG|, sve \verb|dbg.outlined| instrukcije se pretvaraju u \verb|SDDbgOutlined| i čuvaju u novom polju.
 % Oni su jos uvek u obliku SD cvorova tako da jos uvek sadrze redosled (redne brojeve) u kom treba da se pojave.
 Na kraju izbora instrukcija, kada je potrebno poređati instrukcije svaki \verb|SDDbgOutlined| sadrži redni broj koji je dobio prilikom konstrukcije i na osnovu njega se \verb|DBG_OUTLINED| emituju na očekivanom mestu u kodu.
 % ScheduleDAGSDNodes je zaduzen da raspodeli cvorove u instrukcije
@@ -776,14 +1312,14 @@ Najveća količina informacija se izgubi prilikom izbora instrukcija.
 Identifikatori koji stoje iz instrukcije se mogu izgubiti ako se instrukcija zameni drugom bez kopirnanja njenih dodatnih podataka.
 % To znaci da ...
 % Primer: x86 call instrukcija gubi outline_id sto je rucno popravljeno
-Na primer, prilikom spustanja mašinski nezavisne instrukcije poziva funkcije na mašinski zavisan nivo za arhitekturu X86 pravi potpuno novi čvor.
-Zato što se \verb|outline_id| čuva u mapi ciji je ključ \verb|SDNode|, zamenom nekog cvora će se izgubiti ta veza osim ako se taj podatak eksplicitno prenese.
+Na primer, prilikom spuštanja mašinski nezavisne instrukcije poziva funkcije na mašinski zavisan nivo za arhitekturu X86 pravi potpuno novi čvor.
+Zato što se \verb|outline_id| čuva u mapi ciji je ključ \verb|SDNode|, zamenom nekog čvora će se izgubiti ta veza osim ako se taj podatak eksplicitno prenese.
 % i metapodatak nece biti emitovan uz zamenjenu instrukciju.
-Pomenuti primer je popravljen u implementaciji, ali još uvek postoji veliki broj slučajeva kada će ovaj problem ispoljiti.
+Pomenuti primer je popravljen u implementaciji, ali još uvek postoji veliki broj slučajeva kada će se ovaj problem ispoljiti.
 
 % TODO: MIR printing/parsing
 
-Isečak LLVM mašinski zavišnog međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_mir_example}.
+Isečak LLVM mašinski zavisnog međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_mir_example}.
 
 \begin{figure}
 \begin{minted}[breaklines, fontsize=\small]{text}
@@ -808,72 +1344,147 @@ body:
    DBG_OUTLINED !64, !45, debug-location !65
    ...
 \end{minted}
+\caption{Isečak LLVM mašinski zavisnog međukoda dobijen izborom instrukcija koda iz prethodne glave.}
 \label{lst:outlining_mir_example}
-\caption{}
 \end{figure}
 
 \subsection{Ispisivanje debag lokacija prilikom emitovanja asemblerskog koda}
 
 % https://llvm.org/docs/CodeGenerator.html
 
-% % Uvod
-% Poslednja faza kompilacije koju radi direktno kompajler je emitovanje asemblerskog koda. % dalje poslove rade asembler i linker
-% U okviru nje se mašinske instrukcije dobijene izborom instrukcija pretvaraju u odgovarajuće asemblerske instrukcije za tu arhitekturu.
-% U isto vreme se i informacije za debagovanje ispisuju u isti fajl u izabranom formatu.
-% Ovaj rad podržava samo ispisivanje u formatu DWARF.
-% % MachineInstr -> MCInst konverziju radi MCInstrLower kao deo AsmPrinter prolaza
+% Uvod
+Poslednja faza kompilacije koju radi direktno kompajler je emitovanje asemblerskog koda.
+U okviru nje se mašinske instrukcije dobijene izborom instrukcija pretvaraju u odgovarajuće asemblerske instrukcije za tu arhitekturu.
+U isto vreme se generišu i informacije za debagovanje u izabranom formatu.
+Sledeće faze kompilacije rade asembler i linker koji će bez problema preneti sve informacije redom do objektnog odnosno izvršnog fajla.
+Dakle ovo je poslednji korak koji je potrebno izmeniti za potrebe ovog rada.
 
-% % DW_TAG_LLVM_outlined_ref i DW_AT_LLVM_outlined (Dwarf.def)
-% Svi podaci o izdvojenim instrukcijama treba da se pretvore u informacije za debagovanje.
-% Nijedna instrukcija neće biti dodata u tekst segment programa.
-% % \verb|DBG_OUTLINED| instrukcije ce biti koriscene za popunjavanje etikete sa informacijama o mestu poziva funkcije.
-% Kao sto je pomenuto na početku poglavlja, novi podaci ce biti smešteni u okviru \verb|DW_TAG_call_site| etikete.
-% % Koji su potrebni podaci
-% Za svaku \verb|DBG_OUTLINED| instrukciju u odgovarajućoj etiketi mesta poziva funkcije biće dodata novouvedena etiketa \verb|DW_TAG_LLVM_outlined_ref|.
-% Ona treba da sadrzi informacije koje bi se inace nalazile u tabeli linija.
-% Tu spadaju lokacija u izvornom kodu koja se dobija iz debag lokacije i adresa odgovarajuce instrukcije u tekst segmentu.
-% Adrese se pojavljuju u kodu tek prilikom linkovanja tako da umesto konkretnih vrednosti adresa ovde se koriste labele.
-% % Ispred svake izdvojene instrukcije ce biti dodata labela ...
+% MachineInstr -> MCInst konverziju radi MCInstrLower kao deo AsmPrinter prolaza
 
-% % kako debug info se generise funkciju po funkciju a izdvajanje radi nad vise funkcija, informacije se moraju pamtiti celim procesom
-% Informacije za debagovanje se normalno generisu funkciju po funkciju.
-% Medjutim, po prirodi ovog zadatka uvek ce postojati izdvojena funkcija koju je potrebno obraditi pre nego što je moguće obraditi funkcije koje je pozivaju.
-% LLVM ne pruža mogućnost zadavanja ovakvih zavisnosti, tako da je rešenje pomeriti većinu poslova da se izvrše na samom kraju obrade modula.
-% Obradom svake funkcije se izvršavaju potrebne pripreme i čuvaju potrebne informacije koje će se na kraju spojiti u krajnju reprezentaciju.
+% DW_TAG_LLVM_outlined_ref i DW_AT_LLVM_outlined (Dwarf.def)
+Svi podaci o izdvojenim instrukcijama treba da se pretvore u informacije za debagovanje.
+Uključivanje informacija za debagovanje ne sme da menja krajnji k\^od tako da nijedna instrukcija neće biti dodata u tekst segment programa.
+Ova implementacija podržava samo ispisivanje u formatu DWARF. % TODO pomeriti?
+Proizvođači kompajlera mogu da dodaju svoja proširenja standarda sve dok ne menjaju vrednosti propisane standardom DWARF.
+Kako se etikete i atributi mapiraju na celobrojne numeričke vrednosti, proizvođač može da koristi jedan slobodno izabran opseg vrednosti sve dok se ne preklapa sa opsegom nekog od drugih kompajlera.
+% TODO. npr DWARF, GNU datoteke, dodavenje podrske za druge kompajlere
+Što se tiče kompajlera LLVM, on uvodi svoja proširenja standarda DWARF koja se mogu prepoznati po tome što njihovi nazivi sadrže podnisku \verb|LLVM|.
+% Može se primetiti da sve nove etikete i atributi sadrže podnisku \verb|LLVM|.
+% Razlog za to je što te vrednosti nisu deo standarda DWARF, već su ekstenzija u okviru projekta LLVM.
+Implementacija ovog rada se oslanja na nove vrste etiketa i atributa koji će biti opisani u nastavku. 
 
-% Glavna klasa zadužena za upravljanje informacijama za debagovanje na ovom nivou je \verb|DebugHandlerBase|.
+
+% \verb|DBG_OUTLINED| instrukcije ce biti koriscene za popunjavanje etikete sa informacijama o mestu poziva funkcije.
+Kao što je pomenuto na početku poglavlja, novi podaci će biti smešteni u okviru postojeće etikete \verb|DW_TAG_call_site| koja opisuje poziv funkcije.
+% Koji su potrebni podaci
+Za svaku \verb|DBG_OUTLINED| instrukciju u odgovarajućoj etiketi mesta poziva funkcije biće dodata novouvedena etiketa \verb|DW_TAG_LLVM_outlined_ref|.
+% Ona treba da sadrži informacije koje bi se inače nalazile u tabeli linija.
+% Tu spadaju lokacija u izvornom kodu koja se dobija iz debag lokacije i adresa odgovarajuće instrukcije u tekst segmentu.
+% Adrese se pojavljuju u kodu tek prilikom linkovanja tako da umesto konkretnih vrednosti adresa ovde se koriste labele koje će biti postavljene ispred odgovarajućih instrukcija.
+Nova etiketa se zove \verb|DW_TAG_LLVM_outlined_ref| i sadrži četiri atributa:
+\begin{itemize}
+  \item \verb|DW_AT_decl_file| --- Identifikator fajla lokacije u izvornom kodu
+  \item \verb|DW_AT_decl_line| --- Broj reda u izvornom kodu
+  \item \verb|DW_AT_decl_column| --- Broj kolone u izvornom kodu
+  \item \verb|DW_AT_low_pc| --- Adresu instrukcije u tekst segmentu programa. U ovom trenutku predstavljenu labelom ispred te intrukcije.
+\end{itemize}
+
+Informacije za debagovanje se u kompajleru LLVM generišu funkciju po funkciju.
+Međutim, po prirodi ovog zadatka uvek će postojati izdvojena funkcija koju je potrebno obraditi pre nego što je moguće obraditi funkcije koje je pozivaju.
+LLVM ne pruža mogućnost zadavanja ovakvih zavisnosti, tako da je rešenje pomeriti većinu poslova da se izvrše na samom kraju obrade modula.
+Obradom svake funkcije se rade potrebne pripreme i čuvaju informacije koje će se na kraju spojiti u konačnu reprezentaciju.
+Glavna klasa zadužena za upravljanje informacijama za debagovanje na ovom nivou je \verb|DebugHandlerBase|.
 % To je bazna klasa koja je nasleđena za svaki format informacija za debagovanje.
-% Ovaj rad se fokusira na implementaciju \verb|DwarfDebug|.
-% % TODO: sta jos radi...
-% Na početku obrade funkcije \verb|DbgEntityHistoryCalculator| prolazi kroz kod i pamti \verb|DBG_OUTLINED| instrukcije grupisane po njihovom drugom argumentu koji predstavlja \verb|outline_id| instrukcije poziva. % (DbgOutlinedInstrMap DbgOutlines)
-% % ^ pozvano od strane DebugHandlerBase klase na pocetku funkcije
-% % posle se radi zahtev za labelama
+To je bazna klasa koja radi opšte obrađivanje informacija zajedničko za sve formate za debagovanje.
+Za sve poslove vezane za konkretan format ona poziva virtuelne funkcije koje implementira odgovarajuća podklasa za taj format.
+Ovaj rad se fokusira na implementaciju \verb|DwarfDebug|.
 
-% % DwarfDebug (podklasa DebugHandlerBase) radi sledece
-% % - constructCallSideDIEs - sacuva CallSiteDIE u mapi ciji kljuc je outline id instrukcije poziva (OutlineCallDIEs iz DwarfDebug)
-% % - finalizeModuleInfo - dodaje sve nase informacije u DIE kako bi se emitovali. Sam upis radi DwarfCompileUnit
-% % - endModule - ciscenje (InfoHoldera - DwarfFile - on cuva sve DbgOutlined objekte)
-% % - collectEntityInfo konvertuje izlaz iz DbgEntityHistoryCalculator (DbgOutlinedInstrMap DbgOutlines) u novu reprezentaciju, DbgOutlined
-% % - endFunctionImpl - puni OutlineLabelMap (iz DebugHandlerBase) zahtevanim labelama (kljuc je outline_id)
+Prvi korak prema ispisivanju informacija za debagovanje je prikupljanje \verb|DBG_OUTLINED| instrukcija iz prethodne faze kompilacije.
+Na početku obrade funkcije \verb|DebugHandlerBase| poziva instancu klase \verb|DbgEntityHistoryCalculator| da prođe kroz k\^od i zapamti unutrašnje instrukcije za debagovanje.
+Ta klasa je proširena da isto to uradi i za \verb|DBG_OUTLINED| instrukcije.
+Radi lakšeg budućeg pristupa, grupiše ih po njihovom drugom argumentu koji predstavlja \verb|outline_id| instrukcije poziva. % (DbgOutlinedInstrMap DbgOutlines)
+Svi prikupljeni podaci se smeštaju u polje klase \verb|DebugHandlerBase| tako da je vidljivo i podklasama.
+% posle se radi zahtev za labelama
+% Sve labele su spremne tek na kraju obrade funkcije.
+% Labela se emituje u  DebugHandlerBase::beginInstruction (za requestLabelBeforeInsn) ili u DebugHandlerBase::endInstruction (za requestLabelAfterInsn)
+% i smestaju se u LabelsBeforeInsn ili LabelsAfterInsn
+% beginInstruction -> MachineModuleInfo::getContext() -> MCContext::createTempSymbol -> MCSymbol
+Druga stvar koja se radi takođe na početku funkcije je zahtevanje za kreiranje labela ispred instrukcija u funkcijama generisanim izdvajanjem koda koje imaju \verb|outline_id|.
+Te labele se dodaju tek prilikom obrađivanja instrukcije ispred koje treba da se smeste, tako da sve potrebne labele postoje tek na kraju obrađivanja cele funkcije.
+% DwarfDebug (podklasa DebugHandlerBase) radi sledece
+% 3. constructCallSideDIEs - sacuva CallSiteDIE u mapi ciji kljuc je outline id instrukcije poziva (OutlineCallDIEs iz DwarfDebug) (pozvano od strane endFunctionImpl)
+% 5. finalizeModuleInfo - dodaje sve nase informacije u DIE kako bi se emitovali. Sam upis radi DwarfCompileUnit (pozvano od endModule)
+% 4. endModule - ciscenje (InfoHoldera - DwarfFile - on cuva sve DbgOutlined objekte) (poziva finalizeModuleInfo. U ovoj funkciji se emituju sve DWARF sekcije)
+% 2. collectEntityInfo konvertuje izlaz iz DbgEntityHistoryCalculator (DbgOutlinedInstrMap DbgOutlines) u novu reprezentaciju, DbgOutlined (pozvano od strane endFunctionImpl)
+% 1. endFunctionImpl - puni OutlineLabelMap (iz DebugHandlerBase) zahtevanim labelama (kljuc je outline_id). Poziva collectEntityInfo, zatim cuva labele pa poziva constructCallSideDIEs
+Celokupnu dalju obradu informacija radi instanca klase \verb|DwarfDebug|.
+Na kraju obrade svake od funkcija iz korisničkog koda pozvana je funkcija \verb|endFunctionImpl|.
+Ona prikuplja i emituje sve informacije za debagovanje koje su nastale prilikom obrade te funkcije.
+% TODO: Ovo je previse precizno i nedovoljno razumljivo, skratiti
+% Za potrebe ovog rada, bitne su pomocne funkcije koja ona poziva: \verb|collectEntityInfo| i \verb|constructCallSideDIEs|.
+% Funkcija \verb|collectEntityInfo| je zaduzena za pretvaranje grupisanih \verb|DBG_OUTLINED| instrukcija dobijenih prolazom \verb|DbgEntityHistoryCalculator| u novu reprezentaciju, \verb|DbgOutlined|.
+% Nova reprezentacija, pored \verb|outline_id| arugmenata i lokacije za debagovanje, sadrzi i tip DWARF etikete i polje u kome ce biti privremeno smestena konacna etiketa.
+% Druga funkcija, \verb|constructCallSideDIEs| cuva etikete o mestima poziva svih izdvojenih funkcija iz trenutno obradjivane funkcije.
+% Te etikete su smestene u mapi \verb|OutlineCallDIEs| ciji kljuc je \verb|outline_id| dodeljen instrukciji poziva.
+Te informacije uključuju:
+\begin{itemize}
+  \item DWARF etikete koje predstavljaju mesto poziva funkcije i \verb|outline_id| metapodatak uz instrukciju poziva za svaku funkciju nastalu izdvajanjem koda.
+  \item Labele postavljene ispred svake izdvojene instrukcije zajedno sa njenim \verb|outline_id| podatkom
+  \item Sve ključne informacije iz \verb|DBG_OUTLINED| instrukcija u novoj reprezentaciji vezanoj za DWARF umesto za \verb|MachineInstr|.
+\end{itemize}
+Na kraju obrade modula sigurno su spremni svi neophodni podaci iz svih funkcija korisničkog koda.
+Spajanjem tih podataka na osnovu zajedničkih \verb|outline_id| vrednosti lako je u postojeće etikete dodati sve potrebne informacije za debagovanje.
 
-% % DwarfFile sadrzi CallOutlines, listu DbgOutlined(iz DwarfDebug) grupisane po outline_id instrukcije poziva
+% DwarfFile sadrzi CallOutlines, listu DbgOutlined(iz DwarfDebug) grupisane po outline_id instrukcije poziva
 
-% % DwarfCompileUnit - radi operacije sa DIE
-% % Nove:
-% % - constructOutlinedDIE - Kreira i popunjava DW_TAG_outlined_ref
-% % - createCallSiteOutlineEntries - Prima sve prikupljene informacije: CallSiteDIE, outline_id i labele, sadrzi CallOutlines iz DwarfFile i dodaje DW_TAG_outlined_ref u CallSiteDIE
-% % - applyOutlinedAttributes - dodaje sve informacije u DW_TAG_outlined_ref, pozvano od strane constructOutlinedDIE
-% % Stara:
-% % - constructCallSiteEntryDIE - ovde se dodaje DW_AT_LLVM_outlined atribut kao u DISubprogram, for convenience
+% DwarfCompileUnit - radi operacije sa DIE
+% Nove:
+% - constructOutlinedDIE - Kreira i popunjava DW_TAG_LLVM_outlined_ref
+% - createCallSiteOutlineEntries - Prima sve prikupljene informacije: CallSiteDIE, outline_id i labele, sadrzi CallOutlines iz DwarfFile i dodaje DW_TAG_outlined_ref u CallSiteDIE
+% - applyOutlinedAttributes - dodaje sve informacije u DW_TAG_outlined_ref, pozvano od strane constructOutlinedDIE
+% Stara:
+% - constructCallSiteEntryDIE - ovde se dodaje DW_AT_LLVM_outlined atribut kao u DISubprogram, for convenience
+Funkcije za kreiranje novih i modifikovanje postojećih DWARF etiketa nalaze se u klasi \verb|DwarfCompileUnit|.
+% TODO: pomeriti pri pocetku
+% Može se primetiti da sve nove etikete i atributi sadrže podnisku \verb|LLVM|.
+% Razlog za to je što te vrednosti nisu deo standarda DWARF, već su ekstenzija u okviru projekta LLVM.
+% Proizvođači kompajlera mogu da dodaju svoja proširenja standarda sve dok ne menjaju vrednosti propisane standardom DWARF.
+% % TODO. npr DWARF, GNU datoteke, dodavenje podrske za druge kompajlere
+% Kako se etikete i atributi mapiraju na celobrojne numeričke vrednosti, proizvođač može da koristi jedan slobodno izabran opseg vrednosti sve dok se ne preklapa sa opsegom nekog od drugih kompajlera.
+% Nova etiketa se zove \verb|DW_TAG_LLVM_outlined_ref| i sadrži četiri atributa:
+% \begin{itemize}
+%   \item \verb|DW_AT_decl_file| -- Identifikator fajla lokacije u izvornom kodu
+%   \item \verb|DW_AT_decl_line| -- Broj reda u izvornom kodu
+%   \item \verb|DW_AT_decl_column| -- Broj kolone u izvornom kodu
+%   \item \verb|DW_AT_low_pc| -- Adresu instrukcije u tekst segmentu programa. U ovom trenutku predstavljenu labelom ispred te intrukcije.
+% \end{itemize}
+% Ona se dodaje kao dete \verb|DW_TAG_call_site| etikete.
+Tu su dodate funkcije za generisanje \verb|DW_TAG_LLVM_outlined_ref| etiketa sa ranije opisanim poljima i dodata je pomoćna funkcija za ubacivanje tih etiketa u \verb|DW_TAG_call_site|.
+Uz to, toj etiketi je dodat atribut \verb|DW_AT_LLVM_outlined| koji označava da je to poziv izdvojene funkcije.
+% DwarfUnit::applySubprogramAttributes dodaje DW_AT_LLVM_outlined
+Isti atribut se dodaje i etiketi te funkcije a ovde je dodat kako bi se kasnije brže odredilo da li se poziva izdvojena funkcija ili ne.
 
-% % DwarfUnit::applySubprogramAttributes dodaje DW_AT_LLVM_outlined
+% AsmPrinter::emitFunctionBody dodaje slucaj za TargetOpcode::DBG_OUTLINED. Ne radi nista posto se instrukcija ne emituje.
+% Radi kompletnosti, ...
+% Vec je pomenuto da ukljucivanje debag informacija ne sme da menja krajnji izvrsni kod.
+% Instrukcije se emituju u asemblerski fajl iteriranjem kroz masinske instrukcije modula.
+Što se tiče emitovanja instrukcija u tekst segment, u funkciju \verb|emitFunctionBody| klase \verb|AsmPrinter| je dodat slučaj za ispisivanje instrukcije \verb|DBG_OUTLINED| koji ne radi ništa.
+Promenom ove implementacije da ispiše komentar može se potvrditi da su instrukcije \verb|DBG_OUTLINED| još uvek prisutne i da se nalaze na očekivanom mestu u kodu.
 
-% % Ovo je dwarfdump ispis a ne ispis iz asemblerskog koda
-% Asembler nema predstavu o formatu ili informacijama za debagovanje.
-% Sekcije za debagovanje se u asemblerskom kodu popunjavaju literalima koji imaju redosled i veličinu propisane formatom.
-% % npr. .byte 1 .byte 16 .long 4 ...
+Prethodnim modifikacijama omogućeno je prevođenje do asemblerskog fajla.
+% Ovo je dwarfdump ispis a ne ispis iz asemblerskog koda
+Asembler nema predstavu o formatu ili informacijama za debagovanje i  ne postoje posebne asemblerske direktive za njih.
+Umesto toga, sekcije za debagovanje se u asemblerskom kodu popunjavaju literalima koji imaju redosled i veličinu propisane formatom.
+Te vrednosti se direktno prenose u objektni i izvršni fajl.
+% npr. .byte 1 .byte 16 .long 4 ...
+% TODO: Primer asmeblerskih debag informacije
+Ti literali imaju smisla samo kada se parsiraju u istom formatu u kom su zapisani.
+Jedan alat koji to može da uradi je \verb|llvm-dwarfdump|.
+% Njenovim pokretanjem nad objektnim fajlom
+Listing \ref{lst:outlining_asm_example} prikazuje deo novih etiketa parsiranih iz objektnog fajla pomoću alata \verb|llvm-dwarfdump|.
+Kako bi imao podršku za prikazivanje ovih etiketa potrebno je koristiti verziju alata koja je sagrađena uz ovaj projekat.
 
-\begin{figure}
+\begin{figure}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{text}
   0x00000093: DW_TAG_call_site
                  DW_AT_call_origin    (0x000000dc)
@@ -893,30 +1504,431 @@ body:
                  DW_AT_low_pc         (0x0000000000001196)
   
   \end{minted}
+  \caption{Isečak DWARF stabla koji prikazuje etiketu poziva funkcije i njenu decu sa podacima o izdvojenim instrukcijama}
   \label{lst:outlining_asm_example}
-  \caption{}
 \end{figure}
 
 \section{Implementacija u debageru}
 
-% Potrebne informacije se nalaze u izvrsnom fajlu ali kako nisu u standardnoj lokaciji debager ne ume da ih upotrebi
+\label{sec:debugger_implementation}
+
+% Potrebne informacije se nalaze u izvrsnom fajlu ali kako nisu u standardnoj lokaciji debager ne ume da ih upotrebi.
+Programi prevedeni kompajlerom sa izmenama iz prethodnog poglavlja uz neophodne opcije će sadržati debag informacije o izdvojenom kodu.
+Pošto implementacija predstavlja novo proširenje standarda DWARF, nijedan postojeći debager nema podršku za interpretiranje tih informacija.
+U ovom poglavlju će biti predstavljena implementirana podrška za uvedeno proširenje u debageru \verb|LLDB|.
+% Sta sve ce biti implementirano
+Prvo će biti omogućeno učitavanje novih podataka, a zatim rešeni najveći nedostaci trenutne podrške za debagovanje izdvojenih instrukcija.
+% Rešeni problemi su: ispisivanje tačnih mesta u izvornom kodu kada debager zaustavi program, izvršavanje korak po korak i postavljanje tačaka prekida.
+To uključuje ispisivanje tačnih mesta u izvornom kodu kada se proces zaustavi, podršku za izvšavanje korak po korak i postavljanje tačaka prekida.
+
+% TODO: ima li jos nesto da je potrebno opisati ovde?
 
 % https://github.com/vvuksanovic/llvm-project/commit/0613708ca195f4fb634f7481e2739a3a2ac682fe
 
 \subsection{Učitavanje podataka}
 
+\label{sec:debugger_loading}
+
+% Dve implementacije: CallEdge za mapiranje adresa->lokacija i OutlineLineTable za lokacija->adresa
+% Implementacije rešenja zahtevaju mogućnost mapiranja adrese izvršnog fajla na lokaciju u izvornom kodu i obrnuto.
+Za rešavanje opisanih problema potreban je način za mapiranje adrese izvršnog fajla na lokaciju u izvornom kodu i obrnuto.
+Obično oba ova mapiranja radi tabela linija (eng.~{\em line table}),
+ali za izdvojene instrukcije ta dva smera su nezavisno implementirana na različite načine zato što su im potrebni različiti podaci a koji nisu svi dostupni u vreme kompilacije.
+% Kako je mapiranje sa lokacije na adresu jednostavnije, ono će biti prvo objašnjeno.
+
+% Plugin arhitektura za debag formate
+% SymbolFile, SymbolFileDWARF
+Interfejs za učitavanje i pristup informacijama za debagovanje u debageru LLDB je ostvaren kroz klasu \verb|SymbolFile|.
+On pruža funkcije za parsiranje podataka iz različitih sekcija za debagovanje i njihovo dohvatanje u reprezentaciji nezavisnoj od formata u kome su napisane.
+Većina podataka se ne učitava odmah po pokretanju debagera već tek kada su ti podaci neophodni.
+% SymbolFile::ParseOutlineLineTable ovo je podrazumevana, prazna implementacija, prava je u SymbolFileDWARF:
+%  -- SymbolFileDWARF::GetOutlineRefs - Radi DFS prolaz kroz DWARF stablo i prasira sve DW_TAG_LLVM_outline_ref etikete
+%  -- parsirana tabela je predata CompileUnit
+Tako na primer dohvatanjem podataka za jedinicu kompilacije (eng.~{\em compile unit}) kroz funkciju \verb|GetCompileUnitAtIndex| se izvršava parsiranje te jedinice ukoliko već nije učitana.
+Za tabelu linija, odgovarajuća funkcija za učitavanje se intuitivno zove \verb|ParseLineTable|, ali joj se pristupa pomoću funkcije \verb|GetLineTable| klase \verb|CompileUnit|.
+% Po ugledu na nju je dodata nova funkcija, \verb|ParseOutlineLineTable|.
+Kao i u ranijim poglavljima, podržani formati su implementirani kao priključci (eng.~{\em plug-ins}).
+Svaki od njih implementira interfejs \verb|SymbolFile| ili preciznije apstraktnu klasu \verb|SymbolFileCommon|.
+U slučaju formata DWARF, implementacija se nalazi u klasi \verb|SymbolFileDWARF|.
+
+% TODO: opste, nacin ucitavanja prolaskom kroz debug info stablo
+% GetOutlinedRefs vraca sve line_entry objekte
+% a CollectCallSiteParameters parsira i adresu i vraca je uz std::pair<CallSiteParameterArray, OutlinedInstructionArray> koja je pozvana iz CollectCallEdges
+% Toj klasi je dodata pomoćna funkcija \verb|GetOutlineRefs| koja služi za učitavanje novih informacija za debagovanje iz etikete za poziv funkcije.
+% Prolaskom kroz listu dece te etiketu obrađuju se sve \verb|DW_TAG_LLVM_outlined_ref| etikete i parsiranju njeni atributi.
+% Povratna vrednost funkcije je lista parsiranih informacija o izdvojenim instrukcijama.
+
+% Nova tabela linija za izdvojene instrukcije
+% Nacin ucitavanja obicne tabele linija, reprezentacija obicne tabele linija
+Podaci koji treba da budu učitani su skoro isti kao za tabelu linija, zbog toga se implementacija za učitavanje ugleda na učitavanje tabele linija.
+Uvedena je nova tabela linija specijalno za lokacije izdvojenih instrukcija.
+% Razmatrano je korišćenje postojeće tabele i dodavanje lokacija izdvojenih funkcija u nju, ali onda bi bilo potrebno 
+Za razliku od obične tabele, ova ne koristi specijalnu strukturu podataka već je u pitanju običan niz sortiran po lokaciji u izvornom kodu. % radi bržeg pronalaženja podataka.
+Podaci se dobijaju obilaskom čitavog DWARF stabla i parsiranjem atributa svih \verb|DW_TAG_LLVM_outlined_ref| etiketa.
+Nakon učitavanja, nova tabela linija se predaje klasi \verb|CompileUnit| preko koje može da joj se pristupi iz skoro celog koda.
+% CompileUnit::ResolveSymbolContext namesten da pronalazi line_entry i iz outline line table i vraca blizi od ta dva (prvi koji ima manju adresu)
+Bitniji metod pristupa je putem određivanja trenutnog konteksta izvršavanja.
+U poglavlju \ref{sec:lldb} je rečeno da se informacije o stanju programa dobijaju kroz instancu klase \verb|SymbolContext| koja te podatke dobija iz informacija za debagovanje.
+Stanje programa podrazumeva jedinicu kompilacije, funkciju i lokacija u izvornom kodu.
+Jedan od načina za dobijanje tog konteksta je zadavanjem lokacije u izvornom kodu za koju treba odrediti taj kontekst.
+Bitno je napomenuti da lokacija dobijena iz konteksta ne mora da se poklapa sa prosleđenom lokacijom.
+% Dobijena lokacija će zapravno biti prva sledeća od prosleđene a da sadrži 
+Za kreiranje te instance zadužena je ponovo klasa \verb|CompileUnit|, a funckija koja to obavlja je \verb|ResolveSymbolContext|.
+Pored proveravanja najbliže lokacije iz tabele linija, dodata je i provera u izdvojenoj tabeli linija.
+Ukoliko iz obe tabele postoje takve lokacije, u kontekst se stavlja ona koja je bliža prosleđenoj.
+Ako samo jedna od tabela ima validan rezulat, koristiće se on.
+Sada svi koji koriste ovaj način dohvatanja konteksta mogu da dobiju informacije o izdvojenim instrukcijama.
+Upotreba ove izmene za rešenje konkretnog problema će biti prikazana kasnije.
+
+% CallEdge???
+Mapiranje u drugom smeru, sa adrese izdvojene instrukcije na lokaciju u izvornom kodu nije jedinstveno.
+Činjenica da je instrukcija izdvojena znači da se poziva na bar dva različita mesta u izvornom kodu.
+Zbog toga jednoj adresi će uvek odgovarati bar dve lokacije. 
+Kako bi se dobila tačna lokacija potrebno je uzeti obzir i kontekst izvšavanja programa.
+Taj kontekst je predstavljen stek okvirom (eng.~{\em stack frame}) funkcije koja je pozvala izdvojenu funkciju.
+Preciznije, predstavljen je adresom povratka (eng.~{\em return address}) na funkciju kojoj odgovara taj stek okvir.
+Adresa povratka je adresa sledeće instrukcije koja će biti izvršena nakon povratka iz funkcije.
+Mapiranje u ovom smeru je smešteno u instanacama klase \verb|CallEdge|.
+Neka su funkcije čvorovi usmerenog grafa, i neka grana između dva čvora postoji za svaki poziv funkcije u smeru od pozivaoca do pozvane funkcije.
+Može postojati više grana između dve funkcije ukoliko se ista funkcija poziva više puta.
+% Bitno je da se oni razlikuju na osnovu adrese programskog brojača prilikom povratka u prethodnu funkciju.
+Klasom \verb|CallEdge| predstavlja se jedna od tih grana.
+% Dodata je lista adresa i lokacija svih izdvojenih instrukcija.
+Ona je dopunjena da sadrži adrese i lokacije svih izdvojenih instrukcija prilikom tog poziva.
+% SymbolFile::CollectCallEdges -> Function.h sadrzi call edge listu koja ima podatke o vrednostima parametara i sada izdvojenim instrukcijama.
+% prilikom ucitavanja callEdge-a (tj DW_TAG_call_site) popunjavaju se i novi podaci (CallEdges i is outlined atribut)
+Prethodno pomenuta klasa \verb|SymbolFile| je zadužena za popunjavanje tih podataka kada su potrebni.
+Ta implementacija je smeštena u funkciji \verb|CollectCallEdges| i zasniva se na parsiranju etikete poziva funkcije.
+Svim instancama klase \verb|CallEdge| je moguće pristupiti iz kroz \verb|Function| objekat pozivaoca, ili može da se pristupi konkretnoj instanci na osnovu adrese povratka.
+
+% DWARFAstParserClang ucitava outlined flag DISubprograma - ovo je uradio Voja
+Poslednji neophodan podatak koji je potrebno učitati je atribut \verb|DW_AT_LLVM_outlined|.
+To je implementirano u okviru postojeće implementacije za učitavanje podataka o funkciji u klasi \verb|DWARFASTParserClang|.
+Pristup informaciji da li je funkcija dobijena izdvajanjem koda je omogućen kroz metod \verb|IsOutlined| dostupan nad objektima \verb|Function| klase koja opisuje jednu funkciju iz koda koji se debaguje.
+
 \subsection{Ispisivanje ispravnih linija izvornog koda}
+
+\label{sec:debugger_line_number}
+
+Prilikom debagovanja korisnik može da kontroliše tok izvršavanja programa.
+On zadaje komande koje govore debageru koje delove koda da izvrši.
+Svaki put kada se kontrola vrati korisniku, debager ispiše mesto gde se program zaustavio (i možda nekoliko okolnih linija).
+Na osnovu toga korisnik saznaje informacije o trenutnom stanju programa i bira šta će sledeće da izvrši.
+U prisustvu dobrih debag lokacija to funkcioniše očekivano.
+Međutim u slučaju izvojenih instrukcija koje nemaju vrednost u tabeli linija, lokacija prikazana u debageru će biti netačna.
+% Debager će pokušati da uzme vrednost prve ranije adrese koja ima lokaciju.
+Prikazana lokacija će pripadati prvoj ranijoj instrukciji koja ima lokaciju.
+Kako se izdvojene funkcije se dodaju na adresama iza svih korisničkih funkcija, prva ranija instrukcija može da pripada nekoj drugoj funkciji, ili čak može da joj odgovara lokacija koja označava kompajlerski generisan k\^od.
+Korisnik ne dobija nikakvo obaveštenje o tome šta se desilo već samo može da vidi da je program napravio veliki skok na kraj fajla iako to nije slučaj.
+
+% TODO: Primeri
+% https://www.overleaf.com/learn/latex/How_to_Write_a_Thesis_in_LaTeX_(Part_3)%3A_Figures%2C_Subfigures_and_Tables
+% https://tex.stackexchange.com/questions/119905/insert-multiple-figures-in-latex
+
+Prvi izazov koji je potrebno rešiti kako bi imalo smisla rešavati bilo koji drugi problem je kako odrediti tačnu lokaciju u izvornom kodu kada se debager zaustavi u izdvojenoj funkciji.
+Bez toga iako se uspešno implementira bilo koji način zaustavljanja na izdvojene instrukcije, debager bi prikazivao netačne lokacije što samo otežava debagovanje.
+Trenutno jedini načini da se zastane na izdvojenoj instrukciji je da se program izvršava instrukciju po instrukciju ili da se postavi tačka prekida po adresi.
+% U tim situacijama 
+Oba načina se mogu koristiti za proveru ispravnosti implementacije.
+
+% StackFrame 
+% :: isOutlined - racuna SymbolContext za funkciju i proverava njen IsOutlined koji je ucitan iz DWARF-a
+% :: getOutlinedCallEdge - Trazi stek okvir roditelja, preskacuci inlajnovane stek okvire, i dohvata call edge na osnovu povratne adrese koja je smestena na stek pri pozivu funkcije.
+% :: GetStatus - funkcija pozvana kada se program zaustavi da prikaze trenutnu liniju. Ukoliko posotji CallEdge, line entry dobijen kontekstom se menja lokacijom neke izdvojene instr.
+Ispisivanje statusne poruke, koja između ostalog uključuje i okolne redove gde je program zaustavljen radi funkcija \verb|GetStatus| klase \verb|StackFrame|.
+Taj deo koda je izmenjen na sledeći način.
+% provera se vrsi dobijanjem SymbolContext-a za funkciju i pozivanjem njene IsOutlined
+Prvo se proverava da li trenutni stek okvir pripada izdvojenoj funkciji.
+Podatak koji to opisuje je dostupan kroz metod \verb|IsOutlined| klase \verb|Function|, a ona se dobija na osnovu konteksta tog stek okvira.
+Ukoliko stek okvir ne pripada izdvojenoj funkciji, određivanje linije se svodi na postojeću implemetaciju.
+U suprotnom koristi se nova implementacija.
+% Iz prethodne glave postoji podrška za mapiranje adrese na liniju u izvornom kodu.
+U glavi \ref{sec:debugger_loading} dodata je podrška za mapiranje adrese na liniju u izvornom kodu.
+Jedino što je potrebno je dodati kontekst kako bi se odredila dobra \verb|CallEdge| instanca za instrukciju.
+% Stek okviri predstavljaju najprecizniji vid konteksta.
+Funkcija već ima implementiran mehanizam za pronalaženje te instance na osnovu adrese povratka iz funkcije.
+% Adresa povratka je adresa sledeće instrukcije koja će biti izvršena nakon povratka iz funkcije.
+% TODO: Objasniti da je trenutni stek okvir od izdvojene funkcije
+Ta adresa se postavlja na vrh steka u trenutku poziva funkcije.
+Nit programa ima dostupnu listu stek okvira koji postoje u tom trenutku.
+Povratkom u roditeljski stek okvir lako je pronaći tu adresu.
+% Kada je pronađena povratna adresa.
+Konačna lokacija je dobijena iz \verb|CallEdge| instance dobijene iz tog roditeljskog stek okvira pomoću metode \verb|Function::GetCallEdgeForReturnAddress| sa pronađenom adresom povratka kao parametrom.  
+Uz lokaciju, u status je dodata i poruka da je proces zaustavljen u izdvojenom kodu.
 
 \subsection{Izvršavanje korak po korak}
 
+\label{sec:debugger_stepping}
+
+% Uvod
+Jedna od najkorišćenijih tehnika debagovanja je izvršavanje korak po korak.
+% Ona omogućava korisniku da vidi sve izvršene naredbe i da proverava da li se vrednosti promenljivih posle svakog koraka poklapaju sa njegovim očekivanjima.
+Ona omogućava korisniku da interaktivno prati i kontroliše izvršavanje programa.
+Između dva koraka korisnik može da pogleda vrednosti relevantnih promenljivih i priveri da li se one poklapaju sa očekivanim vrednostima.
+% Step over, into
+% Step inst vec radi
+LLDB nudi nekoliko komandi za koračanje:
+\begin{itemize}
+  \item \verb|step-over| --- Izvršava sve naredbe do sledećeg reda u izvornom kodu preskačući pozvane funkcije
+  \item \verb|step-into| --- Izvršava sve naredbe do sledećeg reda u izvornom kodu pritom ulazeći u pozvane funkcije
+  \item \verb|step-inst| --- Izvršava jednu instrukciju izvršnog fajla
+\end{itemize}
+U postojećoj implementaciji jedino \verb|step-inst| komandom je moguće stati na izdvojenu instrukciju.
+Druge komande, kako se oslanjaju na broj reda u izvornom kodu, će ih uvek preskočiti.
+Cilj ovog poglavlja je prepraviti i njih da rade u skladu sa korisnikovim očekivanjima.
+
+% ThreadPlan objasnjenje
+% TODO: Napomenuti LLDB
+Tokom sesije debagovanja, korsnik zadaje komande debageru kako bi kontrolisao tok izvršavanja programa.
+Celokupna logika o tome koliko program treba da se izvršava i kada treba da se zaustvi implementirana je pomoću planova niti (eng.~{\em thread plan}).
+Više različitih planova može da bude aktivno u isto vreme, zbog čega se oni skladište u stek strukturi podataka.
+Svaka nit ima svoj stek planova i njemu se može pristupiti \verb|GetProcess().GetThreadPlans(GetID())| iz trenutne niti.
+Kada se program zaustavi zbog nekog događaja svi planovi za tu nit se proveravaju redom od vrha do dna steka.
+Traži se prvi plan koji može da objasni događaj koji je izazvao zaustavljanje pozivanjem funkcije \verb|DoPlanExplainsStop| svakog plana.
+Taj plan se ona upita da li treba da se vrati kontrola korisniku funkcijom \verb|ShouldStop|.
+Ovde se ažurira logika ukoliko je potrebno da se program zaustavi na nekom sledećem mestu.
+Posle izvršavanja plana proverava se da li je on završio pozivom funkcije \verb|MischiefManaged|.
+Ukoliko jeste, on i svi planovi iznad njega u steku su uklonjeni ukoliko prijave da više nisu relevantni.
+Uvek postoji bar jedan plan na steku.
+To je instanca \verb|ThreadPlanBase| i on se aktivira kada ni jedan drugi plan ne objašnjava događaj kao na primer za tačke prekida napravljene od strane korisnika.
+
+% ThreadPlanStepRange (SetNextOutlineBreakpoint-na sledeci ili prvi red, ClearNextOutlineBreakpoint, NextOutlineBreakpointExplainsStop) (ShouldStop, DoPlanExplainsStop)
+% | - ThreadPlanStepInRange - lakse
+% | - ThreadPlanStepOverRange - teze, mora da udje u funkciju ako je izdvojena, impl u ThreadPlanStepRange::SetNextBranchBreakpoint
+Postoji više implementacija planova koji imaju različite kriterijume za zaustavljanje.
+Fokus ovog poglavlja su implementacije \verb|ThreadPlanStepInRange| i \verb|ThreadPlanStepOverRange| koje se koriste redom za \verb|step-into| i \verb|step-over| komande.
+Oni dele zajedničku nadklasu \verb|ThreadPlanStepRange|.
+Oba plana rade tako što postavljaju tačke prekida na sledeću intrukciju grananja sve dok program ne izađe iz opsega koji mu je zadat u vreme kreiranja.
+Taj opseg obuhvata sve instrukcije koje pipadaju istom redu i izvornom kodu.
+Nije moguće odmah postaviti tačku prekida direktno na konačnu lokaciju zbog mogućih grananja u programu.
+Razlika između planova je što \verb|step-into| prilikom zaustavljanja na instrukciji poziva funkcije dodaje novi plan za ulazak u funkciju dok \verb|stop-over| to ne radi.
+
+Ideja rešenja je da se osim postojeće tačke prekida uvede još jedna koja se uvek postavlja na seldeću izdvojenu instrukciju.
+Nadklasa \verb|ThreadPlanStepRange| je dopunjena funkcijama za postavljanje te nove tačke prekida koja se dobija na isti način kao u poglavlju \ref{sec:debugger_line_number}.
+% SetNextBranchBreakpoint je modifikovan za step over da ne preskače instrukcije poziva ukoliko je poziv prema izdvojenoj funkciji.
+% To se radi klasično, traženjem ogovarajućeg CallEdge i proverom IsOutlined. Novitet je što kako funckija nije pozvana, return adresa
+% jos nije postavljena na stek, tako da mora da se računa ručno kao: Adresa call instrukcije + veličina call instrukcije.
+Posebno u slučaju \verb|step-over| komande sledeća instrukcija grananja se traži uz bezuslovno preskakanje instrukcija poziva.
+Taj postupak je izmenjen dodavanjem uslova da pozvana funkcija nije nastala izdvajanjem koda.
+Ukoliko jeste, očekivano ponašanje je da debager ipak korača unutar te funkcije kako to odgovara izvornom kodu programa.
+U suprotnom poziv instrukcije se ignoriše kao i ranije.
+% TODO: Sličan postupak radi komanda step-over za umetnutu funkciju
+
+% ShouldStop izmenjen da proverava outlined breakpoint na pocetku onda se u odgovarajucim situacijama postavlja sledeci breakpoint
+% Vrši se provera da li je trenutni stek okvir noviji od početnog:
+% ako je stariji - već se izašlo iz funkcije, plan se zaustavlja, nista novo nije potrebno
+% ako je isti - ukoliko je u izdvojenoj funkciji postavi breakpoint na sledece outlined isntr
+% ako je noviji - ukoliko je u izdvojenoj funkciji postavi breakpoint na prvu outlined instr
+Poslednje što je potrebno učiniti je izmeniti konkretne klase planova da dodavaju i proveravaju tačku prekida na izdvojenoj instrukciji.
+Razlikuju se dva slučaja u kojima je potrebno dodati ciljnu tačku prekida.
+Ulaskom u izdvojenu funkciju potrebno je postaviti sledeći cilj da bude prva izdvojena instrukcija sa lokacijom.
+Ukoliko je program već zautavljen usred izdvojene funkcije onda cilj postaje prva sledeća izdvojena instrukcija sa lokacijom u narednom redu.
+Prethodni slučajevi se lako razlikuju poređenjem odnosa između trenutnog stek okvira i okvira iz trenutka kreiranja plana.
+% DoPlanExplainsStop takodje proverava da li se stalo na outlined beakpoint
+% Dostizanje cilja se lako proverava u funkciji \verb|DoPlanExplainsStop|.
+Kako bi se plan uopšte aktivirao prilikom dostizanja cilja, ta provera je dodata u funkciju \verb|DoPlanExplainsStop|.
+Obrada samog događaja se radi na početku funkcije \verb|ShouldStop| gde se odmah vraća kontrola korisniku i plan se završava.
+
 \subsection{Postavljanje tačaka prekida}
 
+% TODO ovo pomeriti u glavu o debageru, ovde napomenuti znacaj ovog vida debagovanja
+Tačka prekida (eng.~{\em breakpoint}) je mesto u programu koje kada treba da se izvrši u debageru izaziva pauziranje izvršavanja i vraćanje kontrole korisniku.
+% softverska / hardverska podrska
+% INT 3, prepisivanje koda?
+LLDB podržava nekoliko načina za postavljanje tačaka prekida:
+% TODO: Deskripcije
+\begin{itemize}
+  \item pomoću adrese u izvršnom fajlu --- Najjednostavniji vid postavljanja tačke prekida. Postavlja se tačno na prosleđenu adresu.
+  \item pomoću imena funckije --- U izvornom kodu se pronalaze sve funkcije sa prosleđenim imenom i za svaku od njih dodaje se nova tačka prekida.
+  \item pomoću imena fajla i reda --- Prosleđuje se naziv fajla i red u tom fajlu. Na osnovu informacija za debagovanje se tačka prekida postavlja na prvu instrukciju kojoj odgovara prosleđeni red ili prvi sledeći red ukoliko za traženi red ne postoje informacije.
+  \item pomoću regularnog izraza --- Izvorni k\^od se pretražuje za poklapanja sa regularnim izrazom i svako poklapanje dodaje novu tačku prekida.
+\end{itemize}
+% Svi se svode na odredjivanje adrese / adresa. Npr inlajnovana fja postavlja vise breakpointa
+Svi ovi načini se svode na postavljanje preko jedne ili više adresa.
+% Npr umetnuta funkcija.
+
+% BreakpointID X.Y
+Za potrebe razlikovanja, svakoj napravljenoj tački prekida dodeljuje se jedinstveni identifikator u formatu \verb|X.Y| gde \verb|X| označava identifikator grupe, a \verb|Y| označava identifikator lokacije u toj grupi.
+Sve tačke prekida nastale istom komandom imaju istu vrednost \verb|X| i različite vrednosti \verb|Y|.
+Ne može da se desi da dve tačke prekida iz iste grupe imaju istu lokaciju.
+Ovaj identifikator se koristi za izmenu svojstava tačaka prekida i prikazuje se korisniku kada se program zaustavi usled dostizanja jedne od njih.
+% Primer
+Uspešnim izvršavanjem komande za postavljanje tačke prekida dobija se poruka nalik na onu u listingu \ref{lst:breakpoint_example}.
+
+\begin{figure}[!ht]
+\begin{minted}[breaklines, fontsize=\small]{text}
+  * thread #1, name = 'test', stop reason = breakpoint 1.1
+\end{minted}
+\caption{Primer poruke koju prikazuje debager LLDB prilikom postavljanja tačke prekida}
+\label{lst:breakpoint_example}
+\end{figure}
+
+% Problem postoji samo za fajl/red. Ako se samo odredi adresa kojoj odgovara ulaz onda ce se program pauzirati na vise mesta nego sto je ocekivano.
+Prva dva od prethodno opisanih načina rade očekivano za izdvojene instrukcije dok druga dva ne funkcionišu.
+Ono što izdvaja druga dva načina je što oni moraju da odrede adresu na osnovu lokacije u izvornom kodu.
+Tačno je da isti ovaj proces se koristi i za postavljanje tačke prekida po imanu funkcije ali kako izdvojeni k\^od ne može da sadrži deklaraciju funkcije, na njega ne utiče dotični problem.
+Na sreću, potreban mehanizam je već ostvaren dodatnom tabelom linija za izdvojene instrukcije.
+% Ona omogućuje mapiranje lokacija u izvornom kodu na adrese što je baš potrebno u ovom slučaju.
+Međutim i sa tim se javlja drugi problem.
+% Ukoliko bi se samo odredila adresa koja odgovara tom fajlu i redu što je već moguće uz pomoć implementiranih mehanizama došlo bi do neočekivanih zastajkivanja na tačkama prekida.
+Sada prilikom debagovanja dolazi do neočekivanih zastajkivanja na tačke prekida koje korisnik nije postavio.
+% Kako se lokacija ne skladišti u tabeli linija 
+Radi jednostavnosti, nastavak teksta se odnosi na slučaj zadavanja fajla i reda.
+% Implementacija za regularni izraz radi potpuno identično.
+Sve što će biti rečeno važi i za slučaj koji koristi regularne izraze.
+Problem je u tome što odgovarajuća adresa pripada izdvojenoj funkciji koja se poziva iz više mesta.
+Ilustracija ovog problema je prikazana na slici \ref{fig:outlined_breakpoint}.
+% Primer, slika
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.6\textwidth]{assets/outlining_breakpoint.png}
+  \caption{Vizuelni prikaz odnosa izdvojenog koda u izvornom kodu i izvršnom fajl}
+  \label{fig:outlined_breakpoint}
+\end{figure}
+Ukoliko korisnik postavi tačku prekida bilo na red 17, do prekida će doći i prilikom izvršavanja linije 22 i obrnuto.
+Korisnik ne treba da bude svestan postojanja izdvojene funkcije jer on debaguje samo na osnovu izvornog koda.
+Za njega, očekivani ishod treba da bude da se program zautavlja samo na redu koji je on izabrao.
+
+% Breakpoint postavlja BreakpointResolver
+% BreakpointLocation prosiren da sadrzi opcionu lokaciju u izvornom kodu
+% Breakpoint se svakako postavlja na adresu ali ukoliko se lokacija ne poklapa, izvrsavanje se nastavlja dalje. Funkcija \verb|ShouldStop|
+% Za postavljanje lokacije se koristi mapiranje lokacje na adresu (outline line table iz CompilaUnit-a)
+% A za proveru da li je lokacija dobra se koristi mapiranje adresa+context->lokacija i proverava se da li se lokacije poklapaju
+% Postoji i uslov koji moze da se podesi nad celim breakpoint-om ali on se ne proverava u odgovarajuce vreme. Istraziti detaljnije
+Rešenje problema nije moguće realizovati u vreme postavljanja tačke prekida, već se provera ispravnosti lokacije radi nakon izazivanja prekida ali pre povratka kontrole korisniku.
+Dok klasa \verb|Breakpoint| poseduje sve podatke o grupi tačaka prekida koje su nastale istom komandom, informacije o svakoj pojedinačnoj instanci se nalaze u okviru klase \verb|BreakpointLocation|.
+Ona je dopunjena poljem koje predstavlja opcionu lokaciju u izvornom kodu koja odgovara toj adresi i poljem logičkog tipa koje obeležava da li je instrukcija izdvojena.
+Lokacija u izvornom kodu je neophodna samo za podršku izdvojenih instrukcija.
+Oba dodata polja dobijaju vrednost prilikom kreiranja tačke prekida na osnovu podataka iz tabela linija.
+Dolaskom na tačku prekida vrši se provera da li treba vratiti kontrolu korisniku kroz funkciju \verb|ShouldStop| klase \verb|BreakpointLocation|.
+U ovom trenutku je potrebno proveriti da li se lokacija poklapa sa lokacijom koja odgovara trenutnom stanju procesa.
+Način dobijanja trenutne lokacije je isti kao i u prethodna dva poglavlja, uz pomoć trenutne adrese i konteksta.
+Nigde u implementaciji se ne nalazi zavisnost na određeni način određivanja tačaka prekida tako da bi trebalo da funkcioniše 
+Posebna pažnja je data da se ova provera radi pre bilo koje druge operacije koja može da izmeni stanje tačke prekida.
+Na primer pre uvećavanja brojača aktivacije tačke prekida koji korisnik može da korsiti za napredno debagovanje.
+
 \chapter{Rezultati}
+
+Modifikovanu verziju kompajlera i debagera je potrebno detaljno testirati u različitim mogućim situacijama kako bi se postarali da se prvenstveno ne smanjuje funckionalnost u odnosu na nemodifikovanu verziju, a zatim i da se zapravo unapređuje debagovanje izdvojenog koda.
+Kako je velika količina koda izmenjena, velike su šanse da je došlo do propusta u implementaciji koji nisu detektovani testiranjem na jednostavnim primerima u toku prvobitnog pisanja koda.
+
+% LLVM jedinicni i integracioni testovi
+Projekat LLVM već uključuje veliki broj regresionih testova koji pokrivaju skoro svaku podržanu funkcionalnost.
+Ti testovi se pokreću koristeći pomocni alat \verb|lit| (skraćeno za {\em LLVM Integrated Tester}) i sastoje se od fajlova koji sadrže k\^od u nekom formatu i ugradjene direktive u vidu komantara.
+Direktive mogu da budu ili komande koje se pokrecu za izvrsavanje testa ili direktive koje zadaju tvrdnje koje test proverava.
+Testovi se pokreću 
+
+% Testovi
+Pokrenuti su svi testovi uključeni u LLVM projekat. % Da li se nesto pormenilo prilikom generisanja debug info
+Većina testova je uspešno izvršena bez problema. To je bilo i očekivano zato što veliki broj testova i ne radi sa uklječenim izdvajanjem koda.
+Mali deo testova je neuspešno izvršen zato što proverava specificne informacije za debagovanje koje su izmenjene modifikovanim kompajlerom.
+U tim situacijama, odgovarajući testovi su izmenjeni tako da očekuju pojavljivanje novih etiketa i atributa.
+Poslednji, poseban slučaj je činio test koji sadrži istovremeno izdvojen i umetnut k\^od.
+Ova situacija nije bila predviđena prilikom pisanja implementacije.
+% Umetnut kod zahteva debag lokaciju.
+Dotični test je prevremeno zaustavljao zbog neispunjene tvrdnje da poziv funkcije koja moze da bude umetnuta unutar funkcije koja ima inforamcije za debagovanje mora da ima lokaciju.
+Za taj slučaj je dodata posebna podrška.
+Za pozive koji ispunjavaju opisani uslov se postavlja veštačka debag lokacija.
+
+% Kada je provereno da implementacija ne dovodi do regresija
+Ispravkom poslednjeg testa, nije uočeno više problema i svi testovi su se uspešno izršavali.
+% Primer debagovanja C primera
+Sledeće je potrebno isprobati da li implementacija uspešno rešava probleme koje je namenjena da reši.
+Demonstracija će biti prikazana na istom primeru prestavljenim ranije u listingu \ref{lst:outline_program_example}.
+Ponašanje debagera na izdvojenom kodu pre modifikacija je opisano u glavi \ref{sec:izdvajanje_koda_debag}.
+
+% Komande za kompilaciju su iste kao ranije
+Kompilacijom sa modifikovanim kompajlerom i proverom informacija za debagovanje izvršnog fajla se može se primetiti da su nove etikete generisane na mestima poziva funkcija i da se adrese poklapaju sa adresama instrukcija u izdvojenoj funkciji.
+Pokretanjem debagera na generisanom fajlu i koračanjem po programu dobija se ispis prikazan u slici \ref{lst:outlining_debug_step_after}.
+Ukoliko se ovaj ispis uporedi sa ispisom pre modifikacija primećuje se da se program zaustavlja na 3 od 4 izdvojene instrukcije što prethodno nije bio slučaj,
+% TODO: dakle radi kod za koracanje i ispisivanje lokcija
+Takođe, svaki put kad se zastane ispisuje se poruka koja govori da se proces nalazi u izdvojenoj funkciji.
+% c1--; u prethodnom primeru je optimizovano zbog cega je izgubilo lokaciju
+Četvrta naredba, \verb|c1--;|, ne izaziva prekid izvršavanja programa.
+Istraživanjem je otkriveno da se odgovarajuća instrukcija koja je u početku bila instrukcija sabiranja sa -1, u toku izbora instrukcija zamenila sa instrukcijom dekrementiranja za 1.
+Zbog te zamene izgubljen je \verb|outline_id| koji je ta instrukcija originalno imala, stoga nije bilo moguće pronaći adresu te instrukcije prilikom emitovanja asemblerskog koda.
+% 
+Dakle, još uvek postoji prostor za poboljšanje implementacije.
+
+\begin{figure}
+\begin{minted}[breaklines, fontsize=\small]{text}
+  $ lldb outline
+  (lldb) b 11
+  (lldb) r
+      9           int y = 1;
+      10          
+   -> 11          int c1 = x + y;
+      12          c1--;
+      13          global += 2;
+  (lldb) n
+      9           int y = 1;
+      10          
+   -> 11          int c1 = x + y;
+      12          c1--;
+      13          global += 2;
+  Note: this function is outlined.
+  (lldb) n
+      11          int c1 = x + y;
+      12          c1--;
+   -> 13          global += 2;
+      14          foo(c1, global);
+      15          
+  Note: this function is outlined.
+  (lldb) n
+      12          c1--;
+      13          global += 2;
+   -> 14          foo(c1, global);
+      15          
+      16          int c2 = x + y;
+  Note: this function is outlined.
+\end{minted}
+\caption{Koračanje po izdvojenom kodu sa izmenjenim debagerom}
+\label{lst:outlining_debug_step_after}
+\end{figure}
+
+Još jedna implementirana funkcionalnost koju treba proveriti je postavljanje tacaka prekida.
+U prethodnom primeru je izgledalo kao da se uspesno postavila tacka prekida na liniji 11 koja je izdvojena.
+Ono sto se zapravo desilo je da se tacka postavila na instrukciju poziva izdvojene funkcije koja je dobila lokaciju prve izdvojene instrukcije.
+Tek sledecim korakom se zapravo doslo do izdvojene instrukcije.
+Umesto te naredbe na redu 11, tacka ce biti postavljena na red 13 kako bi se izbegla prethodna situacija.
+Ispis debagera je prikazan na slici \ref{lst:outlining_debug_breakpoint_after}.
+Komanda za postavljanje tacke prekida je uspesno odredila adresu koja odgovara zadatoj liniji i pokretanjem programa, proces je zaustavljen na toja adresi.
+
+\begin{figure}
+\begin{minted}[breaklines, fontsize=\small]{text}
+  $ lldb outline
+  (lldb) b 13
+  Breakpoint 1: where = outline`outlined_ir_func_0 + 11 at outline.c, address = 0x00005555555551a0
+  (lldb) r
+      10          
+      11  	       int c1 = x + y;
+      12  	       c1--;
+   -> 13  	       global += 2;
+      14  	       foo(c1, global);
+      15          
+      16          int c2 = x + y;
+  Note: this function is outlined.
+\end{minted}
+\caption{Postavljanje tačke prekida na izdvojenu naredbu sa izmenjenim debagerom}
+\label{lst:outlining_debug_breakpoint_after}
+\end{figure}
+
+% Dodati novi testovi
+Novi regresioni testovi su dodati za kompajler i debager po ugledu na prethodni primer.
+Kompajleru se testira uspešno generisanje informacija za debagovanje u svakom koraku kompilacije.
+% TODO: debager testovi pokrecu unapred zadate komande i ocekuju odgovarajuci ispis u svakom koraku.
+Debager testovi pokreću debager nad programom sa izdvojenim kodom i proveravaju ispravnost lokacije, da li se program zaustvio na očekivanim mestima i da li je uspešno postavljena tačka prekida.
+
 
 % ------------------------------------------------------------------------------
 \chapter{Zaključak}
 % ------------------------------------------------------------------------------
 
+% Buduci rad:
+% Podrska za MachineOutliner
+% Bolja podrska za SelectionDAG
+% Podrska za druge ISel implementacije
+% Backtrace ne treba da prikaze stek okvire izdvojenih funkcija
 
 % ------------------------------------------------------------------------------
 % Literatura
