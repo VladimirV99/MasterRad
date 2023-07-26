@@ -565,114 +565,322 @@ Komanda za prevođenje optimizovanog mašinski nezavisnog međukoda do asemblers
 
 \chapter{Debageri}
 
-% % https://eli.thegreenplace.net/2011/01/23/how-debuggers-work-part-1
+% https://en.wikipedia.org/wiki/Debugging
+% https://eli.thegreenplace.net/2011/01/23/how-debuggers-work-part-1
 
-% % opste o greskama, procesu razvoja softvera
-% % print debagovanje i debageri
-% Prilikom programiranja bilo kog većeg projekta, neminovno je da ce doći do propusta.
-% Ti propusti se popularno nazivaju bagovi. % i mogu se ispoljiti na više načina.
-% % U zavisnosti od komponente programa posledice propusta mogu da budu vise ili manje ozbiljne.
-% Bagovi se odnose na bilo kakvo ponašanje programa koje nije u skladu sa namerom programera.
+% opste o greskama, procesu razvoja softvera
+% print debagovanje i debageri
+Prilikom programiranja bilo kog većeg projekta, neminovno je da ce doći do propusta.
+% Ti propusti se popularno nazivaju bagovi.
+Propusti se odnose na bilo kakvo ponašanje programa koje nije u skladu sa namerom programera.
+% To može da bude na primer nekonzistentnost u korisničkom interfejsu, greška u nekom algoritmu ili 
+U zavisnosti od komponente programa u kojoj se propust ispoljava, posledice mogu da budu više ili manje ozbiljne.
+Na primer, greška u korisničkom interfejsu ima dosta manje posledice od greške u sistemu obrade novca u banci.
+Svakako, svi primećeni propusti trebaju biti popravljeni pre objavljivanja nove verzije softvera.
 
-% Svakako, oni trebaju biti popravljeni pre objavljivanja verzije softvera.
-% % Debagovanje je proces trazenja, analiziranja i popravljanja bagova u programu.
-% Proces traženja, analiziranja i popravljanja bagova u programu se naziva debagovanje.
+% Debagovanje je proces pronalaženja, reprodukovanja, analiziranja i popravljanja grešaka u programu.
+Proces pronalaženja, reprodukovanja, analiziranja i popravljanja grešaka u programu naziva se debagovanje.
+% Jedan od najtežih koraka tog procesa je određivanje problematičnog dela koda, dok je rešavanje problema najlakši deo.
 % Postoji nekoliko načina debagovanja.
-% Osnovni vid je debagovanje štampanjem (eng.~{\em print debugging}).
-% Debagovanje stampanjem podrazumeva izmenu izvornog koda tako da ispisuje poruke i vrednosti promenljivih u glavnim koracima dela koda za koju programer smatra da su razlog za postojanje greske.
-% Za sitnije greske ovo je sasvim prihvatljiv nacin resavanja.
-% Naravno, mane pristupa su potreba za ponovnom kompilacijom celog programa svaki put kada se dodaje ili menja ispis.
-% Kompilacija velikih projekata moze da traje bas dugo, tako da se ovaj pristup ne isplati uvek.
-% Alternativa je koriscenje posebnog alata namenjenog za ovu situaciju.
-% Debager je softverski alat koji olaksava proces debagovanja.
-% % mogucnosti debagera
-% Neke osnovne mogucnosti (feature) debagera su koracanje kroz program, tacke prekida, evaluiranje vrednosti promenljivih ili izraza itd.
+Jedan od osnovnih načina je debagovanje štampanjem (eng.~{\em print debugging}).
+Ono podrazumeva izmenu izvornog koda tako da ispisuje poruke i vrednosti promenljivih u glavnim koracima dela koda za koje programer smatra da su razlog za postojanje greške.
+Za sitnije greške ovo je sasvim prihvatljiv način za njihovo rešavanje.
+Mana tog pristupa je potreba za ponovnom kompilacijom celog programa svaki put kada se dodaje ili menja ispis.
+Kompilacija velikih projekata može da traje baš dugo, tako da se ovaj pristup ne isplati uvek.
+Alternativa je korišćenje posebnog alata namenjenog za ovu situaciju.
 
-% Iako postoje kao posebni alati koji se koriste iz komandnog prozora, debageri su cesto integrisani u razvojna okruzenja.
+Debager je softverski alat koji olakšava proces debagovanja.
+On pruža interaktivan vid izvršavanja programa gde korisnik zadaje komande za izvršavanje programa i proveru vrednosti promenljivih.
+Umesto izmene izvornog koda, debager direktno ispituje i modifikuje program dok se izvršava.
+%Umesto izmene izvornog koda, debager
+On uz pomoć operativnog sistema dobija potpunu kontrolu nad izvršavanjem programa.
+To mu daje pristup za čitanje i pisanje cele memorije programa dok se izvršava, uključujući i instrukcije koje će se izvršiti.
+Na taj način debager može i da kotroliše tok izvršavanja tog programa.
+% mogucnosti debagera
+Neke od funkcionalnosti debagera su: % cite
+\begin{itemize}
+  \item Evaluiranje vrednosti izraza --- Kada je proces zaustavljen na nekom mestu u kodu, korisnik želi da proveri vrednosti promenljivih. Neki debageri osim toga podržavaju i izračunavanje proizvoljnih izraza koji uključuju promenljive i funkcije programa koji se debaguje.
+  \item Izvršavanje korak po korak --- Najčešći i najjednostavniji vid kretanja kroz program. Omogućava kontrolisano izvršavanje samo određenog dela koda. Korak može da označava jednu instrukciju, jedan red ili jednu funkciju. % TODO expand
+  \item Postavljanje tačaka prekida --- Ukoliko programer već naslućuje koji deo koda izaziva problem, on ne želi da izvršava korak po korak program dok se ne dostigne taj deo. Umesto toga može da postavi tačku prekida (eng.~{\em breakpoint}) na to mesto i pusti program da se sam izvršava. Svaki put kada se dostigne tačka prekida proces će biti zaustavljen. % Postoje i načini za zadavanje uslova u kojim situacijama 
+  \item Praćenje vrednosti promenljivih --- Neki bagovi su izazvani neočekivanom promenom vrednosti neke promenljive. Pogodan način za otkrivanje trenutka kada se to desi je postavljanjem tačke prekida nad podatkom (eng.~{\em watchpoint}). Promenom vrednosti na toj adresi će se zaustaviti proces i kontrola se vratiti korisniku.
+  % \item Pregled vrednosti u memoriji --- 
+  \item Pregled stek okvira --- Pronalazak mesta gde je greška ispoljena nije uvek dovoljno da se odredi gde ona nastaje. Taj deo koda se možda poziva sa više mesta i potrebno je odrediti koji od njih je izazvao problem. Pregledom stek okvira korisnik dobija uvid u istoriju svih poziva funkcija od početne funkcije.
+  \item Izvršavanje programa unazad --- Nekada korisnik uoči problem tek nekoliko koraka nakon što je on nastao. Napredni debageri imaju podršku za poništavanje izvršenih instrukcija. Programski brojač se pomera unazad i sva izmenjena memorija se vraća na prethodno stanje.
+\end{itemize}
+Najpoznatiji debageri za jezike C i C++ su \textit{GDB}, \textit{LLDB} i \textit{Microsoft Visual Studio Debugger}.
+
+% Source level debugging
+% Iako je debagovanje moguće na nivou mašinskih instrukcija, to nije mnogo praktično.
+% Umesto toga debagovanje je pogodnije raditi na nivou izvornog koda (eng.~{Source Level Debugging}).
+
+Tradicionalan način korišćenja debagera je putem komandne linije.
+Sve operacije se izvršavaju zadavanjem komande u tekstualnom obliku u formatu koji debager propisuje.
+Upotrebom komande za pokretanje dela ili celog programa korisnik više ne može da zadaje nove komande sve dok se prethodna komanda ne izvrši do kraja.
+Problem sa ovim vidom upotrebe je što korisnik mora da napamet zna strukturu komandi ili da otvara dokumentaciju.
+Drugi način za upotrebu debagera je pomoću integrisanih razvojnih okruženja (eng.~{\em integrated development environment}).
+Mnoga okruženja ugrađuju debager u svoj grafički korisnički interfejs (eng.~{\em graphical user interface}).
+Postojanje grafičkih elemenata olakšava posao korisniku zato što ne mora da memoriše sve komande.
+Dovoljno je da pritisne odgovarajuće dugme ili na neki način izmeni neki drugi element.
+Ovo je najpogodniji način za nove korisnike da nauče da koriste debager.
+Postoji i sredina između prethodna dva načina upotrebe u vidu tekstualnog korisničkog interfejsa (eng.~{\em textual user interface}).
+Umesto odvojenog prozora, i dalje se koristi komanda linija, ali je ona napravljena tako da liči na grafičko okruženje.
+Kako ne postoji podrška za kursor, komande se zadaju prečicama na tastaturi.
+
+U nastavku će prvo biti objašnjen koncept informacija za debagovanje, a zatim će biti opisan format DWARF koji služi za zapisivanje tih informacija.
+Na kraju poglavlja je predstavljen debager LLDB i neki ključni delovi njegove implementacije.
 
 \section{Informacije za debagovanje}
 \label{sec:informacije_za_debagovanje}
 
-% % https://www.prevodioci.matf.bg.ac.rs/kk/2021/predavanja/gostujucePredavanje/DjordjeTodorovic_LLVM_DebagInformacije.pdf
-% % https://www.llvm.org/devmtg/2016-11/Slides/Kleckner-CodeViewInLLVM.pdf
+% https://blog.syrmia.com/posts/debag-informacije-i-optimizacije-kompajlera-llvm
+% https://www.prevodioci.matf.bg.ac.rs/kk/2021/predavanja/gostujucePredavanje/DjordjeTodorovic_LLVM_DebagInformacije.pdf
+% https://www.llvm.org/devmtg/2016-11/Slides/Kleckner-CodeViewInLLVM.pdf
 
-% % https://llvm.org/docs/SourceLevelDebugging.html
+% https://llvm.org/docs/SourceLevelDebugging.html
+% https://www.llvm.org/docs/HowToUpdateDebugInfo.html
 
-% % Source level debugging
-% % Debagovanje radi na nivou izvornog koda, ali on nije vezan za krajnji program.
-% Za uspešno debagovanje programa potrebna je podrška kompajlera da sačuva informacije o izvornom kodu do izvršnog fajla.
-% Pored mašinskog koda, kompajler takođe, ako mu je zatraženo, generiše i dodatne informacije koje se koriste za debagovanje.
-% One uključuju mapiranja mašinskih instrukcija u lokacije u izvornom kodu, imena funkcija i promenjivih itd.
-% Kompajler LLVM generiše ove podatke dodavanje zastavice \verb|-g|.
+% Source level debugging
+% Debagovanje radi na nivou izvornog koda, ali on nije vezan za krajnji program.
+Za uspešno debagovanje programa na nivou izvornog koda (eng.~{source level debugging}) potrebna je podrška kompajlera da sačuva informacije o tom kodu do izvršnog fajla.
+Pored mašinskog koda, kompajler takođe, ako mu je zatraženo, generiše i dodatne informacije koje se koriste za debagovanje.
+Između ostalog, one uključuju mapiranja mašinskih instrukcija u lokacije u izvornom kodu, imena funkcija i promenjivih itd.
+Sve te informacije zauzimaju dodatnu memoriju u krajnjem izvršnom fajlu i produžavaju vreme kompilacije.
+Iz tog razloga, one se podrazmevano ne generišu, već je potrebno eksplicitno navesti kompajleru da treba to da uradi.
+Kompajler LLVM generiše ove podatke dodavanjem zastavice \verb|-g| u okviru komande za kompilaciju.
 
-% % Ove informacije se nalaze u posebnim segmentima, van uobičajenih segmenata (text, data, bss...).
-% Izvršni fajl je normalno podeljen u nekoliko delova koji se nazivaju segmenti.
-% Najbitniji među njima su tekst segment gde se nalaze instrukcije, segment inicijalizovanih podataka i segment neinicijalizovanih podataka.
-% Pored njih mogu da postoje i druge sekcije, na primer za razmotavanje u slučaju greške.
-% % ne smeju da menjaju kod koji se izvrsava
-% Informacije za debagovanje ne diraju nijedan od prethodnih segmenata već definišu nove kako ni bi menjali postojeće podatke.
-% Tačan broj i naziv novih segmenata zavisi od formata informacija za debagovanje koji se koristi.
+% Generisanje i ocuvavanje debag informacija
+Većina informacija za debagovanje nastaju u prednjem delu kompjalera, pošto je on zadužen za analiziranja izvornog koda, i prosleđuju se kroz ostale faze kompilacije gde se usput dopunjuju novim podacima kada oni postanu dostupni (npr. lokacije promenljivih za vreme izvršavanja). % do izvršnog fajla.
+% Odnos optimizacija i debag informacija
+Očuvanje informacija za debagovanje nailazi na problem kada se uključe kompajlerske optimizacije.
+Prilikom primene optimizacija, informacije za debagovanje i dalje treba reflektuju izvorni kod, a ne njegovu optimizovanu verziju.
+Što se više krajnji program razlikuje od izvornog koda postaje teže očuvati informacije, 
+% a u nekim slučajevima je čak potpuno nemoguće.
+a nekada je to čak potpuno nemoguće.
+U slučaju da je moguće izabrati između nepotpunih informacija ili informacije koje ne odgovaraju u potpunosti izvornom kodu, bolje je izabrati prvu opciju.
+% Prihvatljivije je nemati informacije za debagovanje nego imati netačne.
+Ovo je jedan od najvećih izazova pisanja optimizacija.
+Jednostavno rešenje je isključiti kompajlerske optimizacije prilikom debagovanja i ono može da bude pogodno za neke korisnike.
+% To jeste dobro rešenje u situacijama kada je to moguće i praktično.
+Ipak, postoje situacije kada je potrebno prevesti program sa optimizacijama.
+Na primer u slučaju da se program kompajlira za računar sa malom količinom memorije gde ne može da se kompletno smesti ukoliko nije optimizovan za memoriju.
+Drugi problem prevođenja bez optimizacija je što se program onda razlikuje od verzije koja se isporučuje klijentu i moguće je da se bag ispoljava samo u toj verziji.
+Iz prethodno navedenih razloga se posebna pažnja prilikom pisanja optmizacija daje održavanju informacija za debagovanje.
 
-% Postoji vise razlicitih formata za zapisivanje informacija za debagovanje.
-% Najpopularniji medju njima su CodeView za Windows sisteme i DWARF za sisteme UNIX tipa.
+% TODO: ovo treba nekako vezati sa prethodnim poglavljem
+% Ove informacije se nalaze u posebnim segmentima, van uobičajenih segmenata (text, data, bss...).
+Izvršni fajl je podeljen u nekoliko delova koji se nazivaju segmenti.
+Najbitniji među njima su tekst segment gde se nalaze instrukcije programa, segment inicijalizovanih podataka i segment neinicijalizovanih podataka.
+Pored njih mogu da postoje i drugi segmenti, na primer za podatke o razmotavanju steka u slučaju greške.
+% ne smeju da menjaju kod koji se izvrsava
+Informacije za debagovanje ne diraju nijedan od prethodnih segmenata već definišu nove kako ne bi uticali na postojeće podatke.
+Broj i naziv novih segmenata zavisi od formata za zapisivanje informacija za debagovanje koji se koristi.
+% Format propisuje način zapisivanja podataka i njihovog dekodiranja.
+% Postoji više različitih formata za zapisivanje informacija za debagovanje.
+Najpopularniji među njima su format CodeView za \textit{Windows} sisteme i format DWARF za sisteme UNIX tipa.
 
-% % Odnos optimizacija i debag informacija
-% Generisanje informacija za debagovanje nailazi na problem kada se uključe kompajlerske optimizacije.
-% Što se više krajnji program razlikuje od izvornog koda postaje teže očuvati informacije.
-% U nekim slučajevima je čak potpuno nemoguće.
-
+% Zasto postoje formati
+% Mogucnost koriscenja razlicitih kombinacija kompajlera i debagera
+Postojanje standardizovanih formata ima veliki značaj.
+Ono omogućava korišćenje debagera nezavisno od kompajlera kojim je program preveden.
+Bitno je samo da oba koriste isti format.
+Ukoliko bi svaki kompajler pisao informacije za debagovanje u nekom ličnom (eng.~{propriatery}) formatu, on bi mogao da se koristi samo sa odgovarajućim debagerom.
+Zbog standardizovanih formata, program preveden na primer kompajlerom GCC može da se debaguje debagerom LLDB.
+% Iako moze da se zameni kompajler, ne mora da znaci da ce isti podaci biti generisani niti da ce ih debager u istoj meri korstiti
+Iako koriste iste formate, ne mora da znači da će bilo koja dva debagera moći u potpunosti da iskoriste sve dostupne informacije za debagovanje ili da će ih korisiti na iste načine.
 
 \section{Format DWARF}
 \label{sec:dwarf}
 
-% % Introduction to the DWARF Debugging Format
+% Introduction to the DWARF Debugging Format
+% https://en.wikipedia.org/wiki/DWARF
 
-% DWARF je standardizovan format za zapisivanje informacija za debagovanje.
-% Dizajniran da radi uz format ELF za biblioteke, izvršni i objektni k\^od, ali podržava i druge formate.
-% % Ime je dobio zato što je namenjen da se koristi uz format za izvršne fajlove i biblioteke, ELF, ali se može koristiti i uz druge formate.
-% Ovaj format se koristi na UNIX sistemima koji uključuju Linux distribucije i macOS.
+\textit{DWARF} je standardizovan format za zapisivanje informacija za debagovanje.
+Originalno je osmišljen da radi uz format ELF koji se koristi za biblioteke, izvršni i objektni k\^od, ali podržava i druge formate.
+% Ime je dobio zato što je namenjen da se koristi uz format za izvršne fajlove i biblioteke, ELF, ali se može koristiti i uz druge formate.
+Postoji podrška za programske jezike C, C++, Ada, Fortran i COBOL, ali je omogućeno proširenje i za druge jezike.
+Ovaj format se koristi na UNIX sistemima što uključuje \textit{Linux} distribucije i \textit{macOS}.
+Postojalo je nekoliko revizija standarda do sada, a trenutno je aktuelna verzija 5 koja će biti podrazumevana u nastavku rada.
 
-% Sve informacije za debagovanje su raspoređene u nove sekcije izvršnog fajla.
-% Te sekcije počinju prefiksom \verb|.debug_|.
-% % propisuje sekcije: .debug_info .debug_frame .debug_line
-% \begin{itemize}
-%   \item \verb|.debug_info|
-%   \item \verb|.debug_line|
-%   \item \verb|.debug_frame|
-%   \item \verb|.debug_abbrev|
-% \end{itemize}
+Sve informacije za debagovanje su raspoređene u nove sekcije izvršnog fajla koje počinju prefiksom \verb|.debug_|.
+Neke od najbitnijih su \cite{eager2012introduction_dwarf}:
+\begin{itemize}
+  \item \verb|.debug_info| --- Glavna sekcija za debagovanje. Sadrži skoro sve informacije o entitetima iz izvornog koda.
+  \item \verb|.debug_line| --- Tabela adresa instrukcija u izvršnom fajlu i odgovarajućih lokacija u izvornom kodu. Takođe sadrži dodatne podatke o granicama prologa i epiloga funkcija.
+  \item \verb|.debug_frame| --- Podaci o načinu razmotavanja stek okvira.
+  \item \verb|.debug_loclists| --- Lokacije skladištenja promenljivih za vreme izvršavanja. Za jednu promenljivu može da postoji više lokacija na primer ako se promeni registar u kome je smeštena.
+  % \item \verb|.debug_rnglists| --- Prekidni opsezi adresa. Koriste se iz \verb|.debug_info| sekcije kada opseg koji je potrebno opisati nije neprekidan.
+  \item \verb|.debug_abbrev| --- Skraćenice za zapisivanje informacija u \verb|.debug_info| sekciji. Koristi se za kompresovanje podataka. % Umesto da se ispred svakog atributa napise njegov tip, ovde se definiše etiketa i redosled svih atributa u okviru jedinice i dodeljuje se skraćenica za zapis te jedinice.
+  \item \verb|.debug_str| --- Tabela niski koje se koriste u \verb|.debug_info| sekciji.
+\end{itemize}
 
-% % etikete i atributi
-% Podaci su predstavljeni pomoću osnovnih jedinica (eng.~{\em Debug Information Entry, DIE}) organizovanim u drvoliku strukturu.
-% Svaka jedinica ima etiketu (eng.~{\em tag}) koja označava njen tip, dodatne informacije predstavljene atributima i može da ima potomke.
-% Standard propisuje validne etikete i atribute koje moraju da postoje za te etikete.
+% etikete i atributi
+Podaci u sekciji \verb|.debug_info| su predstavljeni pomoću osnovnih jedinica (eng.~{\em Debug Information Entry, DIE}) organizovanih u drvoliku strukturu.
+Svaka jedinica ima etiketu (eng.~{\em tag}) koja označava njen tip, dodatne informacije predstavljene atributima i može da ima druge jedinice kao decu.
+Svaka etiketa i atribut imaju numeričku vrednost koja služi za zapisivanje u računaru i ime u obliku niske koje služi čoveku za lako čitanje podataka.
+Standard propisuje validne etikete i atribute koje moraju da postoje za te etikete.
+Ideja je da svaki entitet programskog jezika bude opisan na ovaj način.
+U listingu \ref{lst:dwarf_variable} prikazan je primer opisa jedne promenljive.
+Značenja prikazanih atributa su objašnjena kasnije u odeljku.
+% Format je veoma kompresovan, što je neophodno za zapisivanje velike količine informacija kakvu imaju veliki projekti.
+% Svi podaci se čuvaju kao numerički literali sa propisanim veličinama.
 
-% % Format je veoma kompresovan. Sve se cuva kao litarli sa propisanim velicinama, ne postoje nikakva imena.
+\begin{figure}[!ht]
+\begin{minted}[]{text}
+DW_TAG_variable
+    DW_AT_location  (DW_OP_fbreg -8)
+    DW_AT_name      ("x")
+    DW_AT_decl_file ("/home/vladimir/Documents/example.c")
+    DW_AT_decl_line (2)
+    DW_AT_type      (0x00000052 "int")
+\end{minted}
+\caption{Primer DWARF jedinice koja opisuje promenljivu}
+\label{lst:dwarf_variable}
+\end{figure}
 
-% % Prosirivost
+% Prosirivost
+Bitna odlika formata DWARF je njegova proširivost.
+Standard pruža način da se format dopuni novim etiketama i atributima od strane proizvođača kompajlera.
+Razni alati mogu zatim da koriste te podatke kako bi poboljšali svoju funkcionalnost.
+% To mogu biti debageri, 
+% Alati koji koriste te podatke mogu da preskoče vrednosti koje ne razumeju, tako da se održava kompatibilnost sa svim alatima.
+Sa druge strane, postojeći alati koji ne razumeju te podatke mogu samo da ih preskoče.
+Na taj način se održava kompatibilnost sa postojećim alatima.
+Slično važi za alate koji su napravljeni za starije verzije standarda.
+% Bitno je da ne koristi vec rezervisana imena i vrednosti koje im odgovaraju
+% Ko god želi da implementira svoje proširenje standarda može da osmisli svoje etikete i atribute.
+Bitna stvar pilikom dodavanja etiketa i atributa je da im se dodele 
+% Bitno je samo da im dodeli 
+numeričke vrednosti koje nisu već deo standarda i poželjno bi bilo da se takođe ne koriste od strane drugih proizvođača kompajlera.
+Raspon dozvoljenih vrednosti je dovoljno veliki da ne dođe do preklapanja vrednosti.
+Kompajleri često koriste samo neki mali opseg za svoje potrebe.
+% Da bi uvedeni podaci bili korisni potrebno je podržati ih u nekom alatu.
 
+% DWARF expression?
+% Postoji i podrška za izračunavanje vrednosti na osnovu vrednosti regisata i drugih promenljivih dostupnih u vreme izršavanja.
+% Primena te funkcionalnosti je na primer izračunavanje vrednosti promenljivih koje su izoptimizovane.
+% Na primer ukoliko debager ima informaciju da je vrednost te promenljive jednaka zbiru dva registra, to se može zapisati u okviru izraza i izračunati kada je potrebno.
+% Implementirano je pomoću niza operacija koji deluju nad stekom vrednosti.
 
-% % Primeri etiketa i atributa
+% Primeri etiketa i atributa
+Etiketa označava neki entitet izvornog koda ili koncept programskog jezika.
+Naziv etikete ima prefiks \verb|DW_TAG_| posle kog može da sledi oznaka proizvođača ako je u pitanju proširenje.
+Neke od najbitnijih etiketa su:
+\begin{itemize}
+  \item \verb|DW_TAG_compile_unit| --- Predstavlja jednu kompilacionu jedinicu. Kao decu sadrži prostore imena (eng.~{\em namespace}), funkcije, globalne promenljive itd.
+  \item \verb|DW_TAG_subprogram| --- Predstavlja jednu funkciju. Sadrži podatke o imenu, parametrima i opsegu funkcije u izvršnom fajlu, između ostalog.
+  \item \verb|DW_TAG_call_site| --- Označava mesto poziva funkcije. Sadrži referencu na jedinicu \verb|DW_TAG_subprogram| za pozvanu funkciju i adresu povratka iz poziva.
+  \item \verb|DW_TAG_variable| --- Opisuje jednu promenljivu. Ima informacije o njenom imenu, lokaciji u izvršnom fajlu i mestu deklaracije u izvršnom kodu.
+  \item \verb|DW_TAG_base_type| --- Pruža informacije o osnovnim tipovima uključujući njihov način zapisa i veličinu. Postoje slične etikete za tipove nizova i niski.
+\end{itemize}
+
+Atributi opisuju svojstva objekata označenih etiketom uz koju stoje.
+Isti atribut može imati više interpretacija u zavisnosti od etikete, ali jedan atribut se ne može ponavljati više puta u osnovnoj jedinici.
+Redosled atributa unutar jedinice nije definisan i ne treba se oslanjati da će biti konzistentan.
+Slično kao za etiketa, atribut počinje niskom \verb|DW_AT_| posle koje može da sledi oznaka proizvođača ako je u pitanju proširenje.
+Neki od najbitnijih atributa su:
+\begin{itemize}
+  \item \verb|DW_AT_name| --- Može da opisuje ime funkcije, promenljive, labele itd.
+  \item \verb|DW_AT_low_pc|, \verb|DW_AT_high_pc| --- Oba atributa zajedno opisuju opseg adresa. To može da bude opseg kompilacione jedinice, funkcije, postojanja promenljive itd. Ukoliko ne postoje informacije o obe granice, mogu se koristiti i odvojeno.
+  \item \verb|DW_AT_decl_file| --- Fajl izvornog koda u kome je deklarisan objekat.
+  \item \verb|DW_AT_decl_line| --- Red u izvornom kodu na kome je deklarisan objekat.
+  \item \verb|DW_AT_decl_col| --- Kolona u izvornom kodu na kojoj je deklarisan objekat.
+  \item \verb|DW_AT_type| --- Može da označava različite stvari u zavisnosti od konteksta. Najčešće je u pitanju tip koji ima neka promenljiva ili povratna vrednost funkcije. 
+\end{itemize}
 
 \section{Debager LLDB}
 \label{sec:lldb}
 
-% % https://en.wikipedia.org/wiki/LLDB_(debugger)
-% % https://lldb.llvm.org/
-% % LLVM Cookbook, chapter 9, Using LLDB
-% % https://lldb.llvm.org/use/tutorial.html
+% https://en.wikipedia.org/wiki/LLDB_(debugger)
+% https://lldb.llvm.org/
+% https://lldb.llvm.org/use/tutorial.html
 
-% LLDB je jedan od potprojekata koji se razvija kao deo projekta LLVM \cite{lldb}.
-% % It is built as a set of reusable components which extensively use existing libraries from LLVM, such as the Clang expression parser and LLVM disassembler
-% % Za jezike C, Objective-C and C++
+% https://lldb.llvm.org/python_api/lldb.SBSymbolContext.html
+% https://lldb.llvm.org/cpp_reference/classlldb__private_1_1SymbolContext.html#details
+% https://lldb.llvm.org/cpp_reference/classlldb__private_1_1SymbolContextScope.html
+% https://lldb.llvm.org/cpp_reference/classlldb__private_1_1StackFrame.html
+% https://lldb.llvm.org/cpp_reference/classlldb__private_1_1Address.html
 
-% % On radi i na kodu koji je generisan kompajlerom GCC.
-% % Kombinacija kompajlera i debagera nije bitna sve dok rade u istom formatu, ali se informacije koje kompjaler generise i debager razume potencijalno razliciti.
+% LLDB je jedan od potprojekata koji se razvija kao deo projekta LLVM.
+LLDB je debager koji se razvija kao deo projekta LLVM.
+% It is built as a set of reusable components which extensively use existing libraries from LLVM, such as the Clang expression parser and LLVM disassembler
+Napravljen je kao skup ponovo upotrebljivih komponenti koje ekstenzivno koriste biblioteke iz LLVM projekta kao što su parser izraza biblioteke clang ili disasembler biblioteke LLVM \cite{lldb}.
+Podržava programske jezike C, C++ i Objective-C i dostupan na svim popularnim operativnim sistemima: \textit{Windows}, \textit{macOS} i \textit{Linux}.
+LLDB je podrazumevani debager u integrisanom razvojnom okruženju \textit{Apple Xcode} i podržan je od strane drugih okruženja uključujući \textit{JetBrains CLion}, \textit{QtCreator}, \textit{Eclipse} i \textit{VSCode}.
 
-% % Podrzava Windows, Mac, Linux
+% Komande
+Primarni vid upotrebe alata LLDB je putem komandne linije.
+Korisnik upravlja načinom izvršavanja debagovanog procesa tako što zadaje komande debageru.
+% Komande koje se zadaju debageru LLDB su uniformnog oblika.
+Te komande su uniformnog oblika.
+% \begin{minted}[options]{text}
+%   <objekat> <predikat> [-<opcije>] [argumenti]
+% \end{minted}
+Prvo se zadaje objekat nad kojim treba izvršiti neku operaciju.
+To može biti proces, nit, tačka prekida itd.
+Posle toga sledi operacija koja će biti izvršena nad tim objektom.
+Raspoložive operacije zavise od objekta.
+U slučaju niti to mogu biti izvršavanja koraka, nastavak izvršavanja programa itd.
+Na kraju komande se nalaze opcije i argumenti ukoliko su potrebni.
+Na primer za postavljanje tačke prekida može se zadati ime funkcije na koju je treba postaviti.
+Najčešće korišćene komande imaju definisane skraćenice radi lakše upotrebe.
+% Jedan takav primer je prikazan u listingu \ref{lldb_command_step_over}.
+Tako se izvršavanje jednog koraka bez ulaska u funkcije može učiniti komandom \verb|thread step-over|, skraćenicom \verb|next| ili samo \verb|n|.
 
-% % LLDB je podrazumevani debager integrisan u Apple Xcode integrisano razvojno okruzenje, i podrzan je od strane drugih okruzenja i debagera ukljucujuci JetBrains CLion, QtCreator, Eclipse i VSCode.
-% % Takodje ima TUI - https://peeterjoot.com/2019/08/26/the-lldb-tui-text-user-interface/
+% % Primer
+% \begin{figure}
+% \begin{minted}[]{text}
+%   thread step-over
+%   next
+%   n
+% \end{minted}
+% \caption{Alternativne komande za izvršavanje jednog koraka bez ulaska u funkcije u debageru LLDB}
+% \label{lldb_command_step_over}
+% \end{figure}
+
+% \begin{minted}[]{text}
+%   breakpoint set -f file.c -l 13
+%   b file.c:13
+% \end{minted}
+
+% Struktura projekta
+Izvorni kod projekta LLDB je dostupan u okviru repozitorijuma projekta LLVM, u direktorijumu \verb|lldb|.
+Glavni deo debagera je implementiran kao biblioteka \verb|liblldb| tako da se mogu napraviti novi alati bazirani na njoj.
+Sama aplikacija LLDB je jedan od tih alata.
+Njena implementacija se nalazi u folderu \verb|tools/Driver|.
+Tu se samo obrađuju argumenti komandne linije i vrše pripreme za izvršavanje dok je debagovanje delegirano biblioteci.
+
+% Target
+% Klase koje opisuju stanje programa se nalaze u direktorijumu \verb|Target|.
+Debager mora da bude sposoban da predstavi stanje programa koji se debaguje.
+Klase zadužene za to se nalaze u direktorijumu \verb|Target|.
+Neke od najbitnijih su:
+\begin{itemize}
+  \item \verb|Target| --- Interfejs za kontrolu izvršavanja ciljnog programa. Zadužen je za kreiranje i modifikovanje tačaka prekida, obaveštavanje objekata kada nastane neki događaj (eng.~{\em event}) i upravljanje procesa.
+  \item \verb|Process| --- Predstavlja proces koji se debaguje. Sadrži listu niti tog procesa i prosleđuje im događaje koje dobija od klase \verb|Target|.
+  \item \verb|Thread| --- Jedna nit procesa koji se debaguje. Određuje način izvršavanja i sadrži listu stek okvira.
+  \item \verb|StackFrame| --- Stek okvir koji pripada jednoj niti procesa koji se debaguje. Stek oviri jedne niti su numerisani tako da najnoviji okvir ima indeks 0, njegov roditelj ima indeks 1, itd. Kroz instancu okvira je moguće pristupiti promenljivama koje su dostupne u tom trenutku izvršavanja.
+\end{itemize}
+% Prethodne klase su poređane od najopštije do najpreciznije.
+% Između susednih klasa postoji obostrana veza.
+Ovi podaci se ne održavaju ažurni u toku izvršavanja procesa već se računaju po potrebi kada se debagovan proces zaustavi.
+
+% Symbol / SymbolContext
+Informacije za debagovanje su integrisane pomoću klasa u direktorijumu \verb|Symbol|.
+Učitavanje i pristup tim informacijama je ostvaren kroz interfejs \verb|SymbolFile|.
+Podržani formati za debagovanje su implementirani u vidu priključaka (eng.~{\em plug-ins}) koji implementiraju taj interfejs.
+Za mnoge operacije u debageru potrebne su informacije o stanju programa.
+% https://lldb.llvm.org/cpp_reference/classlldb__private_1_1SymbolContext.html#details
+U izvornom kodu to stanje se naziva kontekst i skladišti se u objektima klase \verb|SybolContext|.
+On sadrži podatke o ciljnom programu, modulu, kompilacionoj jedinici, funkciji, bloku koda, lokaciji u izvornom fajlu i simbolu.
+Ne moraju uvek da budu dostupni svi ti podaci, a nekada nisu ni svi dostupni.
+Kontekst može da se popunjava selektivno, samo podacima koji su potrebni za neku operaciju.
+Određivanje konteksta se radi na osnovu informacija za debagovanje.
+Klasa \verb|SymbolContextScope| opisuje objekte koji su sposobni da odrede svoj kontekst.
+Nju nasleđuje skoro svaka klasa koja je sadržana u kontekstu.
+Izuzeci su klasa \verb|StackFrame| koja je ne nasleđuje, ali jos uvek može da odredi kontekst na drugi način i \verb|LineEntry| koji ne podžava tu operaciju jer je pomerena u \verb|CompileUnit|.
+Najčešći načini dobijanja konteksta su preko adrese instrukcije u izvršnom fajlu ili preko lokacije u izvornom kodu.
+Drugi način se svakako svodi na prvi određivanjem adrese na osnovu lokacije.
+Adresa koja se najviše koristi za određivanje konteksta je vrednost programskog brojača.
 
 \chapter{Optimizacija izdvajanjem koda}
 
@@ -1850,7 +2058,7 @@ Zbog te zamene izgubljen je \verb|outline_id| koji je ta instrukcija originalno 
 % 
 Dakle, još uvek postoji prostor za poboljšanje implementacije.
 
-\begin{figure}
+\begin{figure}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{text}
   $ lldb outline
   (lldb) b 11
@@ -1894,7 +2102,7 @@ Umesto te naredbe na redu 11, tacka ce biti postavljena na red 13 kako bi se izb
 Ispis debagera je prikazan na slici \ref{lst:outlining_debug_breakpoint_after}.
 Komanda za postavljanje tacke prekida je uspesno odredila adresu koja odgovara zadatoj liniji i pokretanjem programa, proces je zaustavljen na toja adresi.
 
-\begin{figure}
+\begin{figure}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{text}
   $ lldb outline
   (lldb) b 13
@@ -1924,11 +2132,46 @@ Debager testovi pokreću debager nad programom sa izdvojenim kodom i proveravaju
 \chapter{Zaključak}
 % ------------------------------------------------------------------------------
 
+U okviru ovog rada su opisani proces kompilacije sa akcentom na optimizacijama koda i postupak otklanjanja grešaka u softveru pomoću debagera.
+% U okviru ovog rada je opisan proces kompilacije sa akcentom na optimizacijama koda.
+% Zatim je opisan postupak otklanjanja grešaka u softveru pomoću specijalizovanih alata, debagera.
+Detaljno je objašnjena uloga informacija za debagovanje i problem održavanja tih informacija prilikom izvršavanja kompajlerskih optimizacija.
+Za potrebe kompilacije i debagovanja korišćeni su alati infrastrukture LLVM, konkretno kompajler LLVM i debager LLDB.
+% Optimizacija izdvajanja koda
+% Opisana je optimizacija izdvajanja koda koja pronalazi ponovljene delove koda i izdvaja ih u funkciju kako bi se uštedele memorija programa.
+Glavni predmet rada je optimizacija izdvajanja koda koja štedi memoriju programa tako što pomera ponovljene delove koda u funkciju i uklanja duplikate.
+To smanjenje krajnjeg koda predstavlja problem očuvanju informacija za debagovanje i dovodi do problema prilikom upotrebe debagera.
+% Projekat LLVM
+
+% Glavni doprinos
+Doprinos ove teze je poboljšanje očuvanja informacija za debagovanje prilikom optimizacije izdvajanja koda u okviru kompajlera LLVM.
+One su sačuvane prilikom primene optimizacije, prenete kroz sve faze kompilacije i upisane u sekciju za debagovanje izvršnog fajla.
+Na osnovu toga poboljšan je i debager LLDB da iskoristi te informacije kako bi se ostvarilo bolje iskustvo debagovanja.
+Dodata je podrška za ispisivanje ispravnih lokacija iz izvornog koda, koračanje i postavljanje tačaka prekida na izdvojenom kodu.
+% Za implementaciju je koriščena infrastruktura LLVM, ali se ideja rešenja može preneti i na druge kompajlere i debagere.
+
 % Buduci rad:
 % Podrska za MachineOutliner
 % Bolja podrska za SelectionDAG
 % Podrska za druge ISel implementacije
 % Backtrace ne treba da prikaze stek okvire izdvojenih funkcija
+
+% Postoji nekoliko stvari koje bi mogle da se poboljšaju u odnosu na predstavljenu implementaciju.
+Postoji nekoliko pravaca daljeg razvoja.
+Predloženo rešenje je moguće implementirati i u drugim kompajlerima i debagerima kao što su \textit{GCC} i \textit{GDB}.
+% Predloženo rešenje je moguće implementirati i u drugim kompajlerima i debagerima.
+% Nažalost kompajler GCC trenutno ne podržava optimizaciju izdvajanja koda pa ovo rešenje nije primenjivo na njega, ali se u debager GDB može dodati podrška za proširenje formata DWARF što bi poboljšalo iskustvo prilikom debagovanja programa prevedenog kompajlerom LLVM.
+% U okviru same infrastrukture LLVM, moguća su poboljšanja implemenatcije.
+Pored toga, moguća su poboljšanja ove implementacije u okviru infrastrukture LLVM.
+Trenutno postoji podrška za čuvanje debag lokacija samo iz prolaza \verb|IROutliner|.
+Kako se već svakako te informacije spuštaju do mašinski zavisnog međukoda na putu do izvršnog fajla, moguće je dodati podršku i za prolaz \verb|MachineOutliner|.
+Pored toga, trenutna implementacija funkcioniše samo za implementaciju \verb|SelectionDAG| za izbor instrukcija.
+Iako je to dovoljno za sada, u budućnosti kada implementacija \verb|GlobalIsel| bude prešla u širu upotrebu biće potrebno podržati i tu implementaciju.
+Na kraju, jedna posledica nastala opisanim izmenama je što pregled stek okvira dok je proces zaustavljen u izdvojenoj funkciji prikazuje stek okvir i te izdvojene funkcije.
+Kako ona ne postoji u izvornom kodu, korisniku ne treba da bude prikazana prilikom debagovanja.
+Suprotna stvar se dešava kada je proces zaustavljen u umetnutom kodu, gde se konstruiše veštački stek okvir koji ne postoji u toku izvršavanja, ali korisnik očekuje da bude prisutan.
+% Što se tiče razvoja van projekta LLVM,
+% predloženo rešenje je moguće implementirati i u drugim kompajlerima i debagerima kao što su \textit{GCC} i \textit{GDB}.
 
 % ------------------------------------------------------------------------------
 % Literatura
