@@ -76,12 +76,20 @@
 
 % Apstrakt na srpskom jeziku (u odabranom pismu)
 \apstr{%
-% \pangrami
+Skoro sav moderan softver napisan je u višem programskom jeziku što znači da je potrebno kompajlirati ga do izvršnog koda kako bi mogao da se koristi.
+Prilikom kompilacije taj program se optimizuje radi postizanja boljih performansi u vidu vremena izvršavanja ili memorijskog zauzeća.
+Dok su optimizacije pogodne za normalno izvršavanje, problem može da nastane prilikom pokretanja optimizovanog programa pomoću debagera.
+Debager se oslanja na informacije za debagovanje koje kompajler generiše pored mašinskog koda, ali te informacije je teško održati što se više krajnji ko\^d razlikuje od početnog.
+Ovaj problem se susreće prilikom optimizacije izdvajanje koda u kompajleru LLVM.
+Izdvajanje koda je memorijska optimizacija koja pronalazi segmente koda koji se ponavljaju i premešta ih u jednu funkciju pritom zamenjujući sve segmente pozivom nove funkcije.
+Posledica manje količine koda je što nema dovoljno mesta za zapis lokacija u izvornom kodu koje čine bitan deo informacija za debagovanje.
+Ovaj rad ima cilj da popravi to ponašanje i sačuva što je više moguće originalnih lokacija izdvojenog koda i da ih upotrebi za poboljšanje procesa debagovanja.
+Poboljšanja debagera obuhvataju podršku za ispisivanje lokacija izdvojenih instrukcija, koračanje po njima i postavljanje tačaka prekida na njih.
+Rešenje je implementirano kao nadogradnja alata iz infrastrukture LLVM, ali se ideja može primeniti na druge kompajlere i debagere.
 }
 
 % Ključne reči na srpskom jeziku (u odabranom pismu)
-% \kljucnereci{analiza, geometrija, algebra, logika, računarstvo, astronomija}
-\kljucnereci{izdvajanje koda, kompajler, debager, informacije za debagovanje, projekat LLVM}
+\kljucnereci{izdvajanje koda, kompajler, debager, informacije za debagovanje, projekat LLVM, kompajler LLVM, debager LLDB}
 
 \begin{document}
 % ==============================================================================
@@ -107,42 +115,113 @@
 % ------------------------------------------------------------------------------
 \chapter{Uvod}
 
-% TODO Predstavljanje sledecih poglavlja
+% moderan softver, optimizacije
+% potreba za debagovenjem
+Viši programski jezici (eng.~{\em high-level programming languages}) su drastično promenili način na koji se pravi softver.
+Programeri više ne moraju da budu detaljno upoznati sa detaljima hardvera već pišu programe nezavisno od arhitekture.
+Apstrakcija koju nude viši jezici omogućava programerima da razmišljaju na prirodniji način, koristeći napredne konstrukte tog jezika.
+Kako računari ne mogu direktno da izvrše k\^od na višem jeziku, potrebno je prevesti ga u mašinski k\^od za ciljnu arhitekturu.
+Za taj posao zadužen je kompajler.
+%
+Pored glavnog zadatka da prevede program napisan na višem jeziku u sematički ekvivalentan program za neku mašinu, sporedni zadatak kompajlera je da usput transformiše taj program tako da ima bolje performanse.
+% Performanse mogu se ogledaju u vremenu izvršavanja programa ili memoriji potrebnoj za njegovo izvršavanje.
+% Idealno bi bilo maksimizirati oba vida performansi, ali u praksi to nije moguće zato što su ti ciljevi u konfliktu.
+% Poboljšanje vremenske složenosti može da dovede do lošije memorijske složenosti i obrnuto.
+% Kompajleri često imaju više opcija za optimizaciju sa različitim odnosima ova dva cilja.
+% Izbor se ostavlja korisniku.
+
+% Znacaj informacija za debagovanje
+Napisan i preveden program može da ima propuste u svojoj implementaciji. Zbog toga,
+bitan deo razvoja softvera je rešavanje grešaka u napisanom programu.
+Jedan od najtežih delova tog procesa je pronaći deo koda koji izaziva grešku.
+Taj korak je znatno olakšan korišćenjem specijalizovanih alata, debagera.
+Oni uz pomoć podrške operativnog sistema preuzimaju kontrolu nad programom u kome se traži greška što im omogućava da upravljaju njegovim izvršavanjem i čitaju svu njegovu memoriju.
+To omogućava interaktivno izvršavanje programa, pregled vrednosti promenljivih i izraza kao i brojne naprednije mogućnosti.
+Za ugodan rad debagera potrebna je pomoć od strane kompajlera da sačuva podatke o izvornom kodu prilikom kompilacije nekog programa.
+Ti podaci se nazivaju informacije za debagovanje.
+% Lokacije za debagovanje
+Značajan deo tih informacija čine lokacije za debagovanje koje povezuju delove izvršnog fajla sa odgovarajućum delovima izvornog koda na osnovu kojih su generisani.
+% informacije za debagovanje i optimizacije
+Prevođenjem programa sa optimizacijama predstavlja problem održavanju informacija za debagovanje.
+Što se program više udaljava od izvornog koda postaje teže, ako ne i nemoguće, ažurirati informacije za debagovanje tako da i dalje opisuju izvorni k\^od.
+
+% TODO LLVM
+
+% Izdvajanje koda
+Prethodni problem utiče na implementaciju optimizacije izdvajanja koda u kompajleru LLVM.
+Izdvajanje koda je kompajlerska optimizacija čiji cilj je smanjenje količine memorije potrebne za program tako što više puta ponovljen k\^od pomera u zasebnu funkciju i duplikati brišu.
+Smanjenje ukupnog broja instrukcija u programu onemogućava skladištenje lokacija na redovan način zato što bi jednoj instrukciji odgovaralo više različitih lokacija, a to trenutno nije podržano.
+Posledice nedostatka lokacija prilikom debagovanja je što neke osnovne operacije mogu imati neočekivane rezultate.
+Između ostalog, koračanje po programu potpuno preskače instrukcije bez lokacije i nije moguće postaviti tačku prekida na iste.
+U ovoj tezi biće predloženo rešenje za čuvanje originalnih lokacija u izvornom kodu za instrukcije izmeštene optimizacijom izdvajanja koda.
+Rešenje uključuje skladištenje lokacija na drugo mesto u programu gde će u vreme izvršavanja biti moguće odrediti korektnu lokaciju.
+% Rešenje uključuje i korišćenje tih lokacija za poboljšanje rada debagera na izdvojenom kodu.
+Na osnovu tih lokacija biće poboljšan rad debagera na izvdvojenom kodu.
+Rešenje je implementirano kao nadogradnja kompajlera LLVM i debagera LLDB.
+
+% Predstavljanje sledecih poglavlja
+Ostatak rada je organizovan na sledeći način. % Pored trenutnog, rad se sastoji od još 6 poglavlja
+% Kompajleri, struktura, optimizacije, kompajler LLVM
+Poglavlje \ref{sec:compilers} opisuje kompajlere i njihovu strukturu, sa posebnom pažnjom posvećenom optimizacijama izvornog koda koje kompajleri izvršavaju.
+Takođe su detaljno opisane faze kompilacije u okviru kompajlera LLVM za koje će biti implementirano rešenje.
+% Debagovanje, debageri, informacije za debagovanje, format DWARF, LLDB
+U poglavlju \ref{sec:debuggers} se govori o rešavanju grešaka u softveru pomoću debagera, informacijama za debagovanje koje su neophodne za to i formatu DWARF za predstavljanje tih informacija.
+Na kraju poglavlja opisan je debager LLDB kao i glavni delovi njegove implementacije.
+% Izdvajanje koda, opšti algoritam, specifične varijante, odnos sa informacijama za debagovanje, glavni problem
+Poglavlje \ref{sec:outlining} uvodi optimizaciju izdvajanja koda, opisuje njene implementacije u kompajleru LLVM i predstavlja problem koji je tema ovog rada.
+% Implementacija rešenja: za kompajler, za debager
+Implementacija rešenja podeljena je na dva dela u okviru poglavlja \ref{sec:implementation}.
+Prvi deo se bavi implementacijom na strani kompajlera gde je cilj očuvati informacije za debagovanje, a drugi deo implementacijom u debageru gde se sačuvane informacije koriste za poboljšanje podrške za izdvojen k\^od.
+% Rezultati, testovi
+Rezultati implementiranih poboljšanja, kao i testovi ispravnosti predstavljeni su u poglavlju \ref{sec:results}.
+% Zaključak
+Na kraju, u poglavlju \ref{sec:conclusion} iznet je zaključak rada.
+
 % ------------------------------------------------------------------------------
 
 \chapter{Kompajleri}
+\label{sec:compilers}
 
 % https://en.wikipedia.org/wiki/History_of_programming_languages
 % https://en.wikipedia.org/wiki/History_of_compiler_construction
 
-% Istorija, ASM
-% U pocetku, racunarski programi su se pisali direktno u binarnom zapisu.
-% Ubrzo, primetilo se da to nece biti odrzivo pa su napisani binarnim instrukcijama dodeljeni mnemonici i nastali su asmeblerski jezici i odgovariajuci softver koji pretvara te mnemonike u binarni reprezentaciju (asembleri).
-% Ti asembleri su jos uvek bili vezani za konkretnu arhitekturu. Tj program napisan za jedan sistem bi morao da se promeni kako bi radio na drugom sistemu.
-% Kako je softver postajao slozeniji nastala je potreba za opisivanjem naprednih koncepata u programskom kodu i tako su nastali programski jezici viseg nivoa (high-level lanugage).
-% Prevodjenje programa napisanih na visem jeziku je znatno komplikovanije nego jednostavna zamena mnemonika u slucaju asemblera. Tako su se razvili napredniji alati, kompajleri.
-
-% Računari izvršavaju softver napisan u mašinskom kodu.
-% Prva apstrakcija mašinskog koda nastala je u vidu asemblerskog koda.
-% On je uveo mnemonike za mašinske instrukcije što je znatno poboljšalo čitljivost koda.
-% Kako računar još uvek razumeju samo mapinski kod, nastali su posebni alati, asembleri, koji vrše jednostavne zamene menmonika i operanada sa odgovarajućim mašinskim kodom.
-% Programiranje direktno asemblerskim jezikom je veoma izazovan posao koji zahteva precizno poznavanje računara za koji se prevodi program.
-% Potreba za pisanjem kompleksnijeg softvera dovela je do nastanka viših programskih jezika (eng.~{\em high-level programming language}).
-% Ti jezici omogućavaju programerima da koriste složenije koncepte i već poznate algoritme i strukture podataka bez potrebe da sami implementiraju sve iz početka.
-% Takodje, viši programski jezik nije vezan za konkretnu arhitekturu računara.
-
-
-% Skoro sav savremeni softver je napisan korišćenjem viših programskih jezika (eng.~{\em high-level programming language}).
+% Skoro sav savremeni softver je napisan korišćenjem viših programskih jezika.
 % Ti jezici omogućavaju programerima da koriste složenije koncepte i već poznate algoritme i strukture podataka bez potrebe da sami implementiraju sve iz početka.
 % % Pre pojave visih programskih jezika, programiranje se radilo u asemblerskom kodu.
-% Pojava jezika višeg nivoa omogućila je nastanak kompleksnijeg softvera.
+% Pojava viših programskih jezika omogućila je nastanak kompleksnijeg softvera.
 % % Kompajlirani i interpretirani jezici
 % % Prednosti kompajliranih programskih jezika
 % Kompjuteri mogu da izvršavaju samo mašinski k\^od tako da je potreban način da se program napisan u višem programskom jeziku prevede do mašinskog koda.
 % Kompajleri su alati koji rade taj posao.
-% % Kljucnu ulogu imaju kompajleri
+% % Ključnu ulogu imaju kompajleri
 
-% TODO spojiti sa prethodnom glavom
+Računari izvršavaju programe koji su u obliku mašinskog koda.
+Kako je nepogodno za ljude da čitaju i pišu takav k\^od bilo je potrebno da se on na neki način apstrahuje.
+Prva apstrakcija nastala je u vidu asemblerskog koda.
+On je uveo mnemonike za mašinske instrukcije što je znatno poboljšalo čitljivost koda.
+Kako računar još uvek razumeju samo mašinski k\^od, nastali su posebni alati, asembleri, koji vrše jednostavne zamene mnemonika i operanada sa odgovarajućim mašinskim kodom.
+Programiranje direktno asemblerskim jezikom je veoma izazovan posao koji zahteva precizno poznavanje računara za koji se prevodi program.
+Potreba za pisanjem kompleksnijeg softvera dovela je do nastanka viših programskih jezika.
+Ti jezici omogućavaju programerima da koriste složenije koncepte i već poznate algoritme i strukture podataka bez potrebe da sami implementiraju sve iz početka.
+% Takođe, viši programski jezik nije vezan za konkretnu arhitekturu računara.
+Prevođenje viših jezika je zantno izazovnije od jednostavne tekstualne zamene koju rade asembleri.
+Alati za prevođenje sa koda sa višeg programskog jezika nazivaju se kompajleri.
+% Zbog toga postoje brojna istraživanja na temu kompajlera i njihove implementacije.
+
+
+Zadaci kompajlera su višestruki.
+Glavni zadatak je da prevede izvorni k\^od u sematički ekvivalentan mašinski k\^od.
+Pored toga, proces kompilacije treba da se brzo izvršava kako bi veliki programi mogli da se prevedu u razumnoj količini vremena.
+Uz to, poželjno svojstvo je da i konačni program bude što efikasniji.
+Na kraju, kompajler treba da prilikom prevođenja, ukoliko mu je zatraženo, sačuva informacije o izvornom kodu i poveže delove konačnog programa sa odgovarajućim delovima tog koda.
+Poslednja dva zadatka nisu neophodna, ali ih svaki dobar kompajler radi.
+
+% uvod u potpoglavlja
+U nastavku poglavlja će biti prvo opisana opšta struktura modernih kompajlera i zašto se ona koristi.
+Zatim će biti reci o optimizacijama koje kompajler vrši nad izvornim kodom uz nekoliko primera.
+Poglavlje će biti završeno predstavljanjem kompajlera LLVM sa više detalja o implementaciji svakog od osnovnih delova njegove strukture.
+
+
 \section{Struktura modernih kompajlera}
 \label{sec:compiler_structure}
 
@@ -151,7 +230,6 @@
 Kompajleri su veoma kompleksni softverski sistemi.
 Kako postoje već dugo vremena i čine ključne alate za razvoj softvera, kompajleri su tema brojnih istraživanja.
 Kao rezulat tih istraživanja dobijeno je dosta informacija o dobrim načinima za struktuiranje i implementaciju kompajlera.
-% TODO: MxN problem
 Moderni kompajleri se obično sastoje iz tri dela \cite{cooper2022engineering}:
 \begin{itemize}
   \item Prednji deo -- Analizara i prevodi izvorni k\^od na neku internu reprezentaciju. Pritom vrši leksičku, sintaksičku i semantičku analizu nad kodom. Ukoliko korisnički k\^od nije ispravan, kompilacija se završava ovde.
@@ -160,12 +238,13 @@ Moderni kompajleri se obično sastoje iz tri dela \cite{cooper2022engineering}:
 \end{itemize}
 Samo prednji i zadnji deo su potrebni za generisanje mašinskog koda.
 Optimizator je opcioni deo nastao iz potrebe da dobijeni k\^od bude performantan.
-Svaki dobar kompajler ipak sadrži ovaj deo, i on je možda čak njegov najveći deo.
+Svaki dobar kompajler ga ipak sadrži, i on je možda čak najveći deo kompajlera.
 Odnos ovih delova je prikazan na slici \ref{fig:compiler_structure}.
 % Priblizavanje prednjem kraju se priblizava izvornom kodu a pomeranjem ka zadnjem kraju se priblizava ciljnoj masini
 U svakom trenutku program je enkodiran u neku vrstu interne reprezentacije.
 Ta reprezentacija postaje sve bliža mašinskom kodu u svakom koraku.
 Ovakva struktura omogućava lako dodavanje podrške bilo za druge programske jezike i, bitnije, za podržavanje novih arhitektura.
+% TODO: MxN problem
 
 \begin{figure}[!ht]
   \centering
@@ -563,7 +642,10 @@ Komanda za prevođenje optimizovanog mašinski nezavisnog međukoda do asemblers
   \label{lst:llc_command}
 \end{figure}
 
+
+
 \chapter{Debageri}
+\label{sec:debuggers}
 
 % https://en.wikipedia.org/wiki/Debugging
 % https://eli.thegreenplace.net/2011/01/23/how-debuggers-work-part-1
@@ -882,7 +964,10 @@ Najčešći načini dobijanja konteksta su preko adrese instrukcije u izvršnom 
 Drugi način se svakako svodi na prvi određivanjem adrese na osnovu lokacije.
 Adresa koja se najviše koristi za određivanje konteksta je vrednost programskog brojača.
 
+
+
 \chapter{Optimizacija izdvajanjem koda}
+\label{sec:outlining}
 
 % https://www.linaro.org/blog/reducing-code-size-with-llvm-machine-outliner-on-32-bit-arm-targets/
 % https://developer.arm.com/documentation/ka004653/latest
@@ -1294,6 +1379,7 @@ $ lldb outline
 % TODO: a za breakpoint?
 
 \chapter{Implementacija rešenja}
+\label{sec:implementation}
 
 Implementacija rešenja nadograđuje verziju 16 \href{https://llvm.org/}{projekta LLVM}, što je najnovija stabilna vezija u vreme pisanja rada.
 Celokupan izvorni k\^od je dostupan na servisu GitHub na adresi \url{https://github.com/vvuksanovic/llvm-project/tree/outline-debug-info}.
@@ -2015,7 +2101,9 @@ Nigde u implementaciji se ne nalazi zavisnost na određeni način određivanja t
 Posebna pažnja je data da se ova provera radi pre bilo koje druge operacije koja može da izmeni stanje tačke prekida.
 Na primer pre uvećavanja brojača aktivacije tačke prekida koji korisnik može da korsiti za napredno debagovanje.
 
+
 \chapter{Rezultati}
+\label{sec:results}
 
 Modifikovanu verziju kompajlera i debagera je potrebno detaljno testirati u različitim mogućim situacijama kako bi se postarali da se prvenstveno ne smanjuje funckionalnost u odnosu na nemodifikovanu verziju, a zatim i da se zapravo unapređuje debagovanje izdvojenog koda.
 Kako je velika količina koda izmenjena, velike su šanse da je došlo do propusta u implementaciji koji nisu detektovani testiranjem na jednostavnim primerima u toku prvobitnog pisanja koda.
@@ -2130,6 +2218,7 @@ Debager testovi pokreću debager nad programom sa izdvojenim kodom i proveravaju
 
 % ------------------------------------------------------------------------------
 \chapter{Zaključak}
+\label{sec:conclusion}
 % ------------------------------------------------------------------------------
 
 U okviru ovog rada su opisani proces kompilacije sa akcentom na optimizacijama koda i postupak otklanjanja grešaka u softveru pomoću debagera.
@@ -2186,30 +2275,14 @@ Suprotna stvar se dešava kada je proces zaustavljen u umetnutom kodu, gde se ko
 % ------------------------------------------------------------------------------
 % Biografija kandidata
 \begin{biografija}
-  % \textbf{Vuk Stefanović Karadžić} (\emph{Tršić,
-  %   26. oktobar/6. novembar 1787. — Beč, 7. februar 1864.}) bio je
-  % srpski filolog, reformator srpskog jezika, sakupljač narodnih
-  % umotvorina i pisac prvog rečnika srpskog jezika.  Vuk je
-  % najznačajnija ličnost srpske književnosti prve polovine XIX
-  % veka. Stekao je i nekoliko počasnih mastera.  Učestvovao je u
-  % Prvom srpskom ustanku kao pisar i činovnik u Negotinskoj krajini, a
-  % nakon sloma ustanka preselio se u Beč, 1813. godine. Tu je upoznao
-  % Jerneja Kopitara, cenzora slovenskih knjiga, na čiji je podsticaj
-  % krenuo u prikupljanje srpskih narodnih pesama, reformu ćirilice i
-  % borbu za uvođenje narodnog jezika u srpsku književnost. Vukovim
-  % reformama u srpski jezik je uveden fonetski pravopis, a srpski jezik
-  % je potisnuo slavenosrpski jezik koji je u to vreme bio jezik
-  % obrazovanih ljudi. Tako se kao najvažnije godine Vukove reforme
-  % ističu 1818., 1836., 1839., 1847. i 1852.
-  % \textbf{Vladimir Vuksanović} je rođen 2. januara 1999. godine u Užicu.
-  % Tamo je zavrsio osnovnu i školu i prirodno-matematički smer gimnazije.
-  % 2017. godine je upisao informatički smer na Matematičkom fakultetu.
-  % Osnovne studije je završio za 4 godine sa prosekom 9,82.
-  % Nagrađen je kao jedan od najboljih studenata generacije od strane katedre za
-  % računarstvo i informatiku, i dobitnik je nagrade Nedeljko Parezanovic.
-  % Iste godine je upisao master studije. Pred kraj studija je radio praksu u
-  % kompaniji Sirmija posle cega se tamo zaposlio kao softverski inzenjer.
-  % Tamo radi na sistemskom softveru, primarno nad projektom LLVM.
+  \textbf{Vladimir Vuksanović} je rođen 2. januara 1999. godine u Užicu.
+  Tamo je završio osnovnu školu i prirodno-matematički smer Užičke gimnazije.
+  Posle toga je upisao informatički smer na Matematičkom fakultetu 2017. godine.
+  Osnovne studije je završio za 4 godine sa prosekom 9,82.
+  Nagrađen je kao jedan od najuspešnijih studenata generacije od strane katedre za računarstvo i informatiku i dobitnik je nagrade "Nedeljko Parezanović".
+  Iste godine je upisao master studije na Matematičkom fakultetu takođe na smeru informatika. 
+  Pred kraj studija je radio praksu u kompaniji Sirmija posle čega se tamo zaposlio kao softverski inženjer.
+  Tamo radi na sistemskom softveru, primarno na projektima vezanim za infrastrukturu LLVM.
 \end{biografija}
 % ------------------------------------------------------------------------------
 
