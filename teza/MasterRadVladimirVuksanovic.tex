@@ -351,7 +351,7 @@ U nastavku će biti opisani redom prednji, srednji i zadnji deo LLVM kompajlera 
 
 \subsection{Prednji deo}
 
-Projekat LLVM sadrži vise različitih prednjih delova kompajlera.
+Projekat LLVM sadrži više različitih prednjih delova kompajlera.
 Druge organizacije i firme takođe proizvode i održavaju prednje delove kompajlera LLVM za svoje jezike.
 Iz tog razloga, LLVM podržava veliki broj programskih jezika koji uključuju C, C++, Objectve-C, Fortran, Haskell, Swift i druge.
 Prednji deo za programske jezike C i C++ koji su fokus ovog rada naziva se Clang.
@@ -510,7 +510,7 @@ Ukoliko instrukcija vraća vrednost, on se smešta u novi virtuelni registar.
 Dodatne informacije o instrukcijama i globalnim objektima se čuvaju u vidu metapodataka.
 Oni se mogu prepoznati po tome što počinju karakterom '!'.
 Između ostalog, oni se koriste za informacije za debagovanje.
-Vise reči o primeni metapodataka će biti u glavi \ref{sec:informacije_za_debagovanje}.
+Više reči o primeni metapodataka će biti u glavi \ref{sec:informacije_za_debagovanje}.
 
 Optimizacije su implementirane u vidu prolaza (eng.~{\em pass}) koji obrađuju modul, funkciju ili petlju.
 Prolazi nasleđuju apstraktnu klasu \verb|PassInfoMixin| i implementiraju funkciju \verb|run| sa argumentima za odgovarajuću jedinicu obrade.
@@ -1442,7 +1442,7 @@ Dodatno se koristi osnova za prepoznavanje izdvojenih instrukcija implementirana
 Celokupan izvorni k\^od je dostupan na servisu GitHub na adresi \url{https://github.com/vvuksanovic/llvm-project/tree/outline-debug-info}.
 Komande za kompilaciju projekta su prikazane u listingu \ref{lst:llvm_compile_commands}.
 
-\begin{figure}[!ht]
+\begin{listing}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{bash}
   $ git clone https://github.com/vvuksanovic/llvm-project.git
   $ cd llvm-project
@@ -1453,7 +1453,7 @@ Komande za kompilaciju projekta su prikazane u listingu \ref{lst:llvm_compile_co
 \end{minted}
 \caption{Komande za prevođenje kompajlera LLVM}
 \label{lst:llvm_compile_commands}
-\end{figure}
+\end{listing}
 
 Rešenje se sastoji iz dva dela.
 Prvo je potrebno u okviru kompajlera generisati potrebne informacije za debagovanje, a zatim ih iz debagera iskoristiti za poboljšanje procesa debagovanja.
@@ -1472,7 +1472,7 @@ Potrebne informacije se generišu u okviru implementacija optimizacije, u prolaz
 
 % Kao što je već pomenuto u odeljku \ref{sec:izdvajanje_koda_debag},
 Kako tabela linija ne podržava duplirane vrednosti adrese, ona nije u opticaju za čuvanje vrednosti.
-Umesto toga, ideja je da se debag lokacije sačuvaju u \verb|.debug_info| sekciji umesto u \verb|.debug_line|.
+Umesto toga, ideja je da se debag lokacije sačuvaju u sekciji \verb|.debug_info| umesto u \verb|.debug_line|.
 Verzija 5 standarda DWARF je uvela novu etiketu, \verb|DW_TAG_call_site|, koja bi trebalo da sadrži podatke o mestu poziva funkcije \cite{jelinek2010callsite}.
 Trenutno se već koristi za pružanje informacija o vrednostima parametara prilikom poziva funkcije \cite{jelinek2010entryvalue} i da li je poziv repni ili repni rekuzivan. % reference
 Ovo je pogodno mesto za dodavanje informacija o izdvojenim instrukcijama zato što su one baš vezane za mesto poziva izdvojene funkcije.
@@ -1488,7 +1488,7 @@ Za izbor instrukcija se koristi implementacija \verb|SelectionDAG|, tako da će 
 Glavni fokus ove implementacije je \verb|x86_64| arhitektura, ali količina koda specifičnog za tu arhitekturu je minimalna.
 
 % IROutliner, SelectionDAG, MIR, AsmPrinter
-Debag lokacije moraju da budu prenesene od \verb|IROutliner| optimizacionog prolaza, kroz izbor instrukcija do mašinski zavisnog međukoda i konačno do asemblerskog fajla u okviru debag sekcije.
+Debag lokacije moraju da budu prenesene od optimizacionog prolaza \verb|IROutliner|, kroz izbor instrukcija do mašinski zavisnog međukoda i konačno do asemblerskog fajla u okviru debag sekcije.
 Svaka od navedenih stavki je detaljnije objašnjena u nastavku.
 
 \subsection{Čuvanje debag lokacija prilikom optimizacije}
@@ -1515,7 +1515,7 @@ Taj metapodatak će se nalaziti uz svaku izdvojenu instrukciju kao i uz instrukc
 On nema nikakve dodatne podatke nego je umesto toga deklarisan kao jedinstven (eng.~{\em distinct}).
 To znači da će se za svaku upotrebu kreirati nova instanca umesto da se ponovo koristi postojeća kao što je podrazumevano.
 
-Sada kada postoji način za referisanje instrukcija, moguće je definisati deklaraciju \verb|dbg.outlined| funkcije.
+Sada kada postoji način za referisanje instrukcija, moguće je definisati deklaraciju funkcije \verb|dbg.outlined|.
 Deklaracija ima dva parametra, oba su metapodaci koji pokazuju na \verb|outline_id| identifikatore redom za odgovarajuću izdvojenu instrukciju i instrukciju poziva uz koju stoji.
 Ovi parametri ne mogu da budu zaključeni implicitno na osnovu mesta na kom se nalaze zbog potencijalnih optimizacija koje mogu da se izvrše kao i promene redosleda instrukcija (npr. u izdvojenoj funkciji).
 % Razlog postojanja ove instrukcije je dodeljivanje debag lokacije.
@@ -1526,21 +1526,21 @@ Dodatno, instrukcija sadrži i debag lokaciju koju preuzima od izdvojene instruk
 % IntrinsicInst - klasa DbgOutlinedInst
 Kreiranje nove unutrašnje funkcije za debagovanje je veoma jednostavno i radi se na deklarativan način.
 Jedino što je potrebno uraditi je dodati deklaraciju u \verb|Intrinsics.td| fajlu sa nazivom i parametrima.
-Za lakše upravljanje tom funkcijom i njenim parametrima napravljen je novi tip instrukcije \verb|DbgOutlinedInst| koja nasleđuje \verb|DbgInfoIntrinsic| klasu.
-Ta instrukcija služi kao omotač i koristi se kao alias za instrukciju poziva \verb|dbg.outlined| funkcije. 
+Za lakše upravljanje tom funkcijom i njenim parametrima napravljen je novi tip instrukcije \verb|DbgOutlinedInst| koja nasleđuje klasu \verb|DbgInfoIntrinsic|.
+Ta instrukcija služi kao omotač i koristi se kao alias za instrukciju poziva funkcije \verb|dbg.outlined|. 
 Instanciranje ove instrukcije se radi uz pomoć nove funkcije u klasi \verb|DIBuilder|.
 % DebugInfoMetadata sadrzi DISubprogram::isOutlined i definiciju DIOutlineId : MDNode
 % FixedMetadataKinds.def definise tip i string za outline_id
 % Metadata.def registruje DIOutlineId
 Metapodatak \verb|outline_id| se registruje u definicionom fajlu \verb|FixedMetadataKinds.def|.
-Njeegova implementacija se nalazi u klasi \verb|DebugInfoMetadata| i potrebno ju je registrovati u \verb|Metadata.def|.
+Njegova implementacija se nalazi u klasi \verb|DebugInfoMetadata| i potrebno ju je registrovati u \verb|Metadata.def|.
 Dodatno, uvedena je podrška za čitanje i pisanje LLVM IR fajlova kao i za proveru njihove ispravnosti.
 
-Za svaku izdvojenu instrukciju koja ima debag lokaciju se generiše odgovarajuća \verb|dbg.outlined| instrukcija i dodaje se posle instrukcije poziva izdvojene funckije.
+Za svaku izdvojenu instrukciju koja ima debag lokaciju se generiše odgovarajuća instrukcija \verb|dbg.outlined| i dodaje se posle instrukcije poziva izdvojene funckije.
 Isečak LLVM međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_ir_example}.
 
 % Primer
-\begin{figure}
+\begin{listing}
 \begin{minted}[breaklines, fontsize=\small]{llvm}
 define dso_local i32 @main() #2 !dbg !30 {
    ...
@@ -1581,7 +1581,7 @@ define internal void @outlined_ir_func_0(ptr %0, ptr %1, ptr %2) {
 \end{minted}
 \caption{Primer LLVM međukoda nakon optimizacije izdvajanja koda sa novom instrukcijom i metapodatkom.}
 \label{lst:outlining_ir_example}
-\end{figure}
+\end{listing}
 
 % Izdvojena funkcija je obelezena sa outlined flagom (uz artificial) prilikom obe optimizacije
 % outlined flag (DebugInfoFlags.def) -> konvertuje se u DW_AT_LLVM_outlined u asm (Dwarf.def)
@@ -1591,7 +1591,7 @@ Iz tog razloga, dodata je nova vrsta zastavice, \verb|DIFlagOutlined|, koja ozna
 U kasnijoj fazi kompilacije ona će se prevesti u DWARF atribut \verb|DW_AT_LLVM_outlined|.
 Nova zastavica se dodaje u trenutku generisanja izdvojene funkcije u klasi \verb|IROutliner|, a stara zastavica \verb|DIFlagArtificial| je zadržana radi održanja kompatibilnosti unazad.
 % Moguce je pristupiti na osnovu funkcije (DISubprogram)
-Pristup ovoj zastavici je omogućen dodavanjem \verb|isOutlined| metode u okviru \verb|DISubprogram| klase koja predstavlja metapodatak sa podacima o funkciji.
+Pristup ovoj zastavici je omogućen dodavanjem metode \verb|isOutlined| u okviru klase \verb|DISubprogram| koja predstavlja metapodatak sa podacima o funkciji.
 Ovaj deo implementacije je preuzet iz \cite{tomasevic2022autlajning}.
 
 \subsection{Čuvanje debag lokacija prilikom izbora instrukcija}
@@ -1605,13 +1605,13 @@ Na kraju prethodne glave su potrebne informacije za debagovanje postale dostupne
 Naredni korak je sprovesti te informacije do sledećeg nivoa, odnosno mašinski zavisnog međukoda.
 Proces konverzije iz mašinski nezavisnog do zavisnog međukoda u infrastrukturi LLVM se naziva izbor instrukcija.
 % Kao sto je pomenuto u glavi ...
-Postoji vise implementacija izbora instrukcija, ali u ovom radu je trenutno podržana samo implementacija \verb|SelectionDAG|.
+Postoji više implementacija izbora instrukcija, ali u ovom radu je trenutno podržana samo implementacija \verb|SelectionDAG|.
 
 % Sta je sve potrebno pretvoriti u drugi oblik
-Od uvedenih podataka za potrebe ovog rada, za \verb|dbg.outlined| i vezu između \verb|DIOutlineId| i instrukcija za koje su vezane potrebno je implementirati dalje prevođenje.
+Od uvedenih podataka za potrebe ovog rada, za instrukciju \verb|dbg.outlined| i vezu između metapodatka \verb|DIOutlineId| i instrukcija za koje su vezane potrebno je implementirati dalje prevođenje.
 Svi metapodaci ostaju u istom obliku u ovoj fazi kompilacije.
 % Ideja je da ...
-Na kraju izbora instrukcija sve \verb|dbg.outlined| instrukcije će biti zamenjene ekvivalentnom MIR instrukcijom \verb|DBG_OUTLINED| sa istim parametrima i debag lokacijom.
+Na kraju izbora instrukcija sve instrukcije \verb|dbg.outlined| će biti zamenjene ekvivalentnom MIR instrukcijom \verb|DBG_OUTLINED| sa istim parametrima i debag lokacijom.
 % DBG_OUTLINED je pseudo instrukcija
 % Target.td + TargetOpcodes.def registruju DBG_OUTLINED
 Instrukcija \verb|DBG_OUTLINED| je registrovana u definicionim fajlovima \verb|Target.td| i \verb|TargetOpcodes.def|.
@@ -1619,20 +1619,19 @@ Instrukcija \verb|DBG_OUTLINED| je registrovana u definicionim fajlovima \verb|T
 % SalectionDAG - dodate funkcije za generisanje i dodavanje DbgOutlined u DAG
 % Instrukcije za debagovanje se tretiraju drugacije od ostalih instrukcija ...
 Klasa \verb|SelectionDAG| tretira instrukcije za debagovanje drugačije od ostalih instrukcija. 
-One se takođe pretvaraju u čvorove usmerenog aciklicnog grafa ali 
-umesto da se ubace u taj graf, one su ostavljene po strani u odvojenim strukturama podataka. % (zajedno sa SDDbgValue i SDDbgLabel)
+One se takođe pretvaraju u čvorove usmerenog acikličnog grafa ali umesto da se ubace u taj graf, one su ostavljene po strani u odvojenim strukturama podataka. % (zajedno sa SDDbgValue i SDDbgLabel)
 Zahvaljujući ovome te instrukcije će ostati neizmenjene prilikom izvršavanja većine faza izbora instrukcija.
-Po ugledu na druge instrukcije za debagovanje, uveden je tip cvora \verb|SDDbgOutlined| i dodato polje u klasi \verb|SelectionDAG| za njihovo skladištenje.
-Kako se gradi objekat tipa \verb|SelectionDAG|, sve \verb|dbg.outlined| instrukcije se pretvaraju u \verb|SDDbgOutlined| i čuvaju u novom polju.
+Po ugledu na druge instrukcije za debagovanje, uveden je tip čvora \verb|SDDbgOutlined| i dodato polje u klasi \verb|SelectionDAG| za njihovo skladištenje.
+Kako se gradi objekat tipa \verb|SelectionDAG|, sve instrukcije \verb|dbg.outlined| se pretvaraju u instance klase \verb|SDDbgOutlined| i čuvaju u novom polju.
 % Oni su jos uvek u obliku SD cvorova tako da jos uvek sadrze redosled (redne brojeve) u kom treba da se pojave.
-Na kraju izbora instrukcija, kada je potrebno poređati instrukcije svaki \verb|SDDbgOutlined| sadrži redni broj koji je dobio prilikom konstrukcije i na osnovu njega se \verb|DBG_OUTLINED| emituju na očekivanom mestu u kodu.
+Na kraju izbora instrukcija, kada je potrebno poređati instrukcije svaki objekat tipa \verb|SDDbgOutlined| sadrži redni broj koji je dobio prilikom konstrukcije i na osnovu njega se instrukcije \verb|DBG_OUTLINED| emituju na očekivanom mestu u kodu.
 % ScheduleDAGSDNodes je zaduzen da raspodeli cvorove u instrukcije
 % InstrEmitter: SDDbgOUtliner -> DBG_OUTLINED
 
 % Unutar SelectionDAG-a outline id se cuva u CallSiteDbgInfo/NodeExtraInfo objektima
 Na sličan način kao za čvorove instrukcija za debagovanje, tako se i podaci o metapodatku \verb|outline_id| čuvaju odvojeno od grafa.
 Konkretno, čuva se u novom polju u okviru promenljive \verb|SDCallSiteDbgInfo|. % kasnije preimenovana u NodeExtraInfo
-To je mapa koja preslikava \verb|SDNode| u objekat koji sadrži dodatne informacije o čvorovima.
+To je mapa koja preslikava objekat klase \verb|SDNode| u objekat koji sadrži dodatne informacije o čvorovima.
 % ScheduleDAGSDNodes je zaduzen da postavi vrednost outline_id u instrukcije
 Prilikom emitovanja mašinskih instrukcija proverava se postojanje ovog podatka za svaku instrukciju i ukoliko postoji dodeljuje se instrukciji.
 % TODO: U MachineInstr se nalazi u ExtraInfo objektu samo ako postoji
@@ -1642,7 +1641,7 @@ Prilikom emitovanja mašinskih instrukcija proverava se postojanje ovog podatka 
 Prethodnim izmenama omogućeno je prenošenje svih neophodnih informacija na ovom nivou.
 Isečak LLVM mašinski zavisnog međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_mir_example}.
 
-\begin{figure}[!ht]
+\begin{listing}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{text}
 name: main
 ...
@@ -1665,17 +1664,18 @@ body:
    DBG_OUTLINED !64, !45, debug-location !65
    ...
 \end{minted}
-\caption{Isečak LLVM mašinski zavisnog međukoda dobijen izborom instrukcija koda iz prethodne glave.}
+\caption{Isečak LLVM mašinski zavisnog međukoda dobijen izborom instrukcija koda iz listinga \ref{lst:outlining_ir_example}.}
 \label{lst:outlining_mir_example}
-\end{figure}
+\end{listing}
 
 % Problem: gubljenje/promena instrukcija koje imaju outline_id
 Najveća količina informacija se izgubi prilikom izbora instrukcija.
-Identifikatori koji stoje iz instrukcije se mogu izgubiti ako se instrukcija zameni drugom bez kopiranja njenih dodatnih podataka.
+Identifikatori koji stoje uz instrukcije se mogu izgubiti ako se instrukcija zameni drugom bez kopiranja njenih dodatnih podataka.
 % To znaci da ...
 % Primer: x86 call instrukcija gubi outline_id sto je rucno popravljeno
 Na primer, prilikom spuštanja mašinski nezavisne instrukcije poziva funkcije na mašinski zavisan nivo za arhitekturu X86 se pravi potpuno novi čvor.
-Zato što se \verb|outline_id| čuva u mapi čiji je ključ \verb|SDNode|, zamenom nekog čvora će se izgubiti ta veza osim ako se taj podatak eksplicitno prenese.
+Kako se metapodatak \verb|outline_id| povezuje sa instrukcijom na osnovu čvora klase \verb|SelectionDAG| koji je predstavlja, zamenom tog čvora će se izgubiti ta veza osim ako se ona eksplicitno ne sačuva.
+% Zato što se metapodatak \verb|outline_id| čuva u mapi čiji je ključ instanca klase \verb|SDNode|, zamenom nekog čvora će se izgubiti ta veza osim ako se taj podatak eksplicitno prenese.
 % i metapodatak nece biti emitovan uz zamenjenu instrukciju.
 Pomenuti primer je popravljen u implementaciji, ali još uvek postoje drugi slučajevi kada će se ovaj problem ispoljiti.
 
@@ -1699,15 +1699,17 @@ Ovaj deo implementacije podržava samo ispisivanje u formatu DWARF.
 U odeljku \ref{sec:dwarf} bilo je reči o mogućnosti proširenja tog formata.
 % Proizvođači kompajlera mogu da dodaju svoja proširenja standarda sve dok ne menjaju vrednosti propisane standardom DWARF.
 % Kako se etikete i atributi mapiraju na celobrojne numeričke vrednosti, proizvođač može da koristi jedan slobodno izabran opseg vrednosti sve dok se ne preklapa sa opsegom nekog od drugih kompajlera.
-Što se tiče kompajlera LLVM, on uvodi svoja proširenja standarda DWARF koja se mogu prepoznati po tome što njihovi nazivi sadrže podnisku \verb|LLVM|.
-Implementacija ovog rada se oslanja na nove vrste etiketa i atributa koji će biti opisani u nastavku. 
+Što se tiče kompajlera LLVM, on uvodi svoja proširenja
+% standarda DWARF 
+koja se mogu prepoznati po tome što njihovi nazivi sadrže podnisku \verb|LLVM|.
+Implementacija ovog rada se oslanja na nove vrste etiketa i atributa koji će biti opisani u nastavku.
 
 % \verb|DBG_OUTLINED| instrukcije ce biti koriscene za popunjavanje etikete sa informacijama o mestu poziva funkcije.
-Kao što je pomenuto na početku poglavlja, novi podaci će biti smešteni u okviru postojeće etikete \verb|DW_TAG_call_site| koja opisuje poziv funkcije.
+Kao što je pomenuto na početku poglavlja, novi podaci će biti smešteni u okviru postojeće jedinice tipa \verb|DW_TAG_call_site| koja opisuje poziv funkcije.
 % Koji su potrebni podaci
-Za svaku \verb|DBG_OUTLINED| instrukciju u odgovarajućoj etiketi mesta poziva funkcije biće dodato dete sa novouvedenom etiketom \verb|DW_TAG_LLVM_outlined_ref|.
+Za svaku instrukciju \verb|DBG_OUTLINED| u odgovarajućoj jedinici mesta poziva funkcije biće dodata jedinica sa novouvedenom etiketom \verb|DW_TAG_LLVM_outlined_ref|.
 % Ona treba da sadrži informacije koje bi se inače nalazile u tabeli linija.
-Ta etiketa sadrži četiri atributa:
+Ta jedinica sadrži četiri atributa:
 \begin{itemize}
   \item \verb|DW_AT_decl_file| --- Identifikator fajla lokacije u izvornom kodu
   \item \verb|DW_AT_decl_line| --- Broj reda u izvornom kodu
@@ -1724,17 +1726,17 @@ To je bazna klasa koja radi opšte obrađivanje informacija zajedničko za sve f
 Za sve poslove vezane za konkretan format ona poziva virtuelne funkcije koje implementira odgovarajuća podklasa za taj format.
 Ovaj rad se fokusira na implementaciju \verb|DwarfDebug|.
 
-Prvi korak prema ispisivanju informacija za debagovanje je prikupljanje \verb|DBG_OUTLINED| instrukcija iz prethodne faze kompilacije.
-Na početku obrade funkcije \verb|DebugHandlerBase| poziva instancu klase \verb|DbgEntityHistoryCalculator| da prođe kroz k\^od i zapamti unutrašnje instrukcije za debagovanje.
-Ta klasa je proširena da isto to uradi i za \verb|DBG_OUTLINED| instrukcije.
-Radi lakšeg budućeg pristupa, grupiše ih po njihovom drugom argumentu koji predstavlja \verb|outline_id| instrukcije poziva. % (DbgOutlinedInstrMap DbgOutlines)
+Prvi korak prema ispisivanju informacija za debagovanje je prikupljanje instrukcija \verb|DBG_OUTLINED| iz prethodne faze kompilacije.
+Na početku obrade funkcije klasa \verb|DebugHandlerBase| poziva instancu klase \verb|DbgEntityHistoryCalculator| da prođe kroz k\^od i zapamti unutrašnje instrukcije za debagovanje.
+Ta klasa je proširena da isto to uradi i za instrukcije \verb|DBG_OUTLINED|.
+Radi lakšeg budućeg pristupa, grupiše ih po njihovom drugom argumentu koji predstavlja metapodatak \verb|outline_id| instrukcije poziva. % (DbgOutlinedInstrMap DbgOutlines)
 Svi prikupljeni podaci se smeštaju u polje klase \verb|DebugHandlerBase| tako da je vidljivo i podklasama.
 % posle se radi zahtev za labelama
 % Sve labele su spremne tek na kraju obrade funkcije.
 % Labela se emituje u  DebugHandlerBase::beginInstruction (za requestLabelBeforeInsn) ili u DebugHandlerBase::endInstruction (za requestLabelAfterInsn)
 % i smestaju se u LabelsBeforeInsn ili LabelsAfterInsn
 % beginInstruction -> MachineModuleInfo::getContext() -> MCContext::createTempSymbol -> MCSymbol
-Druga stvar koja se radi takođe na početku funkcije je zahtevanje za kreiranje labela ispred izdvojenih instrukcija koje imaju \verb|outline_id|.
+Druga stvar koja se radi takođe na početku funkcije je zahtevanje za kreiranje labela ispred izdvojenih instrukcija koje imaju metapodatak \verb|outline_id|.
 Te labele se dodaju tek prilikom obrađivanja instrukcije ispred koje treba da se smeste, tako da sve potrebne labele postoje tek na kraju obrađivanja cele funkcije.
 % DwarfDebug (podklasa DebugHandlerBase) radi sledece
 % 3. constructCallSideDIEs - sacuva CallSiteDIE u mapi ciji kljuc je outline id instrukcije poziva (OutlineCallDIEs iz DwarfDebug) (pozvano od strane endFunctionImpl)
@@ -1742,6 +1744,7 @@ Te labele se dodaju tek prilikom obrađivanja instrukcije ispred koje treba da s
 % 4. endModule - ciscenje (InfoHoldera - DwarfFile - on cuva sve DbgOutlined objekte) (poziva finalizeModuleInfo. U ovoj funkciji se emituju sve DWARF sekcije)
 % 2. collectEntityInfo konvertuje izlaz iz DbgEntityHistoryCalculator (DbgOutlinedInstrMap DbgOutlines) u novu reprezentaciju, DbgOutlined (pozvano od strane endFunctionImpl)
 % 1. endFunctionImpl - puni OutlineLabelMap (iz DebugHandlerBase) zahtevanim labelama (kljuc je outline_id). Poziva collectEntityInfo, zatim cuva labele pa poziva constructCallSideDIEs
+
 Celokupnu dalju obradu informacija radi instanca klase \verb|DwarfDebug|.
 Na kraju obrade svake od funkcija iz korisničkog koda pozvana je funkcija \verb|endFunctionImpl|.
 Ona prikuplja i emituje sve informacije za debagovanje koje su nastale prilikom obrade te funkcije.
@@ -1754,12 +1757,13 @@ Ona prikuplja i emituje sve informacije za debagovanje koje su nastale prilikom 
 % Te informacije uključuju:
 Od njih su relevantne:
 \begin{itemize}
-  \item DWARF etikete koje predstavljaju mesto poziva funkcije i \verb|outline_id| metapodatak uz instrukciju poziva za svaku funkciju nastalu izdvajanjem koda.
-  \item Labele postavljene ispred svake izdvojene instrukcije zajedno sa njenim \verb|outline_id| podatkom
-  \item Sve ključne informacije iz \verb|DBG_OUTLINED| instrukcija u novoj reprezentaciji vezanoj za DWARF umesto za \verb|MachineInstr|.
+  \item DWARF jedinice koje opisuju mesta poziva funkcija.
+  \item Metapodaci \verb|outline_id| koji stoje uz instrukcije poziva za svaku funkciju nastalu izdvajanjem koda.
+  \item Labele postavljene ispred svake izdvojene instrukcije zajedno sa njenim metapodatkom \verb|outline_id|
+  \item Sve ključne informacije iz instrukcija \verb|DBG_OUTLINED| u novoj reprezentaciji specifičnoj za format DWARF umesto za klasu \verb|MachineInstr|.
 \end{itemize}
 Na kraju obrade modula su spremni svi neophodni podaci iz svih funkcija korisničkog koda.
-Spajanjem tih podataka na osnovu zajedničkih \verb|outline_id| vrednosti lako je u postojeće etikete dodati sve potrebne informacije za debagovanje.
+Spajanjem tih podataka na osnovu zajedničkih vrednosti metapodatka \verb|outline_id| lako je u postojeće jedinice dodati sve potrebne informacije za debagovanje.
 
 % DwarfFile sadrzi CallOutlines, listu DbgOutlined(iz DwarfDebug) grupisane po outline_id instrukcije poziva
 
@@ -1770,7 +1774,7 @@ Spajanjem tih podataka na osnovu zajedničkih \verb|outline_id| vrednosti lako j
 % - applyOutlinedAttributes - dodaje sve informacije u DW_TAG_outlined_ref, pozvano od strane constructOutlinedDIE
 % Stara:
 % - constructCallSiteEntryDIE - ovde se dodaje DW_AT_LLVM_outlined atribut kao u DISubprogram, for convenience
-Funkcije za kreiranje novih i modifikovanje postojećih DWARF etiketa nalaze se u klasi \verb|DwarfCompileUnit|.
+Funkcije za kreiranje novih i modifikovanje postojećih DWARF jedinica nalaze se u klasi \verb|DwarfCompileUnit|.
 % TODO: pomeriti pri pocetku
 % Može se primetiti da sve nove etikete i atributi sadrže podnisku \verb|LLVM|.
 % Razlog za to je što te vrednosti nisu deo standarda DWARF, već su ekstenzija u okviru projekta LLVM.
@@ -1785,15 +1789,16 @@ Funkcije za kreiranje novih i modifikovanje postojećih DWARF etiketa nalaze se 
 %   \item \verb|DW_AT_low_pc| -- Adresu instrukcije u tekst segmentu programa. U ovom trenutku predstavljenu labelom ispred te intrukcije.
 % \end{itemize}
 % Ona se dodaje kao dete \verb|DW_TAG_call_site| etikete.
-Tu su dodate funkcije za generisanje \verb|DW_TAG_LLVM_outlined_ref| etiketa sa ranije opisanim poljima i dodata je pomoćna funkcija za ubacivanje tih etiketa u \verb|DW_TAG_call_site|.
-Uz to, toj etiketi je dodat atribut \verb|DW_AT_LLVM_outlined| koji označava da je to poziv izdvojene funkcije.
+Tu su dodate funkcije za generisanje jedinica sa etiketom \verb|DW_TAG_LLVM_outlined_ref| sa ranije opisanim poljima i dodata je pomoćna funkcija za njihovo ubacivanje u jedinicu tipa \verb|DW_TAG_call_site|.
+Uz to, toj jedinici je dodat atribut \verb|DW_AT_LLVM_outlined| koji označava da je to poziv izdvojene funkcije.
 % DwarfUnit::applySubprogramAttributes dodaje DW_AT_LLVM_outlined
-Isti atribut se dodaje i etiketi te funkcije a ovde je dodat kako bi se kasnije brže odredilo da li se poziva izdvojena funkcija ili ne.
+Isti atribut se dodaje i jedinici te funkcije a ovde je dodat kako bi se kasnije brže odredilo da li se poziva izdvojena funkcija ili ne.
+
 % AsmPrinter::emitFunctionBody dodaje slucaj za TargetOpcode::DBG_OUTLINED. Ne radi nista posto se instrukcija ne emituje.
 % Radi kompletnosti, ...
 % Vec je pomenuto da ukljucivanje debag informacija ne sme da menja krajnji izvrsni kod.
 % Instrukcije se emituju u asemblerski fajl iteriranjem kroz masinske instrukcije modula.
-Što se tiče emitovanja instrukcija u tekst segment, u funkciju \verb|emitFunctionBody| klase \verb|AsmPrinter| je dodat slučaj za ispisivanje instrukcije \verb|DBG_OUTLINED| koji ne radi ništa.
+Za potrebe emitovanja instrukcija u tekst segment, u funkciju \verb|emitFunctionBody| klase \verb|AsmPrinter| je dodat slučaj za ispisivanje instrukcije \verb|DBG_OUTLINED| sa praznom implementacijom.
 Promenom ove implementacije da ispiše komentar može se potvrditi da su instrukcije \verb|DBG_OUTLINED| još uvek prisutne i da se nalaze na očekivanom mestu u kodu.
 
 Prethodnim modifikacijama omogućeno je prevođenje do asemblerskog fajla.
@@ -1809,7 +1814,7 @@ Jedan alat koji to može da uradi je \verb|llvm-dwarfdump|.
 Listing \ref{lst:outlining_asm_example} prikazuje deo novih etiketa parsiranih iz objektnog fajla pomoću alata \verb|llvm-dwarfdump|.
 Kako bi imao podršku za prikazivanje ovih etiketa potrebno je koristiti verziju alata koja je sagrađena uz ovaj projekat.
 
-\begin{figure}[!ht]
+\begin{listing}[!ht]
 \begin{minted}[breaklines, fontsize=\small]{text}
   0x00000093: DW_TAG_call_site
                  DW_AT_call_origin    (0x000000dc)
@@ -1831,7 +1836,7 @@ Kako bi imao podršku za prikazivanje ovih etiketa potrebno je koristiti verziju
   \end{minted}
   \caption{Isečak DWARF stabla koji prikazuje etiketu poziva funkcije i njenu decu sa podacima o izdvojenim instrukcijama}
   \label{lst:outlining_asm_example}
-\end{figure}
+\end{listing}
 
 \section{Implementacija u debageru}
 
@@ -2174,7 +2179,7 @@ Takođe, svaki put kad se zastane ispisuje se poruka koja govori da se proces na
 % c1--; u prethodnom primeru je optimizovano zbog cega je izgubilo lokaciju
 Četvrta naredba, \verb|c1--;|, ne izaziva prekid izvršavanja programa.
 Istraživanjem je otkriveno da se odgovarajuća instrukcija koja je u početku bila instrukcija sabiranja sa -1, u toku izbora instrukcija zamenila sa instrukcijom dekrementiranja za 1.
-Zbog te zamene izgubljen je \verb|outline_id| koji je ta instrukcija originalno imala, stoga nije bilo moguće pronaći adresu te instrukcije prilikom emitovanja asemblerskog koda.
+Zbog te zamene izgubljen je metapodatak \verb|outline_id| koji je ta instrukcija originalno imala, stoga nije bilo moguće pronaći adresu te instrukcije prilikom emitovanja asemblerskog koda.
 % 
 Dakle, još uvek postoji prostor za poboljšanje implementacije.
 
