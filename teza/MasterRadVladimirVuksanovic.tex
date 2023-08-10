@@ -551,7 +551,7 @@ U terminologija projekta LLVM, ona se naziva MIR (eng.~{\em Machine Intermediate
 Ona je dosta bliža ciljnoj arhitekturi i sastoji se od konkretnih instrukcija za tu arhitekturu.
 MIR k\^od se zapisuje u formatu YAML \cite{yaml}.
 Odlike funkcija poput imena, mesta poziva itd. su opisane atributima formata YAML.
-Tela funckija se takođe nalaze u okviru atributa, serijalizovani u obliku niske.
+Tela funkcija se takođe nalaze u okviru atributa, serijalizovani u obliku niske.
 Struktura instrukcija je slična kao za IR k\^od.
 Najveće razlike su u tome što su intrukcije vezane za konkretnu arhitekturu i virtuelni registri su zamenjeni pravim registrima.
 Kompletan pregled jezika dostupan je u okviru dokumentacije projekta LLVM \cite{mirlangref}.
@@ -759,7 +759,7 @@ Kompajler LLVM generiše ove podatke dodavanjem zastavice \verb|-g| u okviru kom
 Većina informacija za debagovanje nastaju u prednjem delu kompajlera, pošto je on zadužen za analiziranja izvornog koda, i prosleđuju se kroz ostale faze kompilacije gde se usput dopunjuju novim podacima kada oni postanu dostupni (npr. lokacije promenljivih za vreme izvršavanja). % do izvršnog fajla.
 % Odnos optimizacija i debag informacija
 Očuvanje informacija za debagovanje nailazi na problem kada se uključe kompajlerske optimizacije.
-Prilikom primene optimizacija, informacije za debagovanje i dalje treba reflektuju izvorni kod, a ne njegovu optimizovanu verziju.
+Prilikom primene optimizacija, informacije za debagovanje i dalje treba reflektuju izvorni k\^od, a ne njegovu optimizovanu verziju.
 Što se više krajnji program razlikuje od izvornog koda postaje teže očuvati informacije, a nekada je to čak potpuno nemoguće.
 % U slučaju da je moguće izabrati između nepotpunih informacija ili informacija koje ne odgovaraju u potpunosti izvornom kodu, bolje je izabrati prvu opciju.
 % Prihvatljivije je nemati informacije za debagovanje nego imati netačne.
@@ -946,7 +946,7 @@ Tako se izvršavanje jednog koraka bez ulaska u funkcije može učiniti komandom
 % \end{minted}
 
 % Struktura projekta
-Izvorni kod projekta LLDB je dostupan u okviru repozitorijuma projekta LLVM, u direktorijumu \verb|lldb|.
+Izvorni k\^od projekta LLDB je dostupan u okviru repozitorijuma projekta LLVM, u direktorijumu \verb|lldb|.
 Glavni deo debagera je implementiran kao biblioteka \verb|liblldb| tako da se mogu napraviti novi alati bazirani na njoj.
 Sama aplikacija LLDB je jedan od tih alata.
 Njena implementacija se nalazi u folderu \verb|tools/Driver|.
@@ -972,11 +972,11 @@ Informacije za debagovanje su integrisane pomoću klasa u direktorijumu \verb|Sy
 Učitavanje i pristup tim informacijama je ostvaren kroz interfejs \verb|SymbolFile|.
 Podržani formati za debagovanje su implementirani u vidu priključaka (eng.~{\em plug-ins}) koji implementiraju taj interfejs.
 
-% Za mnoge operacije u debageru potrebne su informacije o stanju programa.
-Mnoge operacije debagera zahtevaju informacije o stanju programa.
+% Mnoge operacije debagera zahtevaju informacije o stanju programa.
+Mnoge operacije debagera zahtevaju informacije o simbolu na nekom mestu u programu.
 % https://lldb.llvm.org/cpp_reference/classlldb__private_1_1SymbolContext.html#details
-U izvornom kodu to stanje se naziva kontekst i skladišti se u objektima klase \verb|SymbolContext|.
-On sadrži podatke o ciljnom programu, modulu, kompilacionoj jedinici, funkciji, bloku koda, lokaciji u izvornom fajlu i simbolu.
+U izvornom kodu te informacije se nazivaju kontekst i skladište se u objektima klase \verb|SymbolContext|.
+On sadrži podatke o ciljnom programu, modulu, kompilacionoj jedinici, funkciji, bloku koda, lokaciji u izvornom fajlu, simbolu i globalnoj promenljivoj.
 Ne moraju uvek da budu prisutni svi ti podaci, a nekada nisu ni svi dostupni.
 Kontekst može da se popunjava selektivno, samo podacima koji su potrebni za neku operaciju.
 
@@ -1267,7 +1267,7 @@ Cene instrukcija na ciljnoj arhitekturi kao i procene poziva se dobijaju kroz in
 % Grupe se sortiraju po benefitu.
 % Izbacuju se svi kandidati koji se preklapaju sa prethodno izdvojenim kodom.
 Postupak kreiranja izdvojene funkcije na ovom nivou je jednostavan.
-Generiše se nova funckija sa imenom \verb|OUTLINED_FUNCTION_X| gde je \verb|X| redni broj izdvojene funkcije.
+Generiše se nova funkcija sa imenom \verb|OUTLINED_FUNCTION_X| gde je \verb|X| redni broj izdvojene funkcije.
 Kopiraju se instrukcije proizvoljnog kandidata i menjaju se informacije za debagovanje da referišu na novu funkciju.
 Svi kandidati se zamenjuju pozivom ka generisanoj funkciji bez potrebe za bilo kakvim dodatnim instrukcijama.
 % odrzava se liveness
@@ -1294,7 +1294,7 @@ Zbog toga je moguće izdvajanje dosta više koda.
 Dobitak se računa slično kao na mašinski zavisnom nivou, kao razlika bez i sa uključenom optimizacijom.
 Kako je ovaj međukod dalji od krajnjeg koda, procena postaje teža zato što se oslanja na manje precizne podatke.
 Cena bez optimizacije se ovaj put računa kao suma procena veličina svih kandidata koji u ovom slučaju mogu da se razlikuju.
-Sa druge strane, cena sa optimizacijom sadrži prosečnu veličinu kandidata i procene veličina svih instrukcija za smeštanje i učitavanje potrebnih argumenta kao i za stvaranje nove funckije.
+Sa druge strane, cena sa optimizacijom sadrži prosečnu veličinu kandidata i procene veličina svih instrukcija za smeštanje i učitavanje potrebnih argumenta kao i za stvaranje nove funkcije.
 % Dobitak se računa po narednoj formuli:
 % \begin{minted}[fontsize=\footnotesize, breaklines]{text}
 % Benefit = AvgOutlineBenefit(how much will be removed) = TotalRegionBenefit / NumRegions 
@@ -1367,7 +1367,7 @@ Na instrukciju koja nema dodeljenu lokaciju je moguće stati izvršavanjem progr
 % ista lokacija u izvornom kodu se ponavlja vise puta u tabeli.
 % inlinedAt podrska.
 
-Prilikom izdvajanja koda jedna instrukcija ima više mogućih debag lokacija u zavisnosti od mesta poziva izdvojene funckije.
+Prilikom izdvajanja koda jedna instrukcija ima više mogućih debag lokacija u zavisnosti od mesta poziva izdvojene funkcije.
 Ovo predstavlja više problema:
 \begin{itemize}
   \item U vreme izvršavanja programa nije moguće odrediti koja od ovih lokacija je korektna bez dodatnih informacija
@@ -1536,7 +1536,7 @@ Metapodatak \verb|outline_id| se registruje u definicionom fajlu \verb|FixedMeta
 Njegova implementacija se nalazi u klasi \verb|DebugInfoMetadata| i potrebno ju je registrovati u \verb|Metadata.def|.
 Dodatno, uvedena je podrška za čitanje i pisanje LLVM IR fajlova kao i za proveru njihove ispravnosti.
 
-Za svaku izdvojenu instrukciju koja ima debag lokaciju se generiše odgovarajuća instrukcija \verb|dbg.outlined| i dodaje se posle instrukcije poziva izdvojene funckije.
+Za svaku izdvojenu instrukciju koja ima debag lokaciju se generiše odgovarajuća instrukcija \verb|dbg.outlined| i dodaje se posle instrukcije poziva izdvojene funkcije.
 Isečak LLVM međukoda programa nakon izdvajanja funkcije je prikazan u listingu \ref{lst:outlining_ir_example}.
 
 % Primer
@@ -1871,14 +1871,15 @@ Većina podataka se ne učitava odmah po pokretanju debagera već tek kada su ti
 % SymbolFile::ParseOutlineLineTable ovo je podrazumevana, prazna implementacija, prava je u SymbolFileDWARF:
 %  -- SymbolFileDWARF::GetOutlineRefs - Radi DFS prolaz kroz DWARF stablo i prasira sve DW_TAG_LLVM_outline_ref etikete
 %  -- parsirana tabela je predata CompileUnit
-Tako na primer dohvatanjem podataka za jedinicu kompilacije (eng.~{\em compile unit}) kroz funkciju \verb|GetCompileUnitAtIndex| se izvršava parsiranje te jedinice ukoliko već nije učitana.
+Tako na primer dohvatanjem podataka za jedinicu kompilacije kroz funkciju \verb|GetCompileUnitAtIndex| se izvršava parsiranje te jedinice ukoliko već nije učitana.
 Za tabelu linija, odgovarajuća funkcija za učitavanje se intuitivno zove \verb|ParseLineTable|, ali joj se pristupa pomoću funkcije \verb|GetLineTable| klase \verb|CompileUnit|.
 % Po ugledu na nju je dodata nova funkcija, \verb|ParseOutlineLineTable|.
+
 Podržani formati informacija za debagovanje su implementirani kao priključci.
 Svaki od njih implementira interfejs \verb|SymbolFile| ili preciznije apstraktnu klasu \verb|SymbolFileCommon|.
 U slučaju formata DWARF, implementacija se nalazi u klasi \verb|SymbolFileDWARF|.
 
-% TODO: opste, nacin ucitavanja prolaskom kroz debug info stablo
+% Nacin ucitavanja prolaskom kroz debug info stablo
 % GetOutlinedRefs vraca sve line_entry objekte
 % a CollectCallSiteParameters parsira i adresu i vraca je uz std::pair<CallSiteParameterArray, OutlinedInstructionArray> koja je pozvana iz CollectCallEdges
 % Toj klasi je dodata pomoćna funkcija \verb|GetOutlineRefs| koja služi za učitavanje novih informacija za debagovanje iz etikete za poziv funkcije.
@@ -1887,36 +1888,41 @@ U slučaju formata DWARF, implementacija se nalazi u klasi \verb|SymbolFileDWARF
 
 % Nova tabela linija za izdvojene instrukcije
 % Nacin ucitavanja obicne tabele linija, reprezentacija obicne tabele linija
-Podaci koji treba da budu učitani su skoro isti kao za tabelu linija, zbog toga se implementacija za učitavanje ugleda na učitavanje tabele linija.
+Mapiranje lokacije u izvornom kodu na adresu izdvojene instrukcije se može uraditi na isti način kao što radi tabela linija za obične instrukcije.
+Zbog toga se ovaj deo implementacije ugleda na nju.
 Uvedena je nova tabela linija specijalno za lokacije izdvojenih instrukcija.
 % Razmatrano je korišćenje postojeće tabele i dodavanje lokacija izdvojenih funkcija u nju, ali onda bi bilo potrebno 
-Za razliku od obične tabele, ova ne koristi specijalnu strukturu podataka već je u pitanju običan niz sortiran po lokaciji u izvornom kodu. % radi bržeg pronalaženja podataka.
-Podaci se dobijaju obilaskom čitavog DWARF stabla i parsiranjem atributa svih \verb|DW_TAG_LLVM_outlined_ref| etiketa.
-Nakon učitavanja, nova tabela linija se predaje klasi \verb|CompileUnit| preko koje može da joj se pristupi iz skoro celog koda.
+% Za razliku od obične tabele, ova ne koristi specijalnu strukturu podataka već je u pitanju običan niz sortiran po lokaciji u izvornom kodu. % radi bržeg pronalaženja podataka.
+Podaci korišćeni u toj tabeli se dobijaju obilaskom čitavog DWARF stabla i parsiranjem atributa svih jedinica tipa \verb|DW_TAG_LLVM_outlined_ref|.
+Nakon učitavanja, nova tabela linija se predaje odgovarajućem objektu klase \verb|CompileUnit| preko koga može da joj se pristupi iz skoro celog koda.
+
 % CompileUnit::ResolveSymbolContext namesten da pronalazi line_entry i iz outline line table i vraca blizi od ta dva (prvi koji ima manju adresu)
-Bitniji metod pristupa je putem određivanja trenutnog konteksta izvršavanja.
-U poglavlju \ref{sec:lldb} je rečeno da se informacije o stanju programa dobijaju kroz instancu klase \verb|SymbolContext| koja te podatke dobija iz informacija za debagovanje.
-Stanje programa podrazumeva jedinicu kompilacije, funkciju i lokaciju u izvornom kodu.
-Jedan od načina za dobijanje tog konteksta je zadavanjem lokacije u izvornom kodu za koju treba odrediti taj kontekst.
-Bitno je napomenuti da lokacija dobijena iz konteksta ne mora da se poklapa sa prosleđenom lokacijom.
-% Dobijena lokacija će zapravno biti prva sledeća od prosleđene a da sadrži 
-Za kreiranje te instance zadužena je ponovo klasa \verb|CompileUnit|, a funckija koja to obavlja je \verb|ResolveSymbolContext|.
+Dohvatanje adrese instrukcije za prosleđenu lokaciju se koristi u okviru određivanja konteksta.
+U poglavlju \ref{sec:lldb} je rečeno da je kontekst opisan kroz instancu klase \verb|SymbolContext| koja te podatke dobija iz informacija za debagovanje.
+Kontekst između ostalog podrazumeva jedinicu kompilacije, funkciju i lokaciju u izvornom kodu.
+% Jedan od načina za dobijanje tog konteksta je zadavanjem lokacije u izvornom kodu za koju treba odrediti taj kontekst.
+Bitno je primetiti da lokacija dobijena iz konteksta ne mora da se poklapa sa prosleđenom lokacijom, već može da se dobije najbliža lokacija za koju postoje informacije.
+
+Za određivanje konteksta na osnovu lokacije zadužena je klasa \verb|CompileUnit|, a funkcija koja to obavlja je \verb|ResolveSymbolContext|.
 Ona radi tako što pokušava da odredi adresu instrukcije koja ima lokaciju najbližu prosleđenoj.
-Pored proveravanja najbliže lokacije iz tabele linija, dodata je i provera u izdvojenoj tabeli linija.
-Ukoliko iz obe tabele postoje takve lokacije, u kontekst se stavlja ona koja je bliža prosleđenoj.
+% Ovde je dodata podrška za proveru lokacija i iz nove tabele.
+% Iz postojeće i nove tabele linija se dohvata red sa lokacijom najbližom prosleđenoj ().
+Pored postojeće provere najbliže lokacije iz tabele linija, dodata je ista provera za izdvojenu tabelu linija.
+Ukoliko u obe tabele postoje lokacije, u kontekst se stavlja ona koja je bliža prosleđenoj.
 Ako samo jedna od tabela ima validan rezulat, koristiće se on.
-Sada svi koji koriste ovaj način dohvatanja konteksta mogu da dobiju informacije o izdvojenim instrukcijama.
+Ostatak konteksta se određuje preko adrese koja odgovara izabranoj lokaciji.
+Ovo omogućava svima koji koriste ovaj način dohvatanja konteksta mogu da dobiju informacije o izdvojenim instrukcijama.
 Upotreba ove izmene za rešenje konkretnog problema će biti prikazana kasnije.
 
-% CallEdge???
 Mapiranje u drugom smeru, sa adrese izdvojene instrukcije na lokaciju u izvornom kodu nije jedinstveno.
 Činjenica da je instrukcija izdvojena znači da se poziva na bar dva različita mesta u izvornom kodu.
 Zbog toga jednoj adresi će uvek odgovarati bar dve lokacije. 
-Kako bi se dobila tačna lokacija potrebno je uzeti obzir i kontekst izvšavanja programa.
+Kako bi se dobila tačna lokacija potrebno je uzeti obzir i kontekst izvršavanja programa.
 Taj kontekst je predstavljen stek okvirom (eng.~{\em stack frame}) funkcije koja je pozvala izdvojenu funkciju.
 Preciznije, predstavljen je adresom povratka (eng.~{\em return address}) na funkciju kojoj odgovara taj stek okvir.
 Adresa povratka je adresa sledeće instrukcije koja će biti izvršena nakon povratka iz funkcije.
-Mapiranje u ovom smeru je smešteno u instanacama klase \verb|CallEdge|.
+
+Podaci o mapiranju u ovom smeru su smešteni u instancama klase \verb|CallEdge|.
 Neka su funkcije čvorovi usmerenog grafa i neka grana između dva čvora postoji za svaki poziv funkcije u smeru od pozivaoca do pozvane funkcije.
 Može postojati više grana između dve funkcije ukoliko se ista funkcija poziva više puta.
 % Bitno je da se oni razlikuju na osnovu adrese programskog brojača prilikom povratka u prethodnu funkciju.
@@ -1926,13 +1932,13 @@ Ona je dopunjena da sadrži adrese i lokacije svih izdvojenih instrukcija prilik
 % SymbolFile::CollectCallEdges -> Function.h sadrzi call edge listu koja ima podatke o vrednostima parametara i sada izdvojenim instrukcijama.
 % prilikom ucitavanja callEdge-a (tj DW_TAG_call_site) popunjavaju se i novi podaci (CallEdges i is outlined atribut)
 Prethodno pomenuta klasa \verb|SymbolFile| je zadužena za popunjavanje tih podataka kada su potrebni.
-Ta implementacija je smeštena u funkciji \verb|CollectCallEdges| i zasniva se na parsiranju etikete poziva funkcije.
-Svim instancama klase \verb|CallEdge| je moguće pristupiti iz kroz \verb|Function| objekat pozivaoca, ili može da se pristupi konkretnoj instanci na osnovu adrese povratka.
+Ta implementacija je smeštena u funkciji \verb|CollectCallEdges| i zasniva se na parsiranju jedinice poziva funkcije.
+Svim instancama klase \verb|CallEdge| je moguće pristupiti kroz objekat tipa \verb|Function| pozivaoca, ili može da se pristupi konkretnoj instanci na osnovu adrese povratka.
 
 % DWARFAstParserClang ucitava outlined flag DISubprograma - ovo je uradio Voja
-Poslednji neophodan podatak koji je potrebno učitati je atribut \verb|DW_AT_LLVM_outlined|.
+Poslednji podatak koji je potrebno učitati je atribut \verb|DW_AT_LLVM_outlined| koji obeležava izdvojene funkcije.
 To je implementirano u okviru postojeće implementacije za učitavanje podataka o funkciji u klasi \verb|DWARFASTParserClang|.
-Pristup informaciji da li je funkcija dobijena izdvajanjem koda je omogućen kroz metod \verb|IsOutlined| dostupan nad objektima \verb|Function| klase koja opisuje jednu funkciju iz koda koji se debaguje.
+Pristup informaciji da li je funkcija dobijena izdvajanjem koda je omogućen kroz metod \verb|IsOutlined| dostupan nad objektima klase \verb|Function| koja opisuje jednu funkciju iz koda koji se debaguje.
 
 \subsection{Ispisivanje ispravnih linija izvornog koda}
 
@@ -1942,7 +1948,8 @@ Prilikom debagovanja korisnik može da kontroliše tok izvršavanja programa.
 On zadaje komande koje govore debageru koje delove koda da izvrši.
 Svaki put kada se kontrola vrati korisniku, debager ispiše mesto gde se program zaustavio (i možda nekoliko okolnih linija).
 Na osnovu toga korisnik saznaje informacije o trenutnom stanju programa i bira šta će sledeće da izvrši.
-U prisustvu dobrih debag lokacija to funkcioniše očekivano.
+
+U prisustvu dobrih debag lokacija prethodni proces funkcioniše očekivano.
 Međutim u slučaju izvojenih instrukcija koje nemaju vrednost u tabeli linija, lokacija prikazana u debageru će biti netačna.
 % Debager će pokušati da uzme vrednost prve ranije adrese koja ima lokaciju.
 Prikazana lokacija će pripadati prvoj ranijoj instrukciji koja ima lokaciju.
@@ -1968,17 +1975,20 @@ Taj deo koda je izmenjen na sledeći način.
 % provera se vrsi dobijanjem SymbolContext-a za funkciju i pozivanjem njene IsOutlined
 Prvo se proverava da li trenutni stek okvir pripada izdvojenoj funkciji.
 Podatak koji to opisuje je dostupan kroz metod \verb|IsOutlined| klase \verb|Function|, a ona se dobija na osnovu konteksta tog stek okvira.
-Ukoliko stek okvir ne pripada izdvojenoj funkciji, određivanje linije se svodi na postojeću implemetaciju.
-U suprotnom koristi se nova implementacija zasnovana na sličnoj ideji kao određivanje vrednosti promenljivih prilikom ulaska u funkciju \cite{sowda2019entryvalues}.
-U glavi \ref{sec:debugger_loading} dodata je podrška za mapiranje adrese na liniju u izvornom kodu.
-Jedino što je potrebno je dodati kontekst kako bi se odredila dobra \verb|CallEdge| instanca za instrukciju.
-Funkcija već ima implementiran mehanizam za pronalaženje te instance na osnovu adrese povratka iz funkcije.
+Ukoliko stek okvir ne pripada izdvojenoj funkciji, određivanje linije se svodi na postojeću implementaciju.
+U suprotnom se koristi nova implementacija zasnovana na sličnoj ideji kao određivanje vrednosti promenljivih prilikom ulaska u funkciju \cite{sowda2019entryvalues}.
+
+Ovaj problem se svodi na određivanje linije u izvornom kodu koristeći adresu instrukcije na kojoj je proces zaustavljen.
+% Ono se radi tako što se iz roditeljskog stek okvira dohvate potrebne informacije.
+U glavi \ref{sec:debugger_loading} dodata je podrška za mapiranje u tom smeru.
+Jedino što je potrebno je proslediti joj kontekst kako bi se odredila ispravna instanca klase \verb|CallEdge|.
+Klasa \verb|Function| već ima implementiran mehanizam za pronalaženje te instance na osnovu adrese povratka iz funkcije.
 % TODO: Objasniti da je trenutni stek okvir od izdvojene funkcije
-Ta adresa se postavlja na vrh steka u trenutku poziva funkcije.
-Objekat koji predstavlja nit programa ima dostupnu listu stek okvira koji postoje u tom trenutku.
-Povratkom u roditeljski stek okvir lako je pronaći tu adresu.
-% Kada je pronađena povratna adresa.
-Konačna lokacija je dobijena iz \verb|CallEdge| instance iz tog roditeljskog stek okvira pomoću metode \verb|Function::GetCallEdgeForReturnAddress| sa pronađenom adresom povratka kao parametrom.  
+Ta adresa se postavlja na vrh steka u trenutku poziva funkcije i lako se dohvata povratkom u rediteljski stek okvir koji pripada pozivaocu.
+% Ta adresa se postavlja na vrh steka u trenutku poziva funkcije.
+% Objekat koji predstavlja nit programa ima dostupnu listu stek okvira koji postoje u tom trenutku.
+% Povratkom u roditeljski stek okvir lako je pronaći adresu.
+Konačna lokacija je dobijena iz instance klase \verb|CallEdge| iz tog roditeljskog stek okvira pomoću metode \verb|Function::GetCallEdgeForReturnAddress| sa pronađenom adresom povratka kao parametrom.  
 Uz lokaciju, u status je dodata i poruka da je proces zaustavljen u izdvojenom kodu.
 
 \subsection{Izvršavanje korak po korak}
@@ -1992,7 +2002,7 @@ Ona omogućava korisniku da interaktivno prati i kontroliše izvršavanje progra
 Između dva koraka korisnik može da pogleda vrednosti relevantnih promenljivih i proveri da li se one poklapaju sa očekivanim vrednostima.
 % Step over, into
 % Step inst vec radi
-LLDB nudi nekoliko komandi za koračanje:
+Debager LLDB nudi nekoliko komandi za koračanje:
 \begin{itemize}
   \item \verb|step-over| --- Izvršava sve naredbe do sledećeg reda u izvornom kodu preskačući pozvane funkcije
   \item \verb|step-into| --- Izvršava sve naredbe do sledećeg reda u izvornom kodu pritom ulazeći u pozvane funkcije
@@ -2008,7 +2018,8 @@ Tokom sesije debagovanja, korsnik zadaje komande debageru kako bi kontrolisao to
 Celokupna logika o tome koliko program treba da se izvršava i kada treba da se zaustvi implementirana je pomoću planova niti (eng.~{\em thread plan}).
 Više različitih planova može da bude aktivno u isto vreme, zbog čega se oni skladište u stek strukturi podataka.
 U nastavku se smatra da taj stek raste naviše.
-Svaka nit ima svoj stek planova i njemu se može pristupiti kroz poziv \verb|GetProcess().GetThreadPlans(GetID())| iz trenutne niti.
+
+Svaka nit ima svoj stek planova. % i njemu se može pristupiti kroz poziv \verb|GetProcess().GetThreadPlans(GetID())| iz trenutne niti.
 Kada se program zaustavi zbog nekog događaja svi planovi za tu nit se proveravaju redom od vrha do dna steka.
 Traži se prvi plan koji može da objasni događaj koji je izazvao zaustavljanje pozivanjem funkcije \verb|DoPlanExplainsStop| svakog plana.
 Taj plan se onda upita da li treba da se vrati kontrola korisniku funkcijom \verb|ShouldStop|.
@@ -2021,20 +2032,20 @@ To je instanca \verb|ThreadPlanBase| i on se aktivira kada ni jedan drugi plan n
 % ThreadPlanStepRange (SetNextOutlineBreakpoint-na sledeci ili prvi red, ClearNextOutlineBreakpoint, NextOutlineBreakpointExplainsStop) (ShouldStop, DoPlanExplainsStop)
 % | - ThreadPlanStepInRange - lakse
 % | - ThreadPlanStepOverRange - teze, mora da udje u funkciju ako je izdvojena, impl u ThreadPlanStepRange::SetNextBranchBreakpoint
-Postoji više implementacija planova koji imaju različite kriterijume za zaustavljanje.
-Fokus ovog poglavlja su implementacije \verb|ThreadPlanStepInRange| i \verb|ThreadPlanStepOverRange| koje se koriste redom za komande \verb|step-into| i \verb|step-over|.
+Postoji više implementacija planova niti koji imaju različite kriterijume za zaustavljanje.
+Fokus ovog rada su implementacije u klasama \verb|ThreadPlanStepInRange| i \verb|ThreadPlanStepOverRange| koje se koriste redom za rad komandi \verb|step-into| i \verb|step-over|.
 Oni dele zajedničku nadklasu \verb|ThreadPlanStepRange|.
 Oba plana rade tako što postavljaju tačke prekida na sledeću intrukciju grananja sve dok program ne izađe iz opsega koji mu je zadat u vreme kreiranja.
 Taj opseg obuhvata sve instrukcije koje pipadaju istom redu i izvornom kodu.
 Razlog zašto nije moguće odmah postaviti tačku prekida direktno na konačnu lokaciju je zbog mogućih grananja u programu.
-Razlika između pomenutih planova je što \verb|step-into| prilikom zaustavljanja na instrukciji poziva funkcije dodaje novi plan za ulazak u funkciju dok \verb|stop-over| to ne radi.
+Razlika između pomenutih planova je što komanda \verb|step-into| prilikom zaustavljanja na instrukciji poziva funkcije dodaje novi plan za ulazak u funkciju dok komanda \verb|stop-over| to ne radi.
 
 Ideja rešenja je da se osim postojeće tačke prekida uvede još jedna koja se uvek postavlja na sledeću izdvojenu instrukciju.
 Nadklasa \verb|ThreadPlanStepRange| je dopunjena funkcijama za postavljanje te nove tačke prekida koja se dobija na isti način kao u poglavlju \ref{sec:debugger_line_number}.
 % SetNextBranchBreakpoint je modifikovan za step over da ne preskače instrukcije poziva ukoliko je poziv prema izdvojenoj funkciji.
-% To se radi klasično, traženjem ogovarajućeg CallEdge i proverom IsOutlined. Novitet je što kako funckija nije pozvana, return adresa
+% To se radi klasično, traženjem ogovarajućeg CallEdge i proverom IsOutlined. Novitet je što kako funkcija nije pozvana, return adresa
 % jos nije postavljena na stek, tako da mora da se računa ručno kao: Adresa call instrukcije + veličina call instrukcije.
-Posebno u slučaju \verb|step-over| komande sledeća instrukcija grananja se traži uz bezuslovno preskakanje instrukcija poziva.
+Posebno u slučaju komande \verb|step-over| sledeća instrukcija grananja se traži uz bezuslovno preskakanje instrukcija poziva.
 Taj postupak je izmenjen dodavanjem uslova da pozvana funkcija nije nastala izdvajanjem koda.
 Ukoliko jeste, očekivano ponašanje je da debager ipak korača unutar te funkcije kako to odgovara izvornom kodu programa.
 U suprotnom poziv instrukcije se ignoriše kao i ranije.
@@ -2062,10 +2073,10 @@ Obrada samog događaja se radi na početku funkcije \verb|ShouldStop| gde se odm
 Tačka prekida je mehanizam u debageru za pauziranje izvršavanja procesa i vraćanje kontrole korisniku kada proces dostigne mesto u kodu gde je ta tačka postavljena.
 % softverska / hardverska podrska
 % INT 3, prepisivanje koda?
-LLDB podržava nekoliko načina za postavljanje tačaka prekida:
+Debager LLDB podržava nekoliko načina za postavljanje tačaka prekida:
 \begin{itemize}
   \item pomoću adrese u izvršnom fajlu --- Najjednostavniji vid postavljanja tačke prekida. Postavlja se tačno na prosleđenu adresu.
-  \item pomoću imena funckije --- U izvornom kodu se pronalaze sve funkcije sa prosleđenim imenom i za svaku od njih dodaje se nova tačka prekida.
+  \item pomoću imena funkcije --- U izvornom kodu se pronalaze sve funkcije sa prosleđenim imenom i za svaku od njih dodaje se nova tačka prekida.
   \item pomoću imena fajla i reda --- Prosleđuje se naziv fajla i red u tom fajlu. Na osnovu informacija za debagovanje se tačka prekida postavlja na prvu instrukciju kojoj odgovara prosleđeni red ili prvi sledeći red ukoliko za traženi red ne postoje informacije.
   \item pomoću regularnog izraza --- Izvorni k\^od se pretražuje za poklapanja sa regularnim izrazom i svako poklapanje dodaje novu tačku prekida.
 \end{itemize}
@@ -2093,6 +2104,7 @@ Uspešnim izvršavanjem komande za postavljanje tačke prekida dobija se poruka 
 Prva dva od prethodno opisanih načina rade očekivano za izdvojene instrukcije dok druga dva ne funkcionišu.
 Ono što izdvaja druga dva načina je što oni moraju da odrede adresu na osnovu lokacije u izvornom kodu.
 Tačno je da se isti ovaj proces koristi i za postavljanje tačke prekida po imenu funkcije ali kako izdvojeni k\^od ne može da sadrži deklaraciju funkcije, dotični problem ne važi u ovom slučaju.
+
 Potreban mehanizam za rešenje ovog problema je već ostvaren dodatnom tabelom linija za izdvojene instrukcije.
 Ona omogućuje mapiranje lokacija u izvornom kodu na adrese što je baš potrebno u ovom slučaju.
 Međutim i sa tim se javlja drugi problem.
@@ -2101,9 +2113,14 @@ Sada prilikom debagovanja dolazi do neočekivanih zastajkivanja na tačke prekid
 % Kako se lokacija ne skladišti u tabeli linija 
 Radi jednostavnosti, nastavak teksta se odnosi na slučaj zadavanja fajla i reda.
 % Implementacija za regularni izraz radi potpuno identično.
-Sve što će biti rečeno važi i za slučaj koji koristi regularne izraze.
+% Sve što će biti rečeno važi i za slučaj koji koristi regularne izraze.
 Problem je u tome što odgovarajuća adresa pripada izdvojenoj funkciji koja se poziva iz više mesta.
+
 Ilustracija ovog problema je prikazana na slici \ref{fig:outlined_breakpoint}.
+Ukoliko korisnik postavi tačku prekida na red 17, do prekida će doći i prilikom izvršavanja linije 22 i obrnuto.
+Korisnik ne treba da bude svestan postojanja izdvojene funkcije jer on debaguje samo na osnovu izvornog koda.
+Za njega, očekivani ishod treba da bude da se program zautavlja samo na redu koji je on izabrao.
+
 % Primer, slika
 \begin{figure}[!ht]
   \centering
@@ -2111,9 +2128,6 @@ Ilustracija ovog problema je prikazana na slici \ref{fig:outlined_breakpoint}.
   \caption{Vizuelni prikaz odnosa izdvojenog koda u izvornom kodu i izvršnom fajl}
   \label{fig:outlined_breakpoint}
 \end{figure}
-Ukoliko korisnik postavi tačku prekida na red 17, do prekida će doći i prilikom izvršavanja linije 22 i obrnuto.
-Korisnik ne treba da bude svestan postojanja izdvojene funkcije jer on debaguje samo na osnovu izvornog koda.
-Za njega, očekivani ishod treba da bude da se program zautavlja samo na redu koji je on izabrao.
 
 % Breakpoint postavlja BreakpointResolver
 % BreakpointLocation prosiren da sadrzi opcionu lokaciju u izvornom kodu
@@ -2123,16 +2137,17 @@ Za njega, očekivani ishod treba da bude da se program zautavlja samo na redu ko
 % Postoji i uslov koji moze da se podesi nad celim breakpoint-om ali on se ne proverava u odgovarajuce vreme. Istraziti detaljnije
 Rešenje problema nije moguće realizovati u vreme postavljanja tačke prekida, već se provera ispravnosti lokacije radi nakon izazivanja prekida ali pre povratka kontrole korisniku.
 Dok klasa \verb|Breakpoint| poseduje sve podatke o grupi tačaka prekida koje su nastale istom komandom, informacije o svakoj pojedinačnoj instanci se nalaze u okviru klase \verb|BreakpointLocation|.
-Ona je dopunjena poljem koje predstavlja opcionu lokaciju u izvornom kodu koja odgovara toj adresi i poljem logičkog tipa koje obeležava da li je instrukcija izdvojena.
+Ona je dopunjena poljem koje predstavlja opcionu lokaciju u izvornom kodu na osnovu koje je napravljena i poljem logičkog tipa koje obeležava da li je instrukcija izdvojena.
 % Lokacija u izvornom kodu je neophodna samo za podršku izdvojenih instrukcija.
 Oba dodata polja dobijaju vrednost prilikom kreiranja tačke prekida na osnovu podataka iz tabela linija.
+
 Dolaskom na tačku prekida u toku izvršavanja radi se provera da li treba vratiti kontrolu korisniku kroz funkciju \verb|ShouldStop| klase \verb|BreakpointLocation|.
 U ovom trenutku je potrebno proveriti da li se lokacija sačuvana u polju poklapa sa lokacijom koja odgovara trenutnom stanju procesa.
 Način dobijanja trenutne lokacije je isti kao i u prethodna dva poglavlja, uz pomoć trenutne adrese i konteksta.
 Ukoliko se lokacije poklapaju, proces će se zaustaviti, a u suprotnom će se prekid ignorisati.
 % Nigde u implementaciji ne postoji zavisnost na konkretan način postavljanja tačaka prekida tako da bi isti mehanizam trebalo da funkcioniše 
-Posebna pažnja je data da se ova provera radi pre bilo koje druge operacije koja može da izmeni stanje tačke prekida.
-Na primer pre uvećavanja brojača aktivacije tačke prekida koji korisnik može da korsiti za napredno debagovanje.
+Posebna pažnja je data da se ova provera radi pre bilo koje druge operacije koja može da izmeni stanje tačke prekida, na primer uvećanja njenog brojača aktivacije.
+% Na primer pre uvećavanja brojača aktivacije tačke prekida. % koji korisnik može da korsiti za napredno debagovanje.
 
 \chapter{Rezultati}
 \label{sec:results}
