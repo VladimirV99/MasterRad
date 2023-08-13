@@ -328,7 +328,7 @@ Mnoge firme koriste svoje verzije kompajlera LLVM bilo za podršku neke arhitekt
 Glavnu komponentu projekta LLVM čini kolekcija biblioteka u okviru istoimenog potprojekta.
 One implementiraju optimizator i zadnji deo kompajlera i koriste se od strane većine ostalih alata.
 Drugi bitan potprojekat je clang. On implementira prednji deo kompajlera za jezike C, C++ i Objective-C.
-LLVM implementira i svoj debager koji se zove LLDB. Više reči o njemu će biti u glavi \ref{sec:lldb}.
+LLVM implementira i svoj debager koji se zove LLDB. Više reči o njemu će biti u poglavlju \ref{sec:lldb}.
 Postoji još veliki broj biblioteka i pomoćnih alata koji nisu pomenuti zato što nisu predmet ovog rada.
 
 Kompajler LLVM je relativno nov u odnosu na druge popularne kompajlere i prati moderniji dizajn.
@@ -510,7 +510,7 @@ Ukoliko instrukcija vraća vrednost, on se smešta u novi virtuelni registar.
 Dodatne informacije o instrukcijama i globalnim objektima se čuvaju u vidu metapodataka.
 Oni se mogu prepoznati po tome što počinju karakterom '!'.
 Između ostalog, oni se koriste za informacije za debagovanje.
-Više reči o primeni metapodataka će biti u glavi \ref{sec:informacije_za_debagovanje}.
+Više reči o primeni metapodataka će biti u poglavlju \ref{sec:informacije_za_debagovanje}.
 
 Optimizacije su implementirane u vidu prolaza (eng.~{\em pass}) koji obrađuju modul, funkciju ili petlju.
 Prolazi nasleđuju apstraktnu klasu \verb|PassInfoMixin| i implementiraju funkciju \verb|run| sa argumentima za odgovarajuću jedinicu obrade.
@@ -1056,7 +1056,7 @@ int main() {
 \end{listing}
 
 \begin{listing}[!ht]
-  \begin{minted}[fontsize=\small]{bash}
+  \begin{minted}[breaklines, fontsize=\small]{bash}
 clang -Xclang -disable-llvm-passes -g -O3 -S -emit-llvm outline.c -o outline.ll
 opt -passes="iroutliner" -ir-outlining-no-cost=true -S outline.ll -o outline_opt.ll
 llc -filetype=asm outline_opt.ll -o outline.s
@@ -1342,7 +1342,7 @@ Listing \ref{lst:debug_line_commands} prikazuje upotrebu nekoliko alata za dekod
 \end{listing}
 
 \begin{listing}[!ht]
-  \begin{minted}[fontsize=\small]{text}
+  \begin{minted}[fontsize=\footnotesize]{text}
 Address            Line   Column File   ISA Discriminator Flags
 ------------------ ------ ------ ------ --- ------------- -------------
 0x0000000000401110      1      0      1   0             0  is_stmt
@@ -1471,7 +1471,7 @@ Zadatak ovog dela je da prilikom primene optimizacije izdvajanja funkcija zapamt
 Potrebne informacije se generišu u okviru implementacija optimizacije, u prolazima \verb|IROutliner| i \verb|MachineOutliner|.
 
 % Kao što je već pomenuto u odeljku \ref{sec:izdvajanje_koda_debag},
-Kako tabela linija ne podržava duplirane vrednosti adrese, ona nije u opticaju za čuvanje vrednosti.
+Kako tabela linija ne podržava duplirane vrednosti adrese, ona se ne može iskoristiti za čuvanje vrednosti.
 Umesto toga, ideja je da se debag lokacije sačuvaju u sekciji \verb|.debug_info| umesto u \verb|.debug_line|.
 Verzija 5 standarda DWARF je uvela novu etiketu, \verb|DW_TAG_call_site|, koja bi trebalo da sadrži podatke o mestu poziva funkcije \cite{jelinek2010callsite}.
 Trenutno se već koristi za pružanje informacija o vrednostima parametara prilikom poziva funkcije \cite{jelinek2010entryvalue} i da li je poziv repni ili repni rekuzivan. % reference
@@ -1481,7 +1481,7 @@ Ovo je pogodno mesto za dodavanje informacija o izdvojenim instrukcijama zato š
 % Prvo, podržano je čuvanje samo podataka na mašinski nezavisnoj međureprezentaciji, ali se lako može proširiti da podržava i mašinski zavisnu međureprezentaciju.
 % Takođe, \verb|SelectionDAG| je jedina podržana implementacija izbora instrukcija.
 % Ona je izabrana zato što je podrazumevana za veliki broj arhitektura uključujući \verb|x86_64|.
-Implementacija trenutno podržava čuvanje podataka na prilikom izdvajanja koda mašinski nezavisnoj međureprezentaciji.
+Implementacija trenutno podržava čuvanje podataka prilikom izdvajanja koda na mašinski nezavisnoj međureprezentaciji.
 Kako to uključuje spuštanje kroz mašinski zavisnu reprezentaciju, jednostavno je dodati podršku za izdvajanje koda i na toj reprezentaciji.
 % Jedini deo koji nedostaje je generisanje podataka.
 Za izbor instrukcija se koristi implementacija \verb|SelectionDAG|, tako da će čuvanje podataka raditi za sve podržane arhitekture.
@@ -1601,9 +1601,10 @@ Ovaj deo implementacije je preuzet iz \cite{tomasevic2022autlajning}.
 % scheduling -> zakazivanje, planiranje, odredjivanje redosleda instrukcija
 
 % Kratak uvod
-Na kraju prethodne glave su potrebne informacije za debagovanje postale dostupne posle izvršavanja optimizacija na mašinski nezavisnom međukodu.
+% Na kraju prethodne glave su potrebne informacije za debagovanje postale dostupne posle izvršavanja optimizacija na mašinski nezavisnom međukodu.
+U prethodnoj sekciji je opisana implementacija koja omogućava da potrebne informacije za debagovanje postanu dostupne posle izvršavanja optimizacija na mašinski nezavisnom međukodu.
 Naredni korak je sprovesti te informacije do sledećeg nivoa, odnosno mašinski zavisnog međukoda.
-Proces konverzije iz mašinski nezavisnog do zavisnog međukoda u infrastrukturi LLVM se naziva izbor instrukcija.
+Proces konverzije iz mašinski nezavisnog do mašinski zavisnog međukoda u infrastrukturi LLVM se naziva izbor instrukcija.
 % Kao sto je pomenuto u glavi ...
 Postoji više implementacija izbora instrukcija, ali u ovom radu je trenutno podržana samo implementacija \verb|SelectionDAG|.
 
@@ -1714,7 +1715,7 @@ Ta jedinica sadrži četiri atributa:
   \item \verb|DW_AT_decl_file| --- Identifikator fajla lokacije u izvornom kodu
   \item \verb|DW_AT_decl_line| --- Broj reda u izvornom kodu
   \item \verb|DW_AT_decl_column| --- Broj kolone u izvornom kodu
-  \item \verb|DW_AT_low_pc| --- Adresa instrukcije u tekst segmentu programa. U ovom trenutku je predstavljena labelom ispred te intrukcije i biće zamenjena pravom adresom u fazi povezivanja.
+  \item \verb|DW_AT_low_pc| --- Adresa instrukcije u tekst segmentu programa. U ovom trenutku je predstavljena labelom ispred te instrukcije i biće zamenjena pravom adresom u fazi povezivanja.
 \end{itemize}
 
 Informacije za debagovanje se u kompajleru LLVM generišu funkciju po funkciju.
@@ -1953,7 +1954,7 @@ U prisustvu dobrih debag lokacija prethodni proces funkcioniše očekivano.
 Međutim u slučaju izvojenih instrukcija koje nemaju vrednost u tabeli linija, lokacija prikazana u debageru će biti netačna.
 % Debager će pokušati da uzme vrednost prve ranije adrese koja ima lokaciju.
 Prikazana lokacija će pripadati prvoj ranijoj instrukciji koja ima lokaciju.
-Kako se izdvojene funkcije se dodaju na adresama iza svih korisničkih funkcija, prva ranija instrukcija može da pripada nekoj drugoj funkciji, ili čak može da joj odgovara lokacija koja označava kompajlerski generisan k\^od.
+Kako se izdvojene funkcije dodaju na adresama iza svih korisničkih funkcija, prva ranija instrukcija može da pripada nekoj drugoj funkciji, ili čak može da joj odgovara lokacija koja označava kompajlerski generisan k\^od.
 Korisnik ne dobija nikakvo obaveštenje o tome šta se desilo već samo može da vidi da je program napravio veliki skok na kraj fajla iako to nije slučaj.
 
 % TODO: Primeri
@@ -1980,8 +1981,9 @@ U suprotnom se koristi nova implementacija zasnovana na sličnoj ideji kao odre�
 
 Ovaj problem se svodi na određivanje linije u izvornom kodu koristeći adresu instrukcije na kojoj je proces zaustavljen.
 % Ono se radi tako što se iz roditeljskog stek okvira dohvate potrebne informacije.
-U glavi \ref{sec:debugger_loading} dodata je podrška za mapiranje u tom smeru.
-Jedino što je potrebno je proslediti joj kontekst kako bi se odredila ispravna instanca klase \verb|CallEdge|.
+% U glavi \ref{sec:debugger_loading} dodata je podrška za mapiranje u tom smeru.
+Podrška za mapiranje u tom smeru je opisana u prethodnoj sekciji.
+Jedino što je potrebno je proslediti kontekst kako bi se odredila ispravna instanca klase \verb|CallEdge|.
 Klasa \verb|Function| već ima implementiran mehanizam za pronalaženje te instance na osnovu adrese povratka iz funkcije.
 % TODO: Objasniti da je trenutni stek okvir od izdvojene funkcije
 Ta adresa se postavlja na vrh steka u trenutku poziva funkcije i lako se dohvata povratkom u rediteljski stek okvir koji pripada pozivaocu.
@@ -2059,7 +2061,7 @@ U suprotnom poziv instrukcije se ignoriše kao i ranije.
 Poslednje što je potrebno učiniti je izmeniti konkretne klase planova da dodavaju i proveravaju tačku prekida na izdvojenoj instrukciji.
 Razlikuju se dva slučaja u kojima je potrebno dodati ciljnu tačku prekida.
 Ulaskom u izdvojenu funkciju potrebno je postaviti sledeći cilj da bude prva izdvojena instrukcija sa lokacijom.
-Ukoliko je program već zautavljen usred izdvojene funkcije onda cilj postaje prva sledeća izdvojena instrukcija sa lokacijom u narednom redu.
+Ukoliko je program već zaustavljen usred izdvojene funkcije onda cilj postaje prva sledeća izdvojena instrukcija sa lokacijom u narednom redu.
 Prethodni slučajevi se lako razlikuju poređenjem odnosa između trenutnog stek okvira i okvira iz trenutka kreiranja plana.
 % DoPlanExplainsStop takodje proverava da li se stalo na outlined beakpoint
 % Dostizanje cilja se lako proverava u funkciji \verb|DoPlanExplainsStop|.
@@ -2119,7 +2121,7 @@ Problem je u tome što odgovarajuća adresa pripada izdvojenoj funkciji koja se 
 Ilustracija ovog problema je prikazana na slici \ref{fig:outlined_breakpoint}.
 Ukoliko korisnik postavi tačku prekida na red 17, do prekida će doći i prilikom izvršavanja linije 22 i obrnuto.
 Korisnik ne treba da bude svestan postojanja izdvojene funkcije jer on debaguje samo na osnovu izvornog koda.
-Za njega, očekivani ishod treba da bude da se program zautavlja samo na redu koji je on izabrao.
+Za njega, očekivani ishod treba da bude da se program zaustavlja samo na redu koji je on izabrao.
 
 % Primer, slika
 \begin{figure}[!ht]
@@ -2183,7 +2185,7 @@ Posle ispravke poslednjeg testa nije uočeno više problema i svi testovi su se 
 % Primer debagovanja C primera
 Sledeće je potrebno isprobati da li implementacija uspešno rešava probleme koje je namenjena da reši.
 Demonstracija će biti prikazana na istom primeru koji je predstavljen ranije u listingu \ref{lst:outline_program_example}.
-Ponašanje debagera na izdvojenom kodu pre modifikacija je opisano u glavi \ref{sec:izdvajanje_koda_debag}.
+Ponašanje debagera na izdvojenom kodu pre modifikacija je opisano u poglavlju \ref{sec:izdvajanje_koda_debag}.
 
 % Komande za kompilaciju su iste kao ranije
 Kompilacijom sa modifikovanim kompajlerom i proverom informacija za debagovanje izvršnog fajla se može se primetiti da su nove etikete generisane na mestima poziva funkcija i da se adrese poklapaju sa adresama instrukcija u izdvojenoj funkciji.
