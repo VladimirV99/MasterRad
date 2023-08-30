@@ -254,7 +254,7 @@ Ovakva struktura omogućava lako dodavanje podrške za druge programske jezike k
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.8\textwidth]{assets/compiler_structure.png}
+  \includegraphics[width=0.85\textwidth]{assets/compiler_structure.png}
   \caption{Grafički prikaz strukture modernog kompilatora}
   \label{fig:compiler_structure}
 \end{figure}
@@ -2208,7 +2208,7 @@ Za njega, očekivani ishod treba da bude da se program zaustavlja samo na redu k
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=0.6\textwidth]{assets/outlining_breakpoint.png}
-  \caption{Vizuelni prikaz odnosa izdvojenog koda u izvornom kodu i izvršnom fajl}
+  \caption{Vizuelni prikaz odnosa izdvojenog koda u izvornom kodu i izvršnom fajlu}
   \label{fig:outlined_breakpoint}
 \end{figure}
 
@@ -2334,10 +2334,10 @@ Komanda za postavljanje tačke prekida je uspešno odredila adresu koja odgovara
   Breakpoint 1: where = outline`outlined_ir_func_0 + 11 at outline.c, address = 0x00005555555551a0
   (lldb) run
       10          
-      11  	       int c1 = x + y;
-      12  	       c1--;
-   -> 13  	       global += 2;
-      14  	       foo(c1, global);
+      11          int c1 = x + y;
+      12          c1--;
+   -> 13          global += 2;
+      14          foo(c1, global);
       15          
       16          int c2 = x + y;
   Note: this function is outlined.
